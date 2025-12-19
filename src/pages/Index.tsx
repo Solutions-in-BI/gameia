@@ -1,14 +1,22 @@
 import { useState } from "react";
-import MemoryGame from "@/components/game/MemoryGame";
-import SnakeGame from "@/components/game/SnakeGame";
-import GameMenu from "@/components/game/GameMenu";
+import { GameType } from "@/types/game";
+import { MemoryGame } from "@/components/game/memory/MemoryGame";
+import { SnakeGame } from "@/components/game/snake/SnakeGame";
+import { GameMenu } from "@/components/game/menu/GameMenu";
 
-type GameType = "menu" | "memory" | "snake";
+/**
+ * ===========================================
+ * PÁGINA: Index
+ * ===========================================
+ * 
+ * Página principal que gerencia qual jogo está ativo.
+ * Usa um padrão simples de state machine.
+ */
 
 const Index = () => {
   const [currentGame, setCurrentGame] = useState<GameType>("menu");
 
-  const handleSelectGame = (game: "memory" | "snake") => {
+  const handleSelectGame = (game: Exclude<GameType, "menu">) => {
     setCurrentGame(game);
   };
 
@@ -16,15 +24,15 @@ const Index = () => {
     setCurrentGame("menu");
   };
 
-  if (currentGame === "memory") {
-    return <MemoryGame onBack={handleBackToMenu} />;
+  // Renderiza o componente baseado no estado atual
+  switch (currentGame) {
+    case "memory":
+      return <MemoryGame onBack={handleBackToMenu} />;
+    case "snake":
+      return <SnakeGame onBack={handleBackToMenu} />;
+    default:
+      return <GameMenu onSelectGame={handleSelectGame} />;
   }
-
-  if (currentGame === "snake") {
-    return <SnakeGame onBack={handleBackToMenu} />;
-  }
-
-  return <GameMenu onSelectGame={handleSelectGame} />;
 };
 
 export default Index;
