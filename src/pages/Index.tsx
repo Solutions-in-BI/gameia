@@ -3,6 +3,7 @@ import { GameType } from "@/types/game";
 import { MemoryGame } from "@/components/game/memory/MemoryGame";
 import { SnakeGame } from "@/components/game/snake/SnakeGame";
 import { GameMenu } from "@/components/game/menu/GameMenu";
+import { ProfilePage } from "@/components/game/profile/ProfilePage";
 
 /**
  * ===========================================
@@ -10,28 +11,35 @@ import { GameMenu } from "@/components/game/menu/GameMenu";
  * ===========================================
  * 
  * Página principal que gerencia qual jogo está ativo.
- * Usa um padrão simples de state machine.
  */
 
+type PageType = GameType | "profile";
+
 const Index = () => {
-  const [currentGame, setCurrentGame] = useState<GameType>("menu");
+  const [currentPage, setCurrentPage] = useState<PageType>("menu");
 
   const handleSelectGame = (game: Exclude<GameType, "menu">) => {
-    setCurrentGame(game);
+    setCurrentPage(game);
   };
 
   const handleBackToMenu = () => {
-    setCurrentGame("menu");
+    setCurrentPage("menu");
   };
 
-  // Renderiza o componente baseado no estado atual
-  switch (currentGame) {
+  switch (currentPage) {
     case "memory":
       return <MemoryGame onBack={handleBackToMenu} />;
     case "snake":
       return <SnakeGame onBack={handleBackToMenu} />;
+    case "profile":
+      return <ProfilePage onBack={handleBackToMenu} />;
     default:
-      return <GameMenu onSelectGame={handleSelectGame} />;
+      return (
+        <GameMenu 
+          onSelectGame={handleSelectGame} 
+          onOpenProfile={() => setCurrentPage("profile")} 
+        />
+      );
   }
 };
 

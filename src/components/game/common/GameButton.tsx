@@ -21,6 +21,7 @@ interface GameButtonProps {
   icon?: LucideIcon;
   className?: string;
   fullWidth?: boolean;
+  disabled?: boolean;
 }
 
 const variantClasses = {
@@ -36,14 +37,17 @@ export function GameButton({
   icon: Icon,
   className,
   fullWidth = false,
+  disabled = false,
 }: GameButtonProps) {
   return (
     <button
       onClick={onClick}
+      disabled={disabled}
       className={cn(
         variantClasses[variant],
         "flex items-center justify-center gap-2",
         fullWidth && "w-full",
+        disabled && "opacity-50 cursor-not-allowed",
         className
       )}
     >

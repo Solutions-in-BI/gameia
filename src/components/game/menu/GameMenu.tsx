@@ -1,5 +1,6 @@
-import { Gamepad2, Brain } from "lucide-react";
+import { Gamepad2, Brain, Trophy } from "lucide-react";
 import { GameType } from "@/types/game";
+import { useAchievements } from "@/hooks/useAchievements";
 
 /**
  * ===========================================
@@ -12,6 +13,7 @@ import { GameType } from "@/types/game";
 
 interface GameMenuProps {
   onSelectGame: (game: Exclude<GameType, "menu">) => void;
+  onOpenProfile: () => void;
 }
 
 // Configuração dos jogos disponíveis
@@ -34,7 +36,10 @@ const GAMES = [
   },
 ];
 
-export function GameMenu({ onSelectGame }: GameMenuProps) {
+export function GameMenu({ onSelectGame, onOpenProfile }: GameMenuProps) {
+  const { getProgress } = useAchievements();
+  const progress = getProgress();
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center py-8 px-4">
       <div className="max-w-2xl mx-auto text-center">
@@ -47,6 +52,20 @@ export function GameMenu({ onSelectGame }: GameMenuProps) {
             Escolha um jogo para jogar
           </p>
         </header>
+
+        {/* Botão de Perfil/Conquistas */}
+        <button
+          onClick={onOpenProfile}
+          className="mb-8 mx-auto flex items-center gap-3 bg-card border-2 border-border rounded-xl px-6 py-3 
+                     transition-all hover:border-primary/50 hover:scale-105 animate-fade-in"
+          style={{ animationDelay: "50ms" }}
+        >
+          <Trophy className="w-5 h-5 text-primary" />
+          <span className="text-foreground font-medium">Conquistas</span>
+          <span className="bg-primary/20 text-primary text-sm px-2 py-0.5 rounded-full">
+            {progress.unlocked}/{progress.total}
+          </span>
+        </button>
 
         {/* Grid de Jogos */}
         <div className="grid md:grid-cols-2 gap-6">
