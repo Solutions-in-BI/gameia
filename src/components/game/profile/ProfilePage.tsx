@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, Trophy, Award } from "lucide-react";
 import { GameLayout } from "../common/GameLayout";
 import { GameButton } from "../common/GameButton";
@@ -6,16 +6,8 @@ import { AchievementsList } from "../common/AchievementsList";
 import { LeaderboardTable } from "../common/LeaderboardTable";
 import { useAchievements } from "@/hooks/useAchievements";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
-import { ACHIEVEMENTS_BY_CATEGORY } from "@/constants/achievements";
+import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
-
-/**
- * ===========================================
- * COMPONENTE: ProfilePage
- * ===========================================
- * 
- * Página que mostra conquistas e ranking do jogador.
- */
 
 interface ProfilePageProps {
   onBack: () => void;
@@ -29,10 +21,18 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
   const [leaderboardGame, setLeaderboardGame] = useState<LeaderboardGame>("snake");
   
   const { getAchievementsWithStatus, getProgress } = useAchievements();
-  const { entries, isLoading } = useLeaderboard(leaderboardGame);
+  const { entries, userRank, isLoading, refresh } = useLeaderboard(leaderboardGame);
+  const { profile } = useAuth();
   
   const achievements = getAchievementsWithStatus();
   const progress = getProgress();
+
+  // Atualiza ranking com userId quando profile muda
+  useEffect(() => {
+    if (profile?.id) {
+      refresh(profile.id);
+    }
+  }, [profile?.id, leaderboardGame, refresh]);
 
   return (
     <GameLayout title="Perfil" subtitle="Suas conquistas e ranking">
@@ -150,6 +150,7 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
             entries={entries}
             isLoading={isLoading}
             gameType={leaderboardGame}
+            userRank={userRank}
           />
         </div>
       )}
