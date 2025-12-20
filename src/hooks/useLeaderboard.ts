@@ -47,16 +47,51 @@ export function useLeaderboard(gameType: "memory" | "snake" | "dino", difficulty
     }
   }, [gameType, difficulty]);
 
-  /** Adiciona um novo score ao ranking */
+  /** Adiciona ou atualiza um score no ranking */
   const addScore = useCallback(async (entry: NewLeaderboardEntry) => {
     try {
-      const { error: insertError } = await supabase
-        .from("leaderboard")
-        .insert([entry]);
-
-      if (insertError) throw insertError;
+      // Usa upsert para atualizar se já existe um score do mesmo jogador
+      // Para Snake/Dino: mantém o maior score
+      // Para Memory: mantém o menor score (menos movimentos = melhor)
+      const isMemory = entry.game_type === "memory";
       
-      // Recarrega o ranking
+      // Busca score existente
+      let existingQuery = supabase
+        .from("leaderboard")
+        .select("score")
+        .eq("player_name", entry.player_name)
+        .eq("game_type", entry.game_type);
+      
+      if (entry.difficulty) {
+        existingQuery = existingQuery.eq("difficulty", entry.difficulty);
+      } else {
+        existingQuery = existingQuery.is("difficulty", null);
+      }
+      
+      const { data: existing } = await existingQuery.maybeSingle();
+      
+      // Se já existe, verifica se o novo score é melhor
+      if (existing) {
+        const shouldUpdate = isMemory 
+          ? entry.score < existing.score  // Memory: menos movimentos = melhor
+          : entry.score > existing.score; // Snake/Dino: mais pontos = melhor
+        
+        if (!shouldUpdate) {
+          // Score atual é melhor, não atualiza
+          return { success: true, message: "Score anterior era melhor" };
+        }
+      }
+      
+      // Upsert: insere ou atualiza
+      const { error: upsertError } = await supabase
+        .from("leaderboard")
+        .upsert([entry], { 
+          onConflict: "player_name,game_type,difficulty",
+          ignoreDuplicates: false 
+        });
+
+      if (upsertError) throw upsertError;
+      
       await fetchLeaderboard();
       return { success: true };
     } catch (err) {
