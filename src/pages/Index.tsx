@@ -2,6 +2,7 @@ import { useState } from "react";
 import { GameType } from "@/types/game";
 import { MemoryGame } from "@/components/game/memory/MemoryGame";
 import { SnakeGame } from "@/components/game/snake/SnakeGame";
+import { DinoGame } from "@/components/game/dino/DinoGame";
 import { GameMenu } from "@/components/game/menu/GameMenu";
 import { ProfilePage } from "@/components/game/profile/ProfilePage";
 
@@ -31,6 +32,8 @@ const Index = () => {
       return <MemoryGame onBack={handleBackToMenu} />;
     case "snake":
       return <SnakeGame onBack={handleBackToMenu} />;
+    case "dino":
+      return <DinoGame onBack={handleBackToMenu} />;
     case "profile":
       return <ProfilePage onBack={handleBackToMenu} />;
     default:

@@ -22,7 +22,7 @@ interface ProfilePageProps {
 }
 
 type Tab = "achievements" | "leaderboard";
-type LeaderboardGame = "snake" | "memory";
+type LeaderboardGame = "snake" | "memory" | "dino";
 
 export function ProfilePage({ onBack }: ProfilePageProps) {
   const [activeTab, setActiveTab] = useState<Tab>("achievements");
@@ -101,6 +101,10 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
             title="🐍 Snake"
             achievements={achievements.filter(a => a.category === "snake")}
           />
+          <AchievementsList
+            title="🦖 Dino Runner"
+            achievements={achievements.filter(a => a.category === "dino")}
+          />
         </div>
       ) : (
         <div className="space-y-4">
@@ -109,7 +113,7 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
             <button
               onClick={() => setLeaderboardGame("snake")}
               className={cn(
-                "flex-1 py-2 px-4 rounded-lg border transition-all",
+                "flex-1 py-2 px-4 rounded-lg border transition-all text-sm",
                 leaderboardGame === "snake"
                   ? "bg-secondary/20 border-secondary text-secondary"
                   : "bg-card border-border text-muted-foreground"
@@ -120,13 +124,24 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
             <button
               onClick={() => setLeaderboardGame("memory")}
               className={cn(
-                "flex-1 py-2 px-4 rounded-lg border transition-all",
+                "flex-1 py-2 px-4 rounded-lg border transition-all text-sm",
                 leaderboardGame === "memory"
                   ? "bg-primary/20 border-primary text-primary"
                   : "bg-card border-border text-muted-foreground"
               )}
             >
               🧠 Memória
+            </button>
+            <button
+              onClick={() => setLeaderboardGame("dino")}
+              className={cn(
+                "flex-1 py-2 px-4 rounded-lg border transition-all text-sm",
+                leaderboardGame === "dino"
+                  ? "bg-primary/20 border-primary text-primary"
+                  : "bg-card border-border text-muted-foreground"
+              )}
+            >
+              🦖 Dino
             </button>
           </div>
 

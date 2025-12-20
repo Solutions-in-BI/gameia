@@ -26,6 +26,8 @@ const DEFAULT_STATS: PlayerStats = {
   snakeGamesPlayed: 0,
   snakeBestScore: 0,
   snakeMaxLength: 1,
+  dinoGamesPlayed: 0,
+  dinoBestScore: 0,
 };
 
 export function useAchievements() {
@@ -61,7 +63,7 @@ export function useAchievements() {
    * Retorna array de conquistas desbloqueadas
    */
   const checkAndUnlock = useCallback((event: {
-    game: "memory" | "snake";
+    game: "memory" | "snake" | "dino";
     score?: number;
     moves?: number;
     time?: number;
@@ -96,6 +98,13 @@ export function useAchievements() {
           updated.snakeBestScore = event.score;
         }
       }
+
+      if (event.game === "dino") {
+        updated.dinoGamesPlayed++;
+        if (event.score && event.score > updated.dinoBestScore) {
+          updated.dinoBestScore = event.score;
+        }
+      }
       
       return updated;
     });
@@ -113,9 +122,10 @@ export function useAchievements() {
             // Geral - qualquer jogo conta
             shouldUnlock = stats.totalGamesPlayed + 1 >= condition.value;
           } else if (condition.game === event.game) {
-            const count = event.game === "memory" 
-              ? stats.memoryGamesPlayed + 1 
-              : stats.snakeGamesPlayed + 1;
+            let count = 0;
+            if (event.game === "memory") count = stats.memoryGamesPlayed + 1;
+            else if (event.game === "snake") count = stats.snakeGamesPlayed + 1;
+            else if (event.game === "dino") count = stats.dinoGamesPlayed + 1;
             shouldUnlock = count >= condition.value;
           }
           break;
@@ -136,6 +146,9 @@ export function useAchievements() {
 
         case "score":
           if (condition.game === "snake" && event.game === "snake" && event.score) {
+            shouldUnlock = event.score >= condition.value;
+          }
+          if (condition.game === "dino" && event.game === "dino" && event.score) {
             shouldUnlock = event.score >= condition.value;
           }
           break;

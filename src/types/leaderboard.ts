@@ -20,7 +20,7 @@ export interface LeaderboardEntry {
 /** Dados para criar nova entrada */
 export interface NewLeaderboardEntry {
   player_name: string;
-  game_type: "memory" | "snake";
+  game_type: "memory" | "snake" | "dino";
   score: number;
   difficulty?: string;
 }

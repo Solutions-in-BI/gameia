@@ -8,7 +8,7 @@
  */
 
 /** Categorias de conquistas */
-export type AchievementCategory = "memory" | "snake" | "general";
+export type AchievementCategory = "memory" | "snake" | "dino" | "general";
 
 /** Definição de uma conquista */
 export interface Achievement {
@@ -24,7 +24,7 @@ export interface Achievement {
 /** Condições possíveis para desbloquear conquistas */
 export interface AchievementCondition {
   type: "score" | "moves" | "time" | "games_played" | "streak" | "custom";
-  game?: "memory" | "snake";
+  game?: "memory" | "snake" | "dino";
   difficulty?: "easy" | "medium" | "hard";
   value: number;
 }
@@ -42,11 +42,15 @@ export interface PlayerStats {
   
   // Memory
   memoryGamesPlayed: number;
-  memoryBestMoves: Record<string, number>; // { easy: 10, medium: 15, hard: 20 }
+  memoryBestMoves: Record<string, number>;
   memoryBestTime: Record<string, number>;
   
   // Snake
   snakeGamesPlayed: number;
   snakeBestScore: number;
   snakeMaxLength: number;
+  
+  // Dino
+  dinoGamesPlayed: number;
+  dinoBestScore: number;
 }

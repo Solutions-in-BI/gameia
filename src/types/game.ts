@@ -13,7 +13,7 @@
 // ============ TIPOS GERAIS ============
 
 /** Tipos de jogos disponíveis no menu */
-export type GameType = "menu" | "memory" | "snake";
+export type GameType = "menu" | "memory" | "snake" | "dino";
 
 /** Posição em um grid 2D (usado no Snake) */
 export interface Position {

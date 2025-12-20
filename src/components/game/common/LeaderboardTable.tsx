@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 interface LeaderboardTableProps {
   entries: LeaderboardEntry[];
   isLoading: boolean;
-  gameType: "memory" | "snake";
+  gameType: "memory" | "snake" | "dino";
   highlightName?: string;
 }
 

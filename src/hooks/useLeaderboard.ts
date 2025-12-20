@@ -14,7 +14,7 @@ import { LeaderboardEntry, NewLeaderboardEntry } from "@/types/leaderboard";
  * const { entries, addScore, isLoading } = useLeaderboard("snake");
  */
 
-export function useLeaderboard(gameType: "memory" | "snake", difficulty?: string) {
+export function useLeaderboard(gameType: "memory" | "snake" | "dino", difficulty?: string) {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

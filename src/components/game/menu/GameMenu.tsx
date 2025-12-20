@@ -34,6 +34,14 @@ const GAMES = [
     colorClass: "secondary",
     tags: ["Velocidade crescente", "Recorde"],
   },
+  {
+    id: "dino" as const,
+    title: "Dino Runner",
+    description: "Pule os obstáculos e sobreviva! Estilo Chrome offline.",
+    icon: Gamepad2,
+    colorClass: "primary",
+    tags: ["Endless runner", "Velocidade crescente"],
+  },
 ];
 
 export function GameMenu({ onSelectGame, onOpenProfile }: GameMenuProps) {
@@ -68,7 +76,7 @@ export function GameMenu({ onSelectGame, onOpenProfile }: GameMenuProps) {
         </button>
 
         {/* Grid de Jogos */}
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-3 gap-6">
           {GAMES.map((game, index) => (
             <GameCard
               key={game.id}

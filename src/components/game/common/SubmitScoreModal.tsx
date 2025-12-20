@@ -16,7 +16,7 @@ interface SubmitScoreModalProps {
   onClose: () => void;
   onSubmit: (playerName: string) => Promise<void>;
   score: number;
-  gameType: "memory" | "snake";
+  gameType: "memory" | "snake" | "dino";
   isSubmitting?: boolean;
 }
 
@@ -44,9 +44,9 @@ export function SubmitScoreModal({
             🏆 Novo Recorde!
           </DialogTitle>
           <DialogDescription className="text-center text-muted-foreground">
-            {gameType === "snake" 
-              ? `Você fez ${score} pontos!` 
-              : `Você completou em ${score} movimentos!`
+            {gameType === "memory" 
+              ? `Você completou em ${score} movimentos!`
+              : `Você fez ${score} pontos!`
             }
           </DialogDescription>
         </DialogHeader>
