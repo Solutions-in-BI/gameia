@@ -22,6 +22,7 @@ export type Database = {
           id: string
           player_name: string
           score: number
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -30,6 +31,7 @@ export type Database = {
           id?: string
           player_name: string
           score: number
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -38,6 +40,33 @@ export type Database = {
           id?: string
           player_name?: string
           score?: number
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leaderboard_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          nickname: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          nickname: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nickname?: string
         }
         Relationships: []
       }

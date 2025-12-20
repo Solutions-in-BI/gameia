@@ -11,6 +11,7 @@
 export interface LeaderboardEntry {
   id: string;
   player_name: string;
+  user_id?: string | null;
   game_type: string;
   score: number;
   difficulty?: string | null; // Para memory: easy, medium, hard
@@ -20,6 +21,7 @@ export interface LeaderboardEntry {
 /** Dados para criar nova entrada */
 export interface NewLeaderboardEntry {
   player_name: string;
+  user_id?: string;
   game_type: "memory" | "snake" | "dino";
   score: number;
   difficulty?: string;

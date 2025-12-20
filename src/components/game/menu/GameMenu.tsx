@@ -1,6 +1,8 @@
-import { Gamepad2, Brain, Trophy } from "lucide-react";
+import { Gamepad2, Brain, Trophy, LogIn, LogOut, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { GameType } from "@/types/game";
 import { useAchievements } from "@/hooks/useAchievements";
+import { useAuth } from "@/hooks/useAuth";
 import { ThemeToggle } from "../common/ThemeToggle";
 
 /**
@@ -46,13 +48,42 @@ const GAMES = [
 ];
 
 export function GameMenu({ onSelectGame, onOpenProfile }: GameMenuProps) {
+  const navigate = useNavigate();
   const { getProgress } = useAchievements();
+  const { profile, isAuthenticated, signOut } = useAuth();
   const progress = getProgress();
+
+  const handleLogout = async () => {
+    await signOut();
+  };
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center py-8 px-4 relative">
-      {/* Botão de Tema */}
-      <div className="absolute top-4 right-4 z-10">
+      {/* Header Actions */}
+      <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
+        {isAuthenticated && profile ? (
+          <>
+            <div className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5">
+              <User size={16} className="text-primary" />
+              <span className="text-sm font-medium text-foreground">{profile.nickname}</span>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="p-2 rounded-lg bg-card border border-border hover:bg-muted transition-colors"
+              title="Sair"
+            >
+              <LogOut size={18} className="text-muted-foreground" />
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={() => navigate("/auth")}
+            className="flex items-center gap-2 bg-primary text-primary-foreground px-3 py-1.5 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
+          >
+            <LogIn size={16} />
+            <span>Entrar</span>
+          </button>
+        )}
         <ThemeToggle />
       </div>
 
@@ -63,7 +94,10 @@ export function GameMenu({ onSelectGame, onOpenProfile }: GameMenuProps) {
             Game Zone
           </h1>
           <p className="text-muted-foreground text-base sm:text-lg">
-            Escolha um jogo para jogar
+            {isAuthenticated && profile 
+              ? `Olá, ${profile.nickname}! Escolha um jogo para jogar`
+              : "Escolha um jogo para jogar"
+            }
           </p>
         </header>
 
