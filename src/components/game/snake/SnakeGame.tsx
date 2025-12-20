@@ -7,10 +7,11 @@ import { SnakeBoard } from "./SnakeBoard";
 import { MobileControls } from "./MobileControls";
 import { GameOverlay } from "./GameOverlay";
 import { AchievementToast } from "../common/AchievementToast";
-import { SubmitScoreModal } from "../common/SubmitScoreModal";
 import { useSnakeGame } from "@/hooks/useSnakeGame";
 import { useAchievements } from "@/hooks/useAchievements";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 import { OPPOSITE_DIRECTIONS } from "@/constants/game";
 import { Direction } from "@/types/game";
 
@@ -44,14 +45,14 @@ export function SnakeGame({ onBack }: SnakeGameProps) {
 
   const { checkAndUnlock } = useAchievements();
   const { addScore } = useLeaderboard("snake");
+  const { profile, isAuthenticated } = useAuth();
+  const { toast } = useToast();
 
-  // Estado para toasts e modais
+  // Estado para toasts
   const [unlockedAchievement, setUnlockedAchievement] = useState<string | null>(null);
-  const [showScoreModal, setShowScoreModal] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasCheckedAchievements, setHasCheckedAchievements] = useState(false);
 
-  // Verifica conquistas quando game over
+  // Verifica conquistas e salva score quando game over
   useEffect(() => {
     if (isGameOver && score > 0 && !hasCheckedAchievements) {
       const unlocked = checkAndUnlock({
@@ -59,37 +60,40 @@ export function SnakeGame({ onBack }: SnakeGameProps) {
         score,
       });
 
-      // Mostra toast da primeira conquista desbloqueada
       if (unlocked.length > 0) {
         setUnlockedAchievement(unlocked[0]);
       }
 
       setHasCheckedAchievements(true);
 
-      // Mostra modal de score se fez pontos significativos
-      if (score >= 30) {
-        setTimeout(() => setShowScoreModal(true), 1500);
+      // Salva automaticamente se logado e fez pontos significativos
+      if (isAuthenticated && profile && score >= 30) {
+        addScore({
+          player_name: profile.nickname,
+          user_id: profile.id,
+          game_type: "snake",
+          score,
+        }).then((result) => {
+          if (result.success) {
+            toast({
+              title: "Score salvo!",
+              description: `${score} pontos salvos no ranking.`,
+            });
+          }
+        });
+      } else if (score >= 30 && !isAuthenticated) {
+        toast({
+          title: "Faça login para salvar",
+          description: "Crie uma conta para competir no ranking!",
+        });
       }
     }
-  }, [isGameOver, score, checkAndUnlock, hasCheckedAchievements]);
+  }, [isGameOver, score, checkAndUnlock, hasCheckedAchievements, isAuthenticated, profile, addScore, toast]);
 
   // Reset do estado quando reinicia
   const handleReset = () => {
     setHasCheckedAchievements(false);
-    setShowScoreModal(false);
     resetGame();
-  };
-
-  // Submete score ao ranking
-  const handleSubmitScore = async (playerName: string) => {
-    setIsSubmitting(true);
-    await addScore({
-      player_name: playerName,
-      game_type: "snake",
-      score,
-    });
-    setIsSubmitting(false);
-    setShowScoreModal(false);
   };
 
   // Handler para controles mobile (valida direção oposta)
@@ -152,16 +156,6 @@ export function SnakeGame({ onBack }: SnakeGameProps) {
       <AchievementToast
         achievementId={unlockedAchievement}
         onClose={() => setUnlockedAchievement(null)}
-      />
-
-      {/* Modal de Envio de Score */}
-      <SubmitScoreModal
-        isOpen={showScoreModal}
-        onClose={() => setShowScoreModal(false)}
-        onSubmit={handleSubmitScore}
-        score={score}
-        gameType="snake"
-        isSubmitting={isSubmitting}
       />
     </GameLayout>
   );

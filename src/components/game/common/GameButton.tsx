@@ -16,18 +16,26 @@ import { cn } from "@/lib/utils";
 
 interface GameButtonProps {
   children: React.ReactNode;
-  onClick: () => void;
+  onClick?: () => void;
   variant?: "primary" | "secondary" | "muted";
   icon?: LucideIcon;
   className?: string;
   fullWidth?: boolean;
   disabled?: boolean;
+  type?: "button" | "submit" | "reset";
+  size?: "sm" | "md" | "lg";
 }
 
 const variantClasses = {
   primary: "btn-primary-game",
   secondary: "btn-secondary-game",
   muted: "btn-game bg-muted text-foreground",
+};
+
+const sizeClasses = {
+  sm: "px-3 py-1.5 text-sm",
+  md: "px-4 py-2",
+  lg: "px-6 py-3 text-lg",
 };
 
 export function GameButton({ 
@@ -38,13 +46,17 @@ export function GameButton({
   className,
   fullWidth = false,
   disabled = false,
+  type = "button",
+  size = "md",
 }: GameButtonProps) {
   return (
     <button
+      type={type}
       onClick={onClick}
       disabled={disabled}
       className={cn(
         variantClasses[variant],
+        sizeClasses[size],
         "flex items-center justify-center gap-2",
         fullWidth && "w-full",
         disabled && "opacity-50 cursor-not-allowed",

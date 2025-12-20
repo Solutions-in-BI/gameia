@@ -5,84 +5,52 @@ import { GameButton } from "../common/GameButton";
 import { StatCard } from "../common/StatCard";
 import { DinoCanvas } from "./DinoCanvas";
 import { AchievementToast } from "../common/AchievementToast";
-import { SubmitScoreModal } from "../common/SubmitScoreModal";
 import { useDinoGame } from "@/hooks/useDinoGame";
 import { useAchievements } from "@/hooks/useAchievements";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
-
-/**
- * ===========================================
- * COMPONENTE: DinoGame
- * ===========================================
- * 
- * Jogo do dinossauro estilo Chrome offline.
- * Pule os obstáculos e sobreviva o máximo possível!
- */
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 interface DinoGameProps {
   onBack: () => void;
 }
 
 export function DinoGame({ onBack }: DinoGameProps) {
-  const {
-    isPlaying,
-    isGameOver,
-    score,
-    bestScore,
-    dinoY,
-    isJumping,
-    obstacles,
-    jump,
-    resetGame,
-  } = useDinoGame();
-
+  const { isPlaying, isGameOver, score, bestScore, dinoY, isJumping, obstacles, jump, resetGame } = useDinoGame();
   const { checkAndUnlock } = useAchievements();
   const { addScore } = useLeaderboard("dino");
+  const { profile, isAuthenticated } = useAuth();
+  const { toast } = useToast();
 
-  // Estado para toasts e modais
   const [unlockedAchievement, setUnlockedAchievement] = useState<string | null>(null);
-  const [showScoreModal, setShowScoreModal] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasCheckedAchievements, setHasCheckedAchievements] = useState(false);
 
-  // Verifica conquistas quando game over
   useEffect(() => {
     if (isGameOver && score > 0 && !hasCheckedAchievements) {
-      const unlocked = checkAndUnlock({
-        game: "dino",
-        score,
-      });
-
-      if (unlocked.length > 0) {
-        setUnlockedAchievement(unlocked[0]);
-      }
-
+      const unlocked = checkAndUnlock({ game: "dino", score });
+      if (unlocked.length > 0) setUnlockedAchievement(unlocked[0]);
       setHasCheckedAchievements(true);
 
-      // Mostra modal de score se fez pontos significativos
-      if (score >= 50) {
-        setTimeout(() => setShowScoreModal(true), 1500);
+      if (isAuthenticated && profile && score >= 50) {
+        addScore({
+          player_name: profile.nickname,
+          user_id: profile.id,
+          game_type: "dino",
+          score,
+        }).then((result) => {
+          if (result.success) {
+            toast({ title: "Score salvo!", description: `${score} pontos salvos no ranking.` });
+          }
+        });
+      } else if (score >= 50 && !isAuthenticated) {
+        toast({ title: "Faça login para salvar", description: "Crie uma conta para competir no ranking!" });
       }
     }
-  }, [isGameOver, score, checkAndUnlock, hasCheckedAchievements]);
+  }, [isGameOver, score, checkAndUnlock, hasCheckedAchievements, isAuthenticated, profile, addScore, toast]);
 
-  // Reset do estado quando reinicia
   const handleReset = () => {
     setHasCheckedAchievements(false);
-    setShowScoreModal(false);
     resetGame();
-  };
-
-  // Submete score ao ranking
-  const handleSubmitScore = async (playerName: string) => {
-    setIsSubmitting(true);
-    await addScore({
-      player_name: playerName,
-      game_type: "dino",
-      score,
-    });
-    setIsSubmitting(false);
-    setShowScoreModal(false);
   };
 
   return (
@@ -169,21 +137,7 @@ export function DinoGame({ onBack }: DinoGameProps) {
         </GameButton>
       </div>
 
-      {/* Toast de Conquista */}
-      <AchievementToast
-        achievementId={unlockedAchievement}
-        onClose={() => setUnlockedAchievement(null)}
-      />
-
-      {/* Modal de Envio de Score */}
-      <SubmitScoreModal
-        isOpen={showScoreModal}
-        onClose={() => setShowScoreModal(false)}
-        onSubmit={handleSubmitScore}
-        score={score}
-        gameType="dino"
-        isSubmitting={isSubmitting}
-      />
+      <AchievementToast achievementId={unlockedAchievement} onClose={() => setUnlockedAchievement(null)} />
     </GameLayout>
   );
 }
