@@ -1,6 +1,7 @@
 import { Gamepad2, Brain, Trophy } from "lucide-react";
 import { GameType } from "@/types/game";
 import { useAchievements } from "@/hooks/useAchievements";
+import { ThemeToggle } from "../common/ThemeToggle";
 
 /**
  * ===========================================
@@ -49,7 +50,12 @@ export function GameMenu({ onSelectGame, onOpenProfile }: GameMenuProps) {
   const progress = getProgress();
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center py-8 px-4">
+    <div className="min-h-screen bg-background flex items-center justify-center py-8 px-4 relative">
+      {/* Botão de Tema */}
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
+
       <div className="max-w-2xl mx-auto text-center">
         {/* Header */}
         <header className="mb-12 animate-fade-in">
