@@ -8,28 +8,32 @@ import { LeaderboardEntry, NewLeaderboardEntry } from "@/types/leaderboard";
  * ===========================================
  * 
  * Gerencia o ranking online com Lovable Cloud.
- * Suporta realtime updates.
- * 
- * @example
- * const { entries, addScore, isLoading } = useLeaderboard("snake");
+ * Suporta realtime updates e posição do jogador.
  */
+
+interface UserRankInfo {
+  entry: LeaderboardEntry;
+  position: number;
+}
 
 export function useLeaderboard(gameType: "memory" | "snake" | "dino", difficulty?: string) {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
+  const [userRank, setUserRank] = useState<UserRankInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   /** Busca os melhores scores */
-  const fetchLeaderboard = useCallback(async () => {
+  const fetchLeaderboard = useCallback(async (userId?: string) => {
     setIsLoading(true);
     setError(null);
     
     try {
+      // Busca top 10
       let query = supabase
         .from("leaderboard")
         .select("*")
         .eq("game_type", gameType)
-        .order("score", { ascending: gameType === "memory" }) // Memory: menos movimentos = melhor
+        .order("score", { ascending: gameType === "memory" })
         .limit(10);
 
       if (difficulty) {
@@ -37,15 +41,77 @@ export function useLeaderboard(gameType: "memory" | "snake" | "dino", difficulty
       }
 
       const { data, error: fetchError } = await query;
-
       if (fetchError) throw fetchError;
       setEntries(data || []);
+
+      // Busca posição do usuário se logado
+      if (userId) {
+        await fetchUserRank(userId, data || []);
+      } else {
+        setUserRank(null);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao carregar ranking");
     } finally {
       setIsLoading(false);
     }
   }, [gameType, difficulty]);
+
+  /** Busca a posição do usuário no ranking */
+  const fetchUserRank = async (userId: string, topEntries: LeaderboardEntry[]) => {
+    try {
+      // Verifica se usuário já está no top 10
+      const inTop10 = topEntries.find(e => e.user_id === userId);
+      if (inTop10) {
+        const position = topEntries.findIndex(e => e.user_id === userId) + 1;
+        setUserRank({ entry: inTop10, position });
+        return;
+      }
+
+      // Busca entrada do usuário
+      let userQuery = supabase
+        .from("leaderboard")
+        .select("*")
+        .eq("game_type", gameType)
+        .eq("user_id", userId);
+
+      if (difficulty) {
+        userQuery = userQuery.eq("difficulty", difficulty);
+      }
+
+      const { data: userData } = await userQuery.maybeSingle();
+      
+      if (!userData) {
+        setUserRank(null);
+        return;
+      }
+
+      // Conta quantos scores são melhores
+      let countQuery = supabase
+        .from("leaderboard")
+        .select("id", { count: "exact", head: true })
+        .eq("game_type", gameType);
+
+      if (difficulty) {
+        countQuery = countQuery.eq("difficulty", difficulty);
+      }
+
+      // Para memory: conta quantos tem menos movimentos
+      // Para outros: conta quantos tem mais pontos
+      if (gameType === "memory") {
+        countQuery = countQuery.lt("score", userData.score);
+      } else {
+        countQuery = countQuery.gt("score", userData.score);
+      }
+
+      const { count } = await countQuery;
+      const position = (count || 0) + 1;
+
+      setUserRank({ entry: userData, position });
+    } catch (err) {
+      console.error("Erro ao buscar posição:", err);
+    }
+  };
 
   /** Adiciona ou atualiza um score no ranking */
   const addScore = useCallback(async (entry: NewLeaderboardEntry) => {
@@ -136,6 +202,7 @@ export function useLeaderboard(gameType: "memory" | "snake" | "dino", difficulty
 
   return {
     entries,
+    userRank,
     isLoading,
     error,
     addScore,
