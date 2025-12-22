@@ -16,6 +16,11 @@ export interface LeaderboardEntry {
   score: number;
   difficulty?: string | null; // Para memory: easy, medium, hard
   created_at: string;
+  // Dados do perfil (opcional, preenchido ao buscar)
+  profile?: {
+    avatar_url: string | null;
+    selected_title: string | null;
+  } | null;
 }
 
 /** Dados para criar nova entrada */

@@ -94,18 +94,21 @@ export type Database = {
           created_at: string
           id: string
           nickname: string
+          selected_title: string | null
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string
           id: string
           nickname: string
+          selected_title?: string | null
         }
         Update: {
           avatar_url?: string | null
           created_at?: string
           id?: string
           nickname?: string
+          selected_title?: string | null
         }
         Relationships: []
       }
@@ -218,6 +221,27 @@ export type Database = {
           tetris_lines_cleared?: number
           total_games_played?: number
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_titles: {
+        Row: {
+          id: string
+          title_id: string
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          title_id: string
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          title_id?: string
+          unlocked_at?: string
           user_id?: string
         }
         Relationships: []

@@ -14,6 +14,7 @@ export interface Profile {
   id: string;
   nickname: string;
   avatar_url: string | null;
+  selected_title: string | null;
   created_at: string;
 }
 
@@ -94,7 +95,7 @@ export function useAuth() {
   };
 
   // Atualiza perfil
-  const updateProfile = async (updates: { nickname?: string; avatar_url?: string }) => {
+  const updateProfile = async (updates: { nickname?: string; avatar_url?: string; selected_title?: string | null }) => {
     if (!user) return { error: new Error("Usuário não autenticado") };
     
     const { error } = await supabase

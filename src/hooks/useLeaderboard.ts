@@ -28,10 +28,16 @@ export function useLeaderboard(gameType: "memory" | "snake" | "dino" | "tetris",
     setError(null);
     
     try {
-      // Busca top 10
+      // Busca top 10 com dados do perfil
       let query = supabase
         .from("leaderboard")
-        .select("*")
+        .select(`
+          *,
+          profiles:user_id (
+            avatar_url,
+            selected_title
+          )
+        `)
         .eq("game_type", gameType)
         .order("score", { ascending: gameType === "memory" })
         .limit(10);
@@ -42,7 +48,14 @@ export function useLeaderboard(gameType: "memory" | "snake" | "dino" | "tetris",
 
       const { data, error: fetchError } = await query;
       if (fetchError) throw fetchError;
-      setEntries(data || []);
+      
+      // Mapeia dados para incluir perfil
+      const entriesWithProfile = (data || []).map(entry => ({
+        ...entry,
+        profile: entry.profiles || null,
+      }));
+      
+      setEntries(entriesWithProfile);
 
       // Busca posição do usuário se logado
       if (userId) {
