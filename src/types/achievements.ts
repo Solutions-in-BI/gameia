@@ -8,7 +8,7 @@
  */
 
 /** Categorias de conquistas */
-export type AchievementCategory = "memory" | "snake" | "dino" | "general";
+export type AchievementCategory = "memory" | "snake" | "dino" | "tetris" | "general";
 
 /** Definição de uma conquista */
 export interface Achievement {
@@ -23,8 +23,8 @@ export interface Achievement {
 
 /** Condições possíveis para desbloquear conquistas */
 export interface AchievementCondition {
-  type: "score" | "moves" | "time" | "games_played" | "streak" | "custom";
-  game?: "memory" | "snake" | "dino";
+  type: "score" | "moves" | "time" | "games_played" | "streak" | "lines" | "level" | "custom";
+  game?: "memory" | "snake" | "dino" | "tetris";
   difficulty?: "easy" | "medium" | "hard";
   value: number;
 }
@@ -53,4 +53,10 @@ export interface PlayerStats {
   // Dino
   dinoGamesPlayed: number;
   dinoBestScore: number;
+  
+  // Tetris
+  tetrisGamesPlayed: number;
+  tetrisBestScore: number;
+  tetrisLinesCleared: number;
+  tetrisBestLevel: number;
 }

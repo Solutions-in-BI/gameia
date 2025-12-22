@@ -35,7 +35,12 @@ export function TetrisGame({ onBack }: TetrisGameProps) {
     if (isGameOver && score > 0 && !hasCheckedAchievements) {
       setHasCheckedAchievements(true);
       
-      checkAndUnlock({ game: "tetris", score }).then((unlocked) => {
+      checkAndUnlock({ 
+        game: "tetris", 
+        score, 
+        lines: linesCleared, 
+        level 
+      }).then((unlocked) => {
         if (unlocked.length > 0) setUnlockedAchievement(unlocked[0]);
       });
 
@@ -52,7 +57,7 @@ export function TetrisGame({ onBack }: TetrisGameProps) {
         });
       }
     }
-  }, [isGameOver, score, hasCheckedAchievements]);
+  }, [isGameOver, score, linesCleared, level, hasCheckedAchievements]);
 
   const handleReset = () => {
     resetGame();

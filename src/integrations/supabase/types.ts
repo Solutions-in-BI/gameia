@@ -102,6 +102,10 @@ export type Database = {
           snake_best_score: number
           snake_games_played: number
           snake_max_length: number
+          tetris_best_level: number
+          tetris_best_score: number
+          tetris_games_played: number
+          tetris_lines_cleared: number
           total_games_played: number
           updated_at: string
           user_id: string
@@ -116,6 +120,10 @@ export type Database = {
           snake_best_score?: number
           snake_games_played?: number
           snake_max_length?: number
+          tetris_best_level?: number
+          tetris_best_score?: number
+          tetris_games_played?: number
+          tetris_lines_cleared?: number
           total_games_played?: number
           updated_at?: string
           user_id: string
@@ -130,6 +138,10 @@ export type Database = {
           snake_best_score?: number
           snake_games_played?: number
           snake_max_length?: number
+          tetris_best_level?: number
+          tetris_best_score?: number
+          tetris_games_played?: number
+          tetris_lines_cleared?: number
           total_games_played?: number
           updated_at?: string
           user_id?: string
