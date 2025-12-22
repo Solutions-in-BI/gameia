@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { ArrowLeft, Trophy, Award, User, Camera, Edit2, Crown, Medal, Star } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { ArrowLeft, Trophy, Award, User, Camera, Edit2, Crown, Medal, Star, ShoppingBag, Coins, Upload } from "lucide-react";
 import { motion } from "framer-motion";
 import { GameLayout } from "../common/GameLayout";
 import { GameButton } from "../common/GameButton";
@@ -8,12 +8,14 @@ import { LeaderboardTable } from "../common/LeaderboardTable";
 import { useAchievements } from "@/hooks/useAchievements";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
 import { useAuth } from "@/hooks/useAuth";
+import { useMarketplace } from "@/hooks/useMarketplace";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
 interface ProfilePageProps {
   onBack: () => void;
+  onOpenMarketplace: () => void;
 }
 
 type Tab = "profile" | "achievements" | "leaderboard";
@@ -26,20 +28,26 @@ const TOP_AVATARS = [
   { position: 3, icon: Star, color: "text-amber-600", bg: "bg-amber-600/20", label: "Bronze" },
 ];
 
-export function ProfilePage({ onBack }: ProfilePageProps) {
+export function ProfilePage({ onBack, onOpenMarketplace }: ProfilePageProps) {
   const [activeTab, setActiveTab] = useState<Tab>("profile");
   const [leaderboardGame, setLeaderboardGame] = useState<LeaderboardGame>("snake");
   const [isEditingNickname, setIsEditingNickname] = useState(false);
   const [newNickname, setNewNickname] = useState("");
   const [topRanks, setTopRanks] = useState<Record<string, number>>({});
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { getAchievementsWithStatus, getProgress, stats } = useAchievements();
   const { entries, userRank, isLoading, refresh } = useLeaderboard(leaderboardGame);
-  const { profile, user, updateProfile, signOut } = useAuth();
+  const { profile, user, updateProfile, signOut, refreshProfile } = useAuth();
+  const { coins, getEquippedItem } = useMarketplace();
   const { toast } = useToast();
   
   const achievements = getAchievementsWithStatus();
   const progress = getProgress();
+  
+  const equippedAvatar = getEquippedItem("avatar");
+  const equippedFrame = getEquippedItem("frame");
 
   // Busca posição do usuário em todos os rankings
   useEffect(() => {
@@ -95,6 +103,51 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
   const handleLogout = async () => {
     await signOut();
     onBack();
+  };
+
+  // Upload de foto
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    // Validação
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Erro", description: "Selecione uma imagem", variant: "destructive" });
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast({ title: "Erro", description: "Imagem deve ter no máximo 2MB", variant: "destructive" });
+      return;
+    }
+
+    setIsUploadingPhoto(true);
+    try {
+      const fileExt = file.name.split(".").pop();
+      const filePath = `${user.id}/avatar.${fileExt}`;
+
+      // Upload para storage
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Pega URL pública
+      const { data: urlData } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(filePath);
+
+      // Atualiza perfil
+      await updateProfile({ avatar_url: urlData.publicUrl + "?t=" + Date.now() });
+      await refreshProfile();
+      
+      toast({ title: "Foto atualizada!" });
+    } catch (err) {
+      console.error(err);
+      toast({ title: "Erro ao enviar foto", variant: "destructive" });
+    } finally {
+      setIsUploadingPhoto(false);
+    }
   };
 
   // Verifica se usuário tem badges do top 3
@@ -168,10 +221,53 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
           <div className="bg-card border border-border rounded-xl p-6">
             <div className="flex items-center gap-6">
               {/* Avatar */}
-              <div className="relative">
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-4xl font-bold text-primary-foreground">
-                  {profile?.nickname?.charAt(0).toUpperCase() || "?"}
+              <div className="relative group">
+                <input 
+                  type="file" 
+                  ref={fileInputRef}
+                  onChange={handlePhotoUpload}
+                  accept="image/*"
+                  className="hidden"
+                />
+                <div 
+                  className={cn(
+                    "w-24 h-24 rounded-full flex items-center justify-center overflow-hidden",
+                    equippedFrame ? "ring-4 ring-offset-2 ring-offset-card" : "",
+                    equippedFrame?.item?.rarity === "legendary" && "ring-yellow-500",
+                    equippedFrame?.item?.rarity === "epic" && "ring-purple-500",
+                    equippedFrame?.item?.rarity === "rare" && "ring-blue-500"
+                  )}
+                >
+                  {profile?.avatar_url ? (
+                    <img 
+                      src={profile.avatar_url} 
+                      alt="Avatar" 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : equippedAvatar ? (
+                    <div className="w-full h-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center text-5xl">
+                      {equippedAvatar.item?.icon}
+                    </div>
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-4xl font-bold text-primary-foreground">
+                      {profile?.nickname?.charAt(0).toUpperCase() || "?"}
+                    </div>
+                  )}
                 </div>
+                
+                {/* Botão de upload */}
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploadingPhoto}
+                  className="absolute inset-0 w-full h-full rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                >
+                  {isUploadingPhoto ? (
+                    <div className="animate-spin w-6 h-6 border-2 border-white border-t-transparent rounded-full" />
+                  ) : (
+                    <Camera className="w-6 h-6 text-white" />
+                  )}
+                </button>
+
                 {topBadges.length > 0 && (
                   <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-card border border-border">
                     {(() => {
@@ -187,13 +283,13 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
               {/* Info */}
               <div className="flex-1">
                 {isEditingNickname ? (
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
                     <input
                       type="text"
                       value={newNickname}
                       onChange={(e) => setNewNickname(e.target.value)}
                       placeholder="Novo apelido"
-                      className="flex-1 px-3 py-2 rounded-lg border border-border bg-background text-foreground"
+                      className="flex-1 min-w-[150px] px-3 py-2 rounded-lg border border-border bg-background text-foreground"
                       maxLength={20}
                       autoFocus
                     />
@@ -219,6 +315,21 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
                   </div>
                 )}
                 <p className="text-muted-foreground text-sm mt-1">{user?.email}</p>
+                
+                {/* Moedas */}
+                <div className="flex items-center gap-2 mt-2">
+                  <div className="flex items-center gap-1.5 bg-yellow-500/20 border border-yellow-500/30 rounded-lg px-2.5 py-1">
+                    <Coins className="w-4 h-4 text-yellow-500" />
+                    <span className="text-sm font-bold text-yellow-500">{coins.toLocaleString()}</span>
+                  </div>
+                  <button
+                    onClick={onOpenMarketplace}
+                    className="flex items-center gap-1.5 bg-primary/20 border border-primary/30 rounded-lg px-2.5 py-1 hover:bg-primary/30 transition-colors"
+                  >
+                    <ShoppingBag className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-medium text-primary">Loja</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>

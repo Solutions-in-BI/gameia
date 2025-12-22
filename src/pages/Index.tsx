@@ -3,8 +3,10 @@ import { GameType } from "@/types/game";
 import { MemoryGame } from "@/components/game/memory/MemoryGame";
 import { SnakeGame } from "@/components/game/snake/SnakeGame";
 import { DinoGame } from "@/components/game/dino/DinoGame";
+import { TetrisGame } from "@/components/game/tetris/TetrisGame";
 import { GameMenu } from "@/components/game/menu/GameMenu";
 import { ProfilePage } from "@/components/game/profile/ProfilePage";
+import { MarketplacePage } from "@/components/game/marketplace/MarketplacePage";
 
 /**
  * ===========================================
@@ -14,7 +16,7 @@ import { ProfilePage } from "@/components/game/profile/ProfilePage";
  * Página principal que gerencia qual jogo está ativo.
  */
 
-type PageType = GameType | "profile";
+type PageType = GameType | "profile" | "marketplace";
 
 const Index = () => {
   const [currentPage, setCurrentPage] = useState<PageType>("menu");
@@ -34,13 +36,18 @@ const Index = () => {
       return <SnakeGame onBack={handleBackToMenu} />;
     case "dino":
       return <DinoGame onBack={handleBackToMenu} />;
+    case "tetris":
+      return <TetrisGame onBack={handleBackToMenu} />;
     case "profile":
-      return <ProfilePage onBack={handleBackToMenu} />;
+      return <ProfilePage onBack={handleBackToMenu} onOpenMarketplace={() => setCurrentPage("marketplace")} />;
+    case "marketplace":
+      return <MarketplacePage onBack={handleBackToMenu} />;
     default:
       return (
         <GameMenu 
           onSelectGame={handleSelectGame} 
-          onOpenProfile={() => setCurrentPage("profile")} 
+          onOpenProfile={() => setCurrentPage("profile")}
+          onOpenMarketplace={() => setCurrentPage("marketplace")}
         />
       );
   }

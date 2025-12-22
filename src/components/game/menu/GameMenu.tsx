@@ -1,8 +1,9 @@
-import { Gamepad2, Brain, Trophy, LogIn, LogOut, User } from "lucide-react";
+import { Gamepad2, Brain, Trophy, LogIn, LogOut, User, ShoppingBag, Coins } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { GameType } from "@/types/game";
 import { useAchievements } from "@/hooks/useAchievements";
 import { useAuth } from "@/hooks/useAuth";
+import { useMarketplace } from "@/hooks/useMarketplace";
 import { ThemeToggle } from "../common/ThemeToggle";
 
 /**
@@ -17,6 +18,7 @@ import { ThemeToggle } from "../common/ThemeToggle";
 interface GameMenuProps {
   onSelectGame: (game: Exclude<GameType, "menu">) => void;
   onOpenProfile: () => void;
+  onOpenMarketplace: () => void;
 }
 
 // Configuração dos jogos disponíveis
@@ -55,10 +57,11 @@ const GAMES = [
   },
 ];
 
-export function GameMenu({ onSelectGame, onOpenProfile }: GameMenuProps) {
+export function GameMenu({ onSelectGame, onOpenProfile, onOpenMarketplace }: GameMenuProps) {
   const navigate = useNavigate();
   const { getProgress } = useAchievements();
   const { profile, isAuthenticated, signOut } = useAuth();
+  const { coins } = useMarketplace();
   const progress = getProgress();
 
   const handleLogout = async () => {
@@ -127,6 +130,21 @@ export function GameMenu({ onSelectGame, onOpenProfile }: GameMenuProps) {
             <span className="bg-primary/20 text-primary text-xs px-2 py-0.5 rounded-full">
               {progress.unlocked}/{progress.total}
             </span>
+          </button>
+          
+          <button
+            onClick={onOpenMarketplace}
+            className="flex items-center gap-2 bg-yellow-500/10 border-2 border-yellow-500/30 rounded-xl px-4 py-2.5 
+                       transition-all hover:border-yellow-500/50 hover:scale-105"
+          >
+            <ShoppingBag className="w-5 h-5 text-yellow-500" />
+            <span className="text-yellow-500 font-medium text-sm">Loja</span>
+            {isAuthenticated && (
+              <span className="flex items-center gap-1 bg-yellow-500/20 text-yellow-500 text-xs px-2 py-0.5 rounded-full">
+                <Coins className="w-3 h-3" />
+                {coins.toLocaleString()}
+              </span>
+            )}
           </button>
           
           {!isAuthenticated && (

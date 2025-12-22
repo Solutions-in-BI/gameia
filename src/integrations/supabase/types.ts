@@ -52,6 +52,42 @@ export type Database = {
           },
         ]
       }
+      marketplace_items: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          icon: string
+          id: string
+          is_active: boolean
+          name: string
+          price: number
+          rarity: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          icon: string
+          id?: string
+          is_active?: boolean
+          name: string
+          price: number
+          rarity?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          icon?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          price?: number
+          rarity?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -94,8 +130,41 @@ export type Database = {
         }
         Relationships: []
       }
+      user_inventory: {
+        Row: {
+          id: string
+          is_equipped: boolean
+          item_id: string
+          purchased_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          is_equipped?: boolean
+          item_id: string
+          purchased_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          is_equipped?: boolean
+          item_id?: string
+          purchased_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_inventory_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_stats: {
         Row: {
+          coins: number
           dino_best_score: number
           dino_games_played: number
           id: string
@@ -114,6 +183,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          coins?: number
           dino_best_score?: number
           dino_games_played?: number
           id?: string
@@ -132,6 +202,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          coins?: number
           dino_best_score?: number
           dino_games_played?: number
           id?: string
