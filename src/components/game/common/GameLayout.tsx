@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { ArrowLeft } from "lucide-react";
 
 /**
  * ===========================================
@@ -7,11 +8,6 @@ import { ReactNode } from "react";
  * 
  * Layout base reutilizável para todos os jogos.
  * Garante consistência visual e estrutura.
- * 
- * @example
- * <GameLayout title="Snake" subtitle="Use WASD">
- *   <SnakeBoard />
- * </GameLayout>
  */
 
 export interface GameLayoutProps {
@@ -35,18 +31,29 @@ export function GameLayout({
   title, 
   subtitle, 
   children, 
-  maxWidth = "4xl" 
+  maxWidth = "4xl",
+  onBack
 }: GameLayoutProps) {
   return (
-    <div className="min-h-screen bg-background py-8 px-4">
+    <div className="min-h-screen bg-background py-6 px-4">
       <div className={`${maxWidthClasses[maxWidth]} mx-auto`}>
         {/* Header do Jogo */}
-        <header className="text-center mb-8 animate-fade-in">
-          <h1 className="text-4xl md:text-5xl font-display font-bold text-foreground mb-2 neon-text">
+        <header className="relative text-center mb-6 animate-fade-in">
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="absolute left-0 top-1/2 -translate-y-1/2 p-2 rounded-lg bg-card border border-border 
+                         hover:bg-muted transition-colors group"
+              title="Voltar ao Menu"
+            >
+              <ArrowLeft className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+            </button>
+          )}
+          <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-1 neon-text">
             {title}
           </h1>
           {subtitle && (
-            <p className="text-muted-foreground">{subtitle}</p>
+            <p className="text-muted-foreground text-sm">{subtitle}</p>
           )}
         </header>
 

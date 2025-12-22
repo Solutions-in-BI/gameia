@@ -33,13 +33,15 @@ export function StatCard({
   iconAnimation = "",
 }: StatCardProps) {
   return (
-    <div className="stat-card flex items-center gap-3">
-      <Icon className={`w-5 h-5 ${iconColor} ${iconAnimation}`} />
-      <div>
-        <p className="text-xs text-muted-foreground uppercase tracking-wider">
+    <div className="bg-card border border-border rounded-xl p-3 sm:p-4 flex items-center gap-3 shadow-sm hover:shadow-md transition-shadow">
+      <div className={`p-2 rounded-lg bg-muted/50 ${iconColor}`}>
+        <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${iconAnimation}`} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-medium">
           {label}
         </p>
-        <p className="text-xl font-display font-bold text-foreground">
+        <p className="text-lg sm:text-xl font-display font-bold text-foreground truncate">
           {value}
         </p>
       </div>

@@ -75,9 +75,10 @@ export function DinoGame({ onBack }: DinoGameProps) {
       title="Dino Runner" 
       subtitle="Pressione ESPAÇO ou clique para pular"
       maxWidth="4xl"
+      onBack={onBack}
     >
       {/* Estatísticas */}
-      <div className="flex justify-center gap-4 mb-6">
+      <div className="grid grid-cols-2 gap-3 mb-4 max-w-sm mx-auto">
         <StatCard 
           icon={Zap} 
           label="Pontos" 
@@ -94,7 +95,7 @@ export function DinoGame({ onBack }: DinoGameProps) {
 
       {/* Área do Jogo */}
       <div 
-        className="relative mx-auto mb-6 cursor-pointer"
+        className="relative mx-auto mb-4 cursor-pointer"
         onClick={jump}
         onTouchStart={(e) => { e.preventDefault(); jump(); }}
       >
@@ -109,10 +110,10 @@ export function DinoGame({ onBack }: DinoGameProps) {
 
         {/* Overlay de início */}
         {!isPlaying && !isGameOver && (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-xl">
+          <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-xl backdrop-blur-sm">
             <div className="text-center">
-              <p className="text-4xl mb-4">🦖</p>
-              <p className="text-xl font-display text-foreground animate-pulse-glow">
+              <p className="text-5xl mb-4">🦖</p>
+              <p className="text-lg font-display text-foreground animate-pulse-glow">
                 Clique ou pressione ESPAÇO para começar
               </p>
             </div>
@@ -121,12 +122,12 @@ export function DinoGame({ onBack }: DinoGameProps) {
 
         {/* Overlay de game over */}
         {isGameOver && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/90 rounded-xl animate-fade-in">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/90 rounded-xl animate-fade-in backdrop-blur-sm">
             <p className="text-3xl font-display font-bold text-destructive mb-2">
               Game Over!
             </p>
-            <p className="text-xl text-foreground mb-4">
-              Pontuação: {score}
+            <p className="text-xl text-foreground mb-2">
+              Pontuação: <span className="font-bold text-primary">{score}</span>
             </p>
             {score >= bestScore && score > 0 && (
               <p className="text-lg text-primary mb-4 animate-pulse">
@@ -134,27 +135,26 @@ export function DinoGame({ onBack }: DinoGameProps) {
               </p>
             )}
             <GameButton variant="primary" onClick={handleReset}>
-              Jogar Novamente
+              🔄 Jogar Novamente
             </GameButton>
           </div>
         )}
       </div>
 
       {/* Instruções */}
-      <p className="text-center text-muted-foreground text-sm mb-4">
-        ESPAÇO / ↑ / W para pular • ↓ / S para abaixar
-      </p>
-      <p className="text-center text-muted-foreground text-xs mb-6">
-        🐦 Após 100 pts: pássaros! Pule os baixos, abaixe para os altos.
-      </p>
+      <div className="bg-muted/50 rounded-lg p-3 mb-4 max-w-lg mx-auto">
+        <p className="text-center text-muted-foreground text-xs sm:text-sm">
+          ESPAÇO / ↑ / W para pular • ↓ / S para abaixar
+        </p>
+        <p className="text-center text-muted-foreground text-xs mt-1">
+          🐦 Após 100 pts: pássaros! Pule os baixos, abaixe para os altos.
+        </p>
+      </div>
 
-      {/* Botões de Ação */}
-      <div className="flex justify-center gap-4">
-        <GameButton variant="secondary" icon={RotateCcw} onClick={handleReset}>
+      {/* Barra de Ações */}
+      <div className="flex justify-center gap-3">
+        <GameButton variant="muted" icon={RotateCcw} onClick={handleReset}>
           Reiniciar
-        </GameButton>
-        <GameButton variant="muted" onClick={onBack}>
-          Voltar ao Menu
         </GameButton>
       </div>
 

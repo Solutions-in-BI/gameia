@@ -123,9 +123,10 @@ export function SnakeGame({ onBack }: SnakeGameProps) {
       title="Snake" 
       subtitle="Use as setas ou WASD para mover"
       maxWidth="2xl"
+      onBack={onBack}
     >
       {/* Estatísticas */}
-      <div className="flex justify-center gap-4 mb-6">
+      <div className="grid grid-cols-2 gap-3 mb-4 max-w-sm mx-auto">
         <StatCard 
           icon={Zap} 
           label="Pontos" 
@@ -141,7 +142,7 @@ export function SnakeGame({ onBack }: SnakeGameProps) {
       </div>
 
       {/* Tabuleiro */}
-      <div className="relative mx-auto mb-6" style={{ width: "min(100%, 400px)" }}>
+      <div className="relative mx-auto mb-4" style={{ width: "min(100%, 400px)" }}>
         <SnakeBoard snake={snake} food={food} gridSize={gridSize} />
         
         <GameOverlay
@@ -156,13 +157,10 @@ export function SnakeGame({ onBack }: SnakeGameProps) {
       {/* Controles Mobile */}
       <MobileControls onDirectionChange={handleMobileDirection} />
 
-      {/* Botões de Ação */}
-      <div className="flex justify-center gap-4">
-        <GameButton variant="secondary" icon={RotateCcw} onClick={handleReset}>
+      {/* Barra de Ações */}
+      <div className="flex justify-center gap-3 mt-4">
+        <GameButton variant="muted" icon={RotateCcw} onClick={handleReset}>
           Reiniciar
-        </GameButton>
-        <GameButton variant="muted" onClick={onBack}>
-          Voltar ao Menu
         </GameButton>
       </div>
 

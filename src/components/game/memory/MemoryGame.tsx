@@ -88,36 +88,30 @@ export function MemoryGame({ onBack }: MemoryGameProps) {
   };
 
   return (
-    <GameLayout title="Jogo da Memória" subtitle="Encontre todos os pares!">
-      {/* Controles */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
+    <GameLayout title="Jogo da Memória" subtitle="Encontre todos os pares!" onBack={onBack}>
+      {/* Controles no Topo */}
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6">
         <DifficultySelector 
           difficulty={difficulty} 
           onSelect={changeDifficulty} 
         />
-        
-        <div className="flex gap-3">
-          <GameButton variant="secondary" icon={RotateCcw} onClick={handleReset}>
-            Reiniciar
-          </GameButton>
-          <GameButton variant="muted" onClick={onBack}>
-            Voltar ao Menu
-          </GameButton>
-        </div>
+        <GameButton variant="muted" icon={RotateCcw} onClick={handleReset} size="sm">
+          Reiniciar
+        </GameButton>
       </div>
 
       {/* Estatísticas */}
-      <div className="mb-8">
+      <div className="mb-6">
         <MemoryStats moves={moves} time={time} bestScore={bestScore} />
       </div>
 
       {/* Tabuleiro */}
-      <div className={`grid ${gridCols} gap-3 md:gap-4 max-w-2xl mx-auto`}>
+      <div className={`grid ${gridCols} gap-2 sm:gap-3 max-w-2xl mx-auto mb-6`}>
         {cards.map((card, index) => (
           <div
             key={card.id}
             className="animate-scale-in"
-            style={{ animationDelay: `${index * 50}ms` }}
+            style={{ animationDelay: `${index * 30}ms` }}
           >
             <MemoryCard
               emoji={card.emoji}

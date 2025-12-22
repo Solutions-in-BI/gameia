@@ -42,28 +42,28 @@ export function MarketplacePage({ onBack }: MarketplacePageProps) {
   const ownedIds = new Set(inventory.map(inv => inv.item_id));
 
   return (
-    <GameLayout title="Marketplace" subtitle="Compre itens especiais com suas moedas">
+    <GameLayout title="Marketplace" subtitle="Compre itens especiais com suas moedas" onBack={onBack}>
       {/* Header com moedas */}
-      <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
-        <div className="flex items-center gap-2 bg-yellow-500/20 border border-yellow-500/30 rounded-xl px-4 py-2">
-          <Coins className="w-5 h-5 text-yellow-500" />
-          <span className="text-lg font-bold text-yellow-500">{coins.toLocaleString()}</span>
+      <div className="flex flex-wrap justify-center items-center gap-4 mb-6">
+        <div className="flex items-center gap-2 bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border border-yellow-500/30 rounded-xl px-5 py-3 shadow-sm">
+          <Coins className="w-6 h-6 text-yellow-500" />
+          <span className="text-2xl font-bold text-yellow-500">{coins.toLocaleString()}</span>
           <span className="text-sm text-yellow-500/70">moedas</span>
         </div>
 
         {!isAuthenticated && (
-          <p className="text-sm text-muted-foreground">Faça login para comprar e ganhar moedas</p>
+          <p className="text-sm text-muted-foreground text-center">Faça login para comprar e ganhar moedas</p>
         )}
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-6">
+      <div className="flex gap-2 mb-6 max-w-md mx-auto">
         <button
           onClick={() => setActiveTab("shop")}
           className={cn(
-            "flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg border transition-all",
+            "flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 font-medium transition-all",
             activeTab === "shop"
-              ? "bg-primary/20 border-primary text-primary"
+              ? "bg-primary/10 border-primary text-primary shadow-sm"
               : "bg-card border-border text-muted-foreground hover:border-primary/50"
           )}
         >
@@ -73,9 +73,9 @@ export function MarketplacePage({ onBack }: MarketplacePageProps) {
         <button
           onClick={() => setActiveTab("inventory")}
           className={cn(
-            "flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg border transition-all",
+            "flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 font-medium transition-all",
             activeTab === "inventory"
-              ? "bg-primary/20 border-primary text-primary"
+              ? "bg-primary/10 border-primary text-primary shadow-sm"
               : "bg-card border-border text-muted-foreground hover:border-primary/50"
           )}
         >
@@ -96,13 +96,13 @@ export function MarketplacePage({ onBack }: MarketplacePageProps) {
           className="space-y-4"
         >
           {/* Filtros */}
-          <div className="flex gap-2">
+          <div className="flex justify-center gap-2 mb-4">
             {(["all", "avatar", "frame"] as Category[]).map(cat => (
               <button
                 key={cat}
                 onClick={() => setCategory(cat)}
                 className={cn(
-                  "px-4 py-2 rounded-lg border text-sm transition-all",
+                  "px-4 py-2 rounded-lg border text-sm font-medium transition-all",
                   category === cat
                     ? "bg-primary/20 border-primary text-primary"
                     : "bg-card border-border text-muted-foreground hover:border-primary/50"
@@ -117,7 +117,7 @@ export function MarketplacePage({ onBack }: MarketplacePageProps) {
           {isLoading ? (
             <div className="text-center py-8 text-muted-foreground">Carregando...</div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
               {filteredItems.map(item => (
                 <ItemCard
                   key={item.id}
@@ -137,13 +137,13 @@ export function MarketplacePage({ onBack }: MarketplacePageProps) {
           className="space-y-4"
         >
           {inventory.length === 0 ? (
-            <div className="text-center py-12">
+            <div className="text-center py-12 bg-card/50 rounded-xl border border-border">
               <Package className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-              <p className="text-muted-foreground">Seu inventário está vazio</p>
+              <p className="text-muted-foreground font-medium">Seu inventário está vazio</p>
               <p className="text-sm text-muted-foreground/70 mt-1">Compre itens na loja!</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
               {inventory.map(inv => inv.item && (
                 <InventoryCard
                   key={inv.id}
@@ -156,12 +156,6 @@ export function MarketplacePage({ onBack }: MarketplacePageProps) {
           )}
         </motion.div>
       )}
-
-      <div className="mt-8">
-        <GameButton variant="muted" icon={ArrowLeft} onClick={onBack}>
-          Voltar ao Menu
-        </GameButton>
-      </div>
     </GameLayout>
   );
 }
