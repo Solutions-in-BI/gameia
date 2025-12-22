@@ -12,6 +12,7 @@ import { useAchievements } from "@/hooks/useAchievements";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useMarketplace } from "@/hooks/useMarketplace";
 import { OPPOSITE_DIRECTIONS } from "@/constants/game";
 import { Direction } from "@/types/game";
 
@@ -47,6 +48,7 @@ export function SnakeGame({ onBack }: SnakeGameProps) {
   const { addScore } = useLeaderboard("snake");
   const { profile, isAuthenticated } = useAuth();
   const { toast } = useToast();
+  const { addCoins } = useMarketplace();
 
   // Estado para toasts
   const [unlockedAchievement, setUnlockedAchievement] = useState<string | null>(null);
@@ -67,6 +69,13 @@ export function SnakeGame({ onBack }: SnakeGameProps) {
       });
 
       // Salva automaticamente se logado e fez pontos significativos
+      // Adiciona moedas baseado na pontuação
+      const coinsEarned = Math.floor(score / 10);
+      if (coinsEarned > 0 && isAuthenticated) {
+        addCoins(coinsEarned);
+        toast({ title: `+${coinsEarned} moedas!`, description: "Moedas adicionadas à sua conta." });
+      }
+
       if (isAuthenticated && profile && score >= 30) {
         addScore({
           player_name: profile.nickname,

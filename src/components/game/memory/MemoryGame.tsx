@@ -12,6 +12,7 @@ import { useAchievements } from "@/hooks/useAchievements";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useMarketplace } from "@/hooks/useMarketplace";
 
 interface MemoryGameProps {
   onBack: () => void;
@@ -37,6 +38,7 @@ export function MemoryGame({ onBack }: MemoryGameProps) {
   const { addScore } = useLeaderboard("memory", difficulty);
   const { profile, isAuthenticated } = useAuth();
   const { toast } = useToast();
+  const { addCoins } = useMarketplace();
 
   const [unlockedAchievement, setUnlockedAchievement] = useState<string | null>(null);
   const [hasCheckedAchievements, setHasCheckedAchievements] = useState(false);
@@ -48,6 +50,14 @@ export function MemoryGame({ onBack }: MemoryGameProps) {
       checkAndUnlock({ game: "memory", moves, time, difficulty }).then((unlocked) => {
         if (unlocked.length > 0) setUnlockedAchievement(unlocked[0]);
       });
+
+      // Adiciona moedas baseado na dificuldade (menos movimentos = mais moedas)
+      const difficultyBonus = difficulty === "hard" ? 15 : difficulty === "medium" ? 10 : 5;
+      const coinsEarned = difficultyBonus;
+      if (isAuthenticated) {
+        addCoins(coinsEarned);
+        toast({ title: `+${coinsEarned} moedas!`, description: "Vitória! Moedas adicionadas." });
+      }
 
       if (isAuthenticated && profile) {
         addScore({

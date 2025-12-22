@@ -10,6 +10,7 @@ import { useAchievements } from "@/hooks/useAchievements";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useMarketplace } from "@/hooks/useMarketplace";
 
 interface DinoGameProps {
   onBack: () => void;
@@ -21,6 +22,7 @@ export function DinoGame({ onBack }: DinoGameProps) {
   const { addScore } = useLeaderboard("dino");
   const { profile, isAuthenticated } = useAuth();
   const { toast } = useToast();
+  const { addCoins } = useMarketplace();
 
   const [unlockedAchievement, setUnlockedAchievement] = useState<string | null>(null);
   const [hasCheckedAchievements, setHasCheckedAchievements] = useState(false);
@@ -32,6 +34,13 @@ export function DinoGame({ onBack }: DinoGameProps) {
       checkAndUnlock({ game: "dino", score }).then((unlocked) => {
         if (unlocked.length > 0) setUnlockedAchievement(unlocked[0]);
       });
+
+      // Adiciona moedas baseado na pontuação
+      const coinsEarned = Math.floor(score / 10);
+      if (coinsEarned > 0 && isAuthenticated) {
+        addCoins(coinsEarned);
+        toast({ title: `+${coinsEarned} moedas!`, description: "Moedas adicionadas à sua conta." });
+      }
 
       if (isAuthenticated && profile && score >= 50) {
         addScore({

@@ -9,6 +9,7 @@ import { useAchievements } from "@/hooks/useAchievements";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useMarketplace } from "@/hooks/useMarketplace";
 import { BOARD_WIDTH, BOARD_HEIGHT, CELL_SIZE, TETROMINOES, TETROMINO_COLORS, TetrominoType } from "@/constants/tetris";
 
 interface TetrisGameProps {
@@ -27,6 +28,7 @@ export function TetrisGame({ onBack }: TetrisGameProps) {
   const { addScore } = useLeaderboard("tetris");
   const { profile, isAuthenticated } = useAuth();
   const { toast } = useToast();
+  const { addCoins } = useMarketplace();
 
   const [unlockedAchievement, setUnlockedAchievement] = useState<string | null>(null);
   const [hasCheckedAchievements, setHasCheckedAchievements] = useState(false);
@@ -43,6 +45,13 @@ export function TetrisGame({ onBack }: TetrisGameProps) {
       }).then((unlocked) => {
         if (unlocked.length > 0) setUnlockedAchievement(unlocked[0]);
       });
+
+      // Adiciona moedas baseado na pontuação
+      const coinsEarned = Math.floor(score / 50);
+      if (coinsEarned > 0 && isAuthenticated) {
+        addCoins(coinsEarned);
+        toast({ title: `+${coinsEarned} moedas!`, description: "Moedas adicionadas à sua conta." });
+      }
 
       if (isAuthenticated && profile && score >= 500) {
         addScore({
