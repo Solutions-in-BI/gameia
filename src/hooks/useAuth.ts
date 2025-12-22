@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 export interface Profile {
   id: string;
   nickname: string;
+  avatar_url: string | null;
   created_at: string;
 }
 
@@ -92,6 +93,37 @@ export function useAuth() {
     return { error };
   };
 
+  // Atualiza perfil
+  const updateProfile = async (updates: { nickname?: string; avatar_url?: string }) => {
+    if (!user) return { error: new Error("Usuário não autenticado") };
+    
+    const { error } = await supabase
+      .from("profiles")
+      .update(updates)
+      .eq("id", user.id);
+    
+    if (!error) {
+      setProfile(prev => prev ? { ...prev, ...updates } : null);
+    }
+    return { error };
+  };
+
+  // Reset de senha
+  const resetPassword = async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth?reset=true`
+    });
+    return { error };
+  };
+
+  // Atualiza senha
+  const updatePassword = async (newPassword: string) => {
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword
+    });
+    return { error };
+  };
+
   return {
     user,
     session,
@@ -100,6 +132,10 @@ export function useAuth() {
     signUp,
     signIn,
     signOut,
+    updateProfile,
+    resetPassword,
+    updatePassword,
+    refreshProfile: () => user && fetchProfile(user.id),
     isAuthenticated: !!session
   };
 }

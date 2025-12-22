@@ -9,7 +9,7 @@ interface UserRankInfo {
 interface LeaderboardTableProps {
   entries: LeaderboardEntry[];
   isLoading: boolean;
-  gameType: "memory" | "snake" | "dino";
+  gameType: "memory" | "snake" | "dino" | "tetris";
   highlightName?: string;
   userRank?: UserRankInfo | null;
 }

@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 interface GameButtonProps {
   children: React.ReactNode;
   onClick?: () => void;
-  variant?: "primary" | "secondary" | "muted";
+  variant?: "primary" | "secondary" | "muted" | "destructive";
   icon?: LucideIcon;
   className?: string;
   fullWidth?: boolean;
@@ -30,6 +30,7 @@ const variantClasses = {
   primary: "btn-primary-game",
   secondary: "btn-secondary-game",
   muted: "btn-game bg-muted text-foreground",
+  destructive: "btn-game bg-destructive text-destructive-foreground hover:bg-destructive/90",
 };
 
 const sizeClasses = {

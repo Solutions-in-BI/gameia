@@ -465,6 +465,48 @@ export const ACHIEVEMENTS: Achievement[] = [
     category: "tetris",
     condition: { type: "level", game: "tetris", value: 15 },
   },
+
+  // ============ CONQUISTAS TOP 3 (ESPECIAIS) ============
+  {
+    id: "top3_snake",
+    name: "Elite Snake",
+    description: "Fique no Top 3 do ranking de Snake",
+    icon: "👑",
+    category: "general",
+    condition: { type: "custom", value: 0 },
+  },
+  {
+    id: "top3_dino",
+    name: "Elite Dino",
+    description: "Fique no Top 3 do ranking de Dino Runner",
+    icon: "👑",
+    category: "general",
+    condition: { type: "custom", value: 0 },
+  },
+  {
+    id: "top3_tetris",
+    name: "Elite Tetris",
+    description: "Fique no Top 3 do ranking de Tetris",
+    icon: "👑",
+    category: "general",
+    condition: { type: "custom", value: 0 },
+  },
+  {
+    id: "top3_memory",
+    name: "Elite Memória",
+    description: "Fique no Top 3 do ranking de Memória",
+    icon: "👑",
+    category: "general",
+    condition: { type: "custom", value: 0 },
+  },
+  {
+    id: "champion",
+    name: "Campeão",
+    description: "Fique em 1º lugar em qualquer ranking",
+    icon: "🏆",
+    category: "general",
+    condition: { type: "custom", value: 0 },
+  },
 ];
 
 /** Conquistas agrupadas por categoria */

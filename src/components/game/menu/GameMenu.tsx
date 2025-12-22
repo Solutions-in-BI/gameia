@@ -71,10 +71,16 @@ export function GameMenu({ onSelectGame, onOpenProfile }: GameMenuProps) {
       <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
         {isAuthenticated && profile ? (
           <>
-            <div className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5">
-              <User size={16} className="text-primary" />
+            <button
+              onClick={onOpenProfile}
+              className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5 hover:bg-muted transition-colors"
+              title="Ver Perfil"
+            >
+              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-xs font-bold text-primary-foreground">
+                {profile.nickname?.charAt(0).toUpperCase() || "?"}
+              </div>
               <span className="text-sm font-medium text-foreground">{profile.nickname}</span>
-            </div>
+            </button>
             <button
               onClick={handleLogout}
               className="p-2 rounded-lg bg-card border border-border hover:bg-muted transition-colors"
@@ -97,7 +103,7 @@ export function GameMenu({ onSelectGame, onOpenProfile }: GameMenuProps) {
 
       <div className="w-full max-w-4xl mx-auto text-center">
         {/* Header */}
-        <header className="mb-10 animate-fade-in">
+        <header className="mb-8 animate-fade-in">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-display font-bold text-foreground mb-3 neon-text">
             Game Zone
           </h1>
@@ -109,22 +115,34 @@ export function GameMenu({ onSelectGame, onOpenProfile }: GameMenuProps) {
           </p>
         </header>
 
-        {/* Botão de Perfil/Conquistas */}
-        <button
-          onClick={onOpenProfile}
-          className="mb-8 mx-auto flex items-center gap-3 bg-card border-2 border-border rounded-xl px-5 py-2.5 
-                     transition-all hover:border-primary/50 hover:scale-105 animate-fade-in"
-          style={{ animationDelay: "50ms" }}
-        >
-          <Trophy className="w-5 h-5 text-primary" />
-          <span className="text-foreground font-medium text-sm sm:text-base">Conquistas</span>
-          <span className="bg-primary/20 text-primary text-xs sm:text-sm px-2 py-0.5 rounded-full">
-            {progress.unlocked}/{progress.total}
-          </span>
-        </button>
+        {/* Ações Rápidas */}
+        <div className="flex flex-wrap justify-center gap-3 mb-8 animate-fade-in" style={{ animationDelay: "50ms" }}>
+          <button
+            onClick={onOpenProfile}
+            className="flex items-center gap-2 bg-card border-2 border-border rounded-xl px-4 py-2.5 
+                       transition-all hover:border-primary/50 hover:scale-105"
+          >
+            <Trophy className="w-5 h-5 text-primary" />
+            <span className="text-foreground font-medium text-sm">Conquistas</span>
+            <span className="bg-primary/20 text-primary text-xs px-2 py-0.5 rounded-full">
+              {progress.unlocked}/{progress.total}
+            </span>
+          </button>
+          
+          {!isAuthenticated && (
+            <button
+              onClick={() => navigate("/auth")}
+              className="flex items-center gap-2 bg-primary/10 border-2 border-primary/30 rounded-xl px-4 py-2.5 
+                         transition-all hover:border-primary hover:scale-105"
+            >
+              <User className="w-5 h-5 text-primary" />
+              <span className="text-primary font-medium text-sm">Criar Conta</span>
+            </button>
+          )}
+        </div>
 
-        {/* Grid de Jogos - Responsivo */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        {/* Grid de Jogos - 2x2 responsivo */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {GAMES.map((game, index) => (
             <GameCard
               key={game.id}
