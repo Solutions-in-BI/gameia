@@ -4,6 +4,7 @@ import { GameLayout } from "../common/GameLayout";
 import { GameButton } from "../common/GameButton";
 import { StatCard } from "../common/StatCard";
 import { AchievementToast } from "../common/AchievementToast";
+import { CoinAnimation } from "../common/CoinAnimation";
 import { useTetrisGame } from "@/hooks/useTetrisGame";
 import { useAchievements } from "@/hooks/useAchievements";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
@@ -32,6 +33,8 @@ export function TetrisGame({ onBack }: TetrisGameProps) {
 
   const [unlockedAchievement, setUnlockedAchievement] = useState<string | null>(null);
   const [hasCheckedAchievements, setHasCheckedAchievements] = useState(false);
+  const [coinsEarned, setCoinsEarned] = useState(0);
+  const [showCoinAnimation, setShowCoinAnimation] = useState(false);
 
   useEffect(() => {
     if (isGameOver && score > 0 && !hasCheckedAchievements) {
@@ -47,10 +50,11 @@ export function TetrisGame({ onBack }: TetrisGameProps) {
       });
 
       // Adiciona moedas baseado na pontuação
-      const coinsEarned = Math.floor(score / 50);
-      if (coinsEarned > 0 && isAuthenticated) {
-        addCoins(coinsEarned);
-        toast({ title: `+${coinsEarned} moedas!`, description: "Moedas adicionadas à sua conta." });
+      const earnedCoins = Math.floor(score / 50);
+      if (earnedCoins > 0 && isAuthenticated) {
+        setCoinsEarned(earnedCoins);
+        setShowCoinAnimation(true);
+        addCoins(earnedCoins);
       }
 
       if (isAuthenticated && profile && score >= 500) {
@@ -71,6 +75,8 @@ export function TetrisGame({ onBack }: TetrisGameProps) {
   const handleReset = () => {
     resetGame();
     setHasCheckedAchievements(false);
+    setShowCoinAnimation(false);
+    setCoinsEarned(0);
   };
 
   return (
@@ -159,6 +165,12 @@ export function TetrisGame({ onBack }: TetrisGameProps) {
       </div>
 
       <AchievementToast achievementId={unlockedAchievement} onClose={() => setUnlockedAchievement(null)} />
+      
+      <CoinAnimation
+        amount={coinsEarned}
+        trigger={showCoinAnimation}
+        onComplete={() => setShowCoinAnimation(false)}
+      />
     </GameLayout>
   );
 }

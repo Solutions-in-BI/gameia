@@ -5,6 +5,7 @@ import { GameButton } from "../common/GameButton";
 import { StatCard } from "../common/StatCard";
 import { DinoCanvas } from "./DinoCanvas";
 import { AchievementToast } from "../common/AchievementToast";
+import { CoinAnimation } from "../common/CoinAnimation";
 import { useDinoGame } from "@/hooks/useDinoGame";
 import { useAchievements } from "@/hooks/useAchievements";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
@@ -26,6 +27,8 @@ export function DinoGame({ onBack }: DinoGameProps) {
 
   const [unlockedAchievement, setUnlockedAchievement] = useState<string | null>(null);
   const [hasCheckedAchievements, setHasCheckedAchievements] = useState(false);
+  const [coinsEarned, setCoinsEarned] = useState(0);
+  const [showCoinAnimation, setShowCoinAnimation] = useState(false);
 
   useEffect(() => {
     if (isGameOver && score > 0 && !hasCheckedAchievements) {
@@ -36,10 +39,11 @@ export function DinoGame({ onBack }: DinoGameProps) {
       });
 
       // Adiciona moedas baseado na pontuação
-      const coinsEarned = Math.floor(score / 10);
-      if (coinsEarned > 0 && isAuthenticated) {
-        addCoins(coinsEarned);
-        toast({ title: `+${coinsEarned} moedas!`, description: "Moedas adicionadas à sua conta." });
+      const earnedCoins = Math.floor(score / 10);
+      if (earnedCoins > 0 && isAuthenticated) {
+        setCoinsEarned(earnedCoins);
+        setShowCoinAnimation(true);
+        addCoins(earnedCoins);
       }
 
       if (isAuthenticated && profile && score >= 50) {
@@ -61,6 +65,8 @@ export function DinoGame({ onBack }: DinoGameProps) {
 
   const handleReset = () => {
     setHasCheckedAchievements(false);
+    setShowCoinAnimation(false);
+    setCoinsEarned(0);
     resetGame();
   };
 
@@ -153,6 +159,12 @@ export function DinoGame({ onBack }: DinoGameProps) {
       </div>
 
       <AchievementToast achievementId={unlockedAchievement} onClose={() => setUnlockedAchievement(null)} />
+      
+      <CoinAnimation
+        amount={coinsEarned}
+        trigger={showCoinAnimation}
+        onComplete={() => setShowCoinAnimation(false)}
+      />
     </GameLayout>
   );
 }

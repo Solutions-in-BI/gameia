@@ -82,12 +82,59 @@ export default {
           "0%": { transform: "scale(0.9)", opacity: "0" },
           "100%": { transform: "scale(1)", opacity: "1" },
         },
+        "coin-float": {
+          "0%": { 
+            opacity: "1", 
+            transform: "translateY(0) scale(1)" 
+          },
+          "50%": { 
+            opacity: "1", 
+            transform: "translateY(-100px) scale(1.2)" 
+          },
+          "100%": { 
+            opacity: "0", 
+            transform: "translateY(-200px) scale(0.5)" 
+          },
+        },
+        "coin-popup": {
+          "0%": { 
+            opacity: "0", 
+            transform: "translate(-50%, 20px) scale(0.5)" 
+          },
+          "20%": { 
+            opacity: "1", 
+            transform: "translate(-50%, 0) scale(1.1)" 
+          },
+          "40%": { 
+            transform: "translate(-50%, 0) scale(1)" 
+          },
+          "80%": { 
+            opacity: "1", 
+            transform: "translate(-50%, 0) scale(1)" 
+          },
+          "100%": { 
+            opacity: "0", 
+            transform: "translate(-50%, -30px) scale(0.8)" 
+          },
+        },
+        "spin-slow": {
+          "0%": { transform: "rotateY(0deg)" },
+          "100%": { transform: "rotateY(360deg)" },
+        },
+        "pulse-glow": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.5" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "fade-in": "fade-in 0.4s ease-out",
         "scale-in": "scale-in 0.3s ease-out",
+        "coin-float": "coin-float 1.5s ease-out forwards",
+        "coin-popup": "coin-popup 2s ease-out forwards",
+        "spin-slow": "spin-slow 1s linear infinite",
+        "pulse-glow": "pulse-glow 2s ease-in-out infinite",
       },
     },
   },

@@ -7,6 +7,7 @@ import { MemoryStats } from "./MemoryStats";
 import { DifficultySelector } from "./DifficultySelector";
 import { WinModal } from "./WinModal";
 import { AchievementToast } from "../common/AchievementToast";
+import { CoinAnimation } from "../common/CoinAnimation";
 import { useMemoryGame } from "@/hooks/useMemoryGame";
 import { useAchievements } from "@/hooks/useAchievements";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
@@ -42,6 +43,8 @@ export function MemoryGame({ onBack }: MemoryGameProps) {
 
   const [unlockedAchievement, setUnlockedAchievement] = useState<string | null>(null);
   const [hasCheckedAchievements, setHasCheckedAchievements] = useState(false);
+  const [coinsEarned, setCoinsEarned] = useState(0);
+  const [showCoinAnimation, setShowCoinAnimation] = useState(false);
 
   useEffect(() => {
     if (hasWon && !hasCheckedAchievements) {
@@ -51,12 +54,12 @@ export function MemoryGame({ onBack }: MemoryGameProps) {
         if (unlocked.length > 0) setUnlockedAchievement(unlocked[0]);
       });
 
-      // Adiciona moedas baseado na dificuldade (menos movimentos = mais moedas)
+      // Adiciona moedas baseado na dificuldade
       const difficultyBonus = difficulty === "hard" ? 15 : difficulty === "medium" ? 10 : 5;
-      const coinsEarned = difficultyBonus;
       if (isAuthenticated) {
-        addCoins(coinsEarned);
-        toast({ title: `+${coinsEarned} moedas!`, description: "Vitória! Moedas adicionadas." });
+        setCoinsEarned(difficultyBonus);
+        setShowCoinAnimation(true);
+        addCoins(difficultyBonus);
       }
 
       if (isAuthenticated && profile) {
@@ -79,6 +82,8 @@ export function MemoryGame({ onBack }: MemoryGameProps) {
 
   const handleReset = () => {
     setHasCheckedAchievements(false);
+    setShowCoinAnimation(false);
+    setCoinsEarned(0);
     resetGame();
   };
 
@@ -136,7 +141,12 @@ export function MemoryGame({ onBack }: MemoryGameProps) {
       )}
 
       <AchievementToast achievementId={unlockedAchievement} onClose={() => setUnlockedAchievement(null)} />
+      
+      <CoinAnimation
+        amount={coinsEarned}
+        trigger={showCoinAnimation}
+        onComplete={() => setShowCoinAnimation(false)}
+      />
     </GameLayout>
   );
 }
-

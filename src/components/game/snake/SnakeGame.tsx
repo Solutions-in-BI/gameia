@@ -7,6 +7,7 @@ import { SnakeBoard } from "./SnakeBoard";
 import { MobileControls } from "./MobileControls";
 import { GameOverlay } from "./GameOverlay";
 import { AchievementToast } from "../common/AchievementToast";
+import { CoinAnimation } from "../common/CoinAnimation";
 import { useSnakeGame } from "@/hooks/useSnakeGame";
 import { useAchievements } from "@/hooks/useAchievements";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
@@ -50,9 +51,11 @@ export function SnakeGame({ onBack }: SnakeGameProps) {
   const { toast } = useToast();
   const { addCoins } = useMarketplace();
 
-  // Estado para toasts
+  // Estado para toasts e animações
   const [unlockedAchievement, setUnlockedAchievement] = useState<string | null>(null);
   const [hasCheckedAchievements, setHasCheckedAchievements] = useState(false);
+  const [coinsEarned, setCoinsEarned] = useState(0);
+  const [showCoinAnimation, setShowCoinAnimation] = useState(false);
 
   // Verifica conquistas e salva score quando game over
   useEffect(() => {
@@ -68,12 +71,12 @@ export function SnakeGame({ onBack }: SnakeGameProps) {
         }
       });
 
-      // Salva automaticamente se logado e fez pontos significativos
       // Adiciona moedas baseado na pontuação
-      const coinsEarned = Math.floor(score / 10);
-      if (coinsEarned > 0 && isAuthenticated) {
-        addCoins(coinsEarned);
-        toast({ title: `+${coinsEarned} moedas!`, description: "Moedas adicionadas à sua conta." });
+      const earnedCoins = Math.floor(score / 10);
+      if (earnedCoins > 0 && isAuthenticated) {
+        setCoinsEarned(earnedCoins);
+        setShowCoinAnimation(true);
+        addCoins(earnedCoins);
       }
 
       if (isAuthenticated && profile && score >= 30) {
@@ -102,6 +105,8 @@ export function SnakeGame({ onBack }: SnakeGameProps) {
   // Reset do estado quando reinicia
   const handleReset = () => {
     setHasCheckedAchievements(false);
+    setShowCoinAnimation(false);
+    setCoinsEarned(0);
     resetGame();
   };
 
@@ -165,6 +170,13 @@ export function SnakeGame({ onBack }: SnakeGameProps) {
       <AchievementToast
         achievementId={unlockedAchievement}
         onClose={() => setUnlockedAchievement(null)}
+      />
+
+      {/* Animação de Moedas */}
+      <CoinAnimation
+        amount={coinsEarned}
+        trigger={showCoinAnimation}
+        onComplete={() => setShowCoinAnimation(false)}
       />
     </GameLayout>
   );
