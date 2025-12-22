@@ -27,6 +27,10 @@ const DEFAULT_STATS: PlayerStats = {
   snakeMaxLength: 1,
   dinoGamesPlayed: 0,
   dinoBestScore: 0,
+  tetrisGamesPlayed: 0,
+  tetrisBestScore: 0,
+  tetrisLinesCleared: 0,
+  tetrisBestLevel: 1,
 };
 
 export function useAchievements() {
@@ -83,6 +87,10 @@ export function useAchievements() {
           snakeMaxLength: userStats.snake_max_length,
           dinoGamesPlayed: userStats.dino_games_played,
           dinoBestScore: userStats.dino_best_score,
+          tetrisGamesPlayed: userStats.tetris_games_played ?? 0,
+          tetrisBestScore: userStats.tetris_best_score ?? 0,
+          tetrisLinesCleared: userStats.tetris_lines_cleared ?? 0,
+          tetrisBestLevel: userStats.tetris_best_level ?? 1,
         });
       }
       
@@ -141,6 +149,10 @@ export function useAchievements() {
       snake_max_length: newStats.snakeMaxLength,
       dino_games_played: newStats.dinoGamesPlayed,
       dino_best_score: newStats.dinoBestScore,
+      tetris_games_played: newStats.tetrisGamesPlayed,
+      tetris_best_score: newStats.tetrisBestScore,
+      tetris_lines_cleared: newStats.tetrisLinesCleared,
+      tetris_best_level: newStats.tetrisBestLevel,
     };
 
     await supabase
@@ -158,6 +170,8 @@ export function useAchievements() {
     moves?: number;
     time?: number;
     difficulty?: string;
+    lines?: number;
+    level?: number;
   }) => {
     if (!isAuthenticated || !user) return [];
 
@@ -196,6 +210,19 @@ export function useAchievements() {
         updatedStats.dinoBestScore = event.score;
       }
     }
+
+    if (event.game === "tetris") {
+      updatedStats.tetrisGamesPlayed++;
+      if (event.score && event.score > updatedStats.tetrisBestScore) {
+        updatedStats.tetrisBestScore = event.score;
+      }
+      if (event.lines && event.lines > updatedStats.tetrisLinesCleared) {
+        updatedStats.tetrisLinesCleared = event.lines;
+      }
+      if (event.level && event.level > updatedStats.tetrisBestLevel) {
+        updatedStats.tetrisBestLevel = event.level;
+      }
+    }
     
     setStats(updatedStats);
     await saveStats(updatedStats);
@@ -216,6 +243,7 @@ export function useAchievements() {
             if (event.game === "memory") count = updatedStats.memoryGamesPlayed;
             else if (event.game === "snake") count = updatedStats.snakeGamesPlayed;
             else if (event.game === "dino") count = updatedStats.dinoGamesPlayed;
+            else if (event.game === "tetris") count = updatedStats.tetrisGamesPlayed;
             shouldUnlock = count >= condition.value;
           }
           break;
@@ -240,6 +268,21 @@ export function useAchievements() {
           }
           if (condition.game === "dino" && event.game === "dino" && event.score) {
             shouldUnlock = event.score >= condition.value;
+          }
+          if (condition.game === "tetris" && event.game === "tetris" && event.score) {
+            shouldUnlock = event.score >= condition.value;
+          }
+          break;
+
+        case "lines":
+          if (condition.game === "tetris" && event.game === "tetris" && event.lines) {
+            shouldUnlock = event.lines >= condition.value;
+          }
+          break;
+
+        case "level":
+          if (condition.game === "tetris" && event.game === "tetris" && event.level) {
+            shouldUnlock = event.level >= condition.value;
           }
           break;
       }
