@@ -14,11 +14,12 @@ import { ReactNode } from "react";
  * </GameLayout>
  */
 
-interface GameLayoutProps {
+export interface GameLayoutProps {
   title: string;
   subtitle?: string;
   children: ReactNode;
   maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl" | "4xl";
+  onBack?: () => void;
 }
 
 const maxWidthClasses = {

@@ -22,7 +22,7 @@ export interface LeaderboardEntry {
 export interface NewLeaderboardEntry {
   player_name: string;
   user_id?: string;
-  game_type: "memory" | "snake" | "dino";
+  game_type: "memory" | "snake" | "dino" | "tetris";
   score: number;
   difficulty?: string;
 }

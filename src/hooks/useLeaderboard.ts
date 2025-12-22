@@ -16,7 +16,7 @@ interface UserRankInfo {
   position: number;
 }
 
-export function useLeaderboard(gameType: "memory" | "snake" | "dino", difficulty?: string) {
+export function useLeaderboard(gameType: "memory" | "snake" | "dino" | "tetris", difficulty?: string) {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [userRank, setUserRank] = useState<UserRankInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);

@@ -35,7 +35,7 @@ export function TetrisGame({ onBack }: TetrisGameProps) {
     if (isGameOver && score > 0 && !hasCheckedAchievements) {
       setHasCheckedAchievements(true);
       
-      checkAndUnlock({ game: "snake", score }).then((unlocked) => {
+      checkAndUnlock({ game: "tetris", score }).then((unlocked) => {
         if (unlocked.length > 0) setUnlockedAchievement(unlocked[0]);
       });
 

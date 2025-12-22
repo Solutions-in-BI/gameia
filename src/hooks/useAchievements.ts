@@ -153,7 +153,7 @@ export function useAchievements() {
   // ═══════════════════════════════════════════════════════════════════════════
 
   const checkAndUnlock = useCallback(async (event: {
-    game: "memory" | "snake" | "dino";
+    game: "memory" | "snake" | "dino" | "tetris";
     score?: number;
     moves?: number;
     time?: number;
