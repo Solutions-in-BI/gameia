@@ -21,6 +21,80 @@ export interface GameTitle {
 }
 
 export const GAME_TITLES: GameTitle[] = [
+  // ===== TÍTULOS POR NÍVEL =====
+  {
+    id: "nivel_5",
+    name: "Aprendiz",
+    description: "Alcance o nível 5",
+    icon: "📚",
+    category: "general",
+    rarity: "common",
+    requirement: { type: "score", value: 5 },
+  },
+  {
+    id: "nivel_10",
+    name: "Jogador",
+    description: "Alcance o nível 10",
+    icon: "🎮",
+    category: "general",
+    rarity: "common",
+    requirement: { type: "score", value: 10 },
+  },
+  {
+    id: "nivel_20",
+    name: "Guerreiro",
+    description: "Alcance o nível 20",
+    icon: "⚔️",
+    category: "general",
+    rarity: "rare",
+    requirement: { type: "score", value: 20 },
+  },
+  {
+    id: "nivel_30",
+    name: "Mestre",
+    description: "Alcance o nível 30",
+    icon: "🏆",
+    category: "general",
+    rarity: "rare",
+    requirement: { type: "score", value: 30 },
+  },
+  {
+    id: "nivel_40",
+    name: "Lenda",
+    description: "Alcance o nível 40",
+    icon: "⭐",
+    category: "general",
+    rarity: "epic",
+    requirement: { type: "score", value: 40 },
+  },
+  {
+    id: "nivel_50",
+    name: "Titã",
+    description: "Alcance o nível 50",
+    icon: "🗿",
+    category: "general",
+    rarity: "epic",
+    requirement: { type: "score", value: 50 },
+  },
+  {
+    id: "nivel_70",
+    name: "Deus",
+    description: "Alcance o nível 70",
+    icon: "☀️",
+    category: "general",
+    rarity: "legendary",
+    requirement: { type: "score", value: 70 },
+  },
+  {
+    id: "nivel_100",
+    name: "∞ Infinito",
+    description: "Alcance o nível 100",
+    icon: "♾️",
+    category: "general",
+    rarity: "legendary",
+    requirement: { type: "score", value: 100 },
+  },
+
   // Títulos Gerais
   {
     id: "iniciante",

@@ -171,6 +171,7 @@ export type Database = {
           dino_best_score: number
           dino_games_played: number
           id: string
+          level: number
           memory_best_moves: Json
           memory_best_time: Json
           memory_games_played: number
@@ -184,12 +185,14 @@ export type Database = {
           total_games_played: number
           updated_at: string
           user_id: string
+          xp: number
         }
         Insert: {
           coins?: number
           dino_best_score?: number
           dino_games_played?: number
           id?: string
+          level?: number
           memory_best_moves?: Json
           memory_best_time?: Json
           memory_games_played?: number
@@ -203,12 +206,14 @@ export type Database = {
           total_games_played?: number
           updated_at?: string
           user_id: string
+          xp?: number
         }
         Update: {
           coins?: number
           dino_best_score?: number
           dino_games_played?: number
           id?: string
+          level?: number
           memory_best_moves?: Json
           memory_best_time?: Json
           memory_games_played?: number
@@ -222,6 +227,7 @@ export type Database = {
           total_games_played?: number
           updated_at?: string
           user_id?: string
+          xp?: number
         }
         Relationships: []
       }

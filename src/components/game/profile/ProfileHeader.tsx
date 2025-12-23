@@ -8,6 +8,7 @@ import { User } from "@supabase/supabase-js";
 import { GameButton } from "../common/GameButton";
 import { CurrentTitleBadge } from "../common/TitlesSelector";
 import { AnimatedAvatarFrame } from "../common/AnimatedAvatarFrame";
+import { LevelBadge } from "../common/LevelBadge";
 import { Profile, useAuth } from "@/hooks/useAuth";
 import { InventoryItem } from "@/hooks/useMarketplace";
 import { GameTitle } from "@/constants/titles";
