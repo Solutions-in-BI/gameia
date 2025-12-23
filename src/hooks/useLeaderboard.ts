@@ -49,10 +49,39 @@ export function useLeaderboard(gameType: "memory" | "snake" | "dino" | "tetris",
       const { data, error: fetchError } = await query;
       if (fetchError) throw fetchError;
       
-      // Mapeia dados para incluir perfil
+      // Busca molduras equipadas de todos os usuários do ranking
+      const userIds = (data || []).map(e => e.user_id).filter(Boolean) as string[];
+      let frameRarities: Record<string, string> = {};
+      
+      if (userIds.length > 0) {
+        const { data: inventoryData } = await supabase
+          .from("user_inventory")
+          .select(`
+            user_id,
+            is_equipped,
+            item:marketplace_items (
+              category,
+              rarity
+            )
+          `)
+          .in("user_id", userIds)
+          .eq("is_equipped", true);
+        
+        // Mapeia usuário -> raridade da moldura
+        if (inventoryData) {
+          inventoryData.forEach((inv: any) => {
+            if (inv.item?.category === "frame" && inv.is_equipped) {
+              frameRarities[inv.user_id] = inv.item.rarity;
+            }
+          });
+        }
+      }
+      
+      // Mapeia dados para incluir perfil e raridade da moldura
       const entriesWithProfile = (data || []).map(entry => ({
         ...entry,
         profile: entry.profiles || null,
+        equipped_frame_rarity: entry.user_id ? (frameRarities[entry.user_id] as any) || null : null,
       }));
       
       setEntries(entriesWithProfile);

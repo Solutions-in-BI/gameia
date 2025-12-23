@@ -1,12 +1,13 @@
 /**
- * ProfileHeader - Cabeçalho do perfil com avatar e informações básicas
+ * ProfileHeader - Cabeçalho do perfil com avatar animado e informações básicas
  */
 
 import { useState, useRef } from "react";
 import { Camera, Edit2, Crown, Medal, Star, ShoppingBag, Coins } from "lucide-react";
-import { User, Session } from "@supabase/supabase-js";
+import { User } from "@supabase/supabase-js";
 import { GameButton } from "../common/GameButton";
 import { CurrentTitleBadge } from "../common/TitlesSelector";
+import { AnimatedAvatarFrame } from "../common/AnimatedAvatarFrame";
 import { Profile, useAuth } from "@/hooks/useAuth";
 import { InventoryItem } from "@/hooks/useMarketplace";
 import { GameTitle } from "@/constants/titles";
@@ -131,7 +132,7 @@ export function ProfileHeader({
       {/* Card Principal */}
       <div className="bg-card border border-border rounded-xl p-4 sm:p-6">
         <div className="flex items-start gap-4 sm:gap-6">
-          {/* Avatar */}
+          {/* Avatar Animado */}
           <div className="relative group flex-shrink-0">
             <input 
               type="file" 
@@ -140,37 +141,21 @@ export function ProfileHeader({
               accept="image/*"
               className="hidden"
             />
-            <div 
-              className={cn(
-                "w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center overflow-hidden",
-                equippedFrame ? "ring-4 ring-offset-2 ring-offset-card" : "",
-                equippedFrame?.item?.rarity === "legendary" && "ring-yellow-500",
-                equippedFrame?.item?.rarity === "epic" && "ring-purple-500",
-                equippedFrame?.item?.rarity === "rare" && "ring-blue-500"
-              )}
-            >
-              {profile?.avatar_url ? (
-                <img 
-                  src={profile.avatar_url} 
-                  alt="Avatar" 
-                  className="w-full h-full object-cover"
-                />
-              ) : equippedAvatar ? (
-                <div className="w-full h-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center text-4xl sm:text-5xl">
-                  {equippedAvatar.item?.icon}
-                </div>
-              ) : (
-                <div className="w-full h-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-3xl sm:text-4xl font-bold text-primary-foreground">
-                  {profile?.nickname?.charAt(0).toUpperCase() || "?"}
-                </div>
-              )}
-            </div>
             
-            {/* Botão de upload */}
+            <AnimatedAvatarFrame
+              avatarUrl={profile?.avatar_url}
+              nickname={profile?.nickname}
+              equippedFrame={equippedFrame}
+              equippedAvatar={equippedAvatar}
+              size="lg"
+              showAnimations={true}
+            />
+            
+            {/* Botão de upload overlay */}
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploadingPhoto}
-              className="absolute inset-0 w-full h-full rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+              className="absolute inset-0 w-full h-full rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-30"
             >
               {isUploadingPhoto ? (
                 <div className="animate-spin w-6 h-6 border-2 border-white border-t-transparent rounded-full" />
@@ -181,7 +166,7 @@ export function ProfileHeader({
 
             {/* Badge do melhor ranking */}
             {topBadges.length > 0 && (
-              <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-card border border-border shadow-sm">
+              <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-card border border-border shadow-sm z-30">
                 {(() => {
                   const best = topBadges.sort((a, b) => (a?.position || 4) - (b?.position || 4))[0];
                   if (!best) return null;

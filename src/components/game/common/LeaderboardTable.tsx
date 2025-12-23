@@ -2,6 +2,7 @@ import { LeaderboardEntry } from "@/types/leaderboard";
 import { getTitleById, RARITY_COLORS } from "@/constants/titles";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { CompactAnimatedAvatar } from "./AnimatedAvatarFrame";
 
 interface UserRankInfo {
   entry: LeaderboardEntry;
@@ -215,26 +216,13 @@ function LeaderboardRow({ entry, position, gameType, isHighlighted, isCurrentUse
           )}
         </div>
         
-        {/* Avatar com borda especial */}
-        <div className={cn(
-          "relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center",
-          isTop3 && topStyle
-            ? cn("ring-2", position === 1 ? "ring-yellow-400" : position === 2 ? "ring-slate-300" : "ring-amber-600")
-            : "ring-1 ring-border"
-        )}>
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20" />
-          {entry.profile?.avatar_url ? (
-            <img 
-              src={entry.profile.avatar_url} 
-              alt={entry.player_name} 
-              className="relative z-10 w-full h-full object-cover"
-            />
-          ) : (
-            <span className="relative z-10 text-xl font-bold text-primary">
-              {entry.player_name.charAt(0).toUpperCase()}
-            </span>
-          )}
-        </div>
+        {/* Avatar com moldura animada */}
+        <CompactAnimatedAvatar
+          avatarUrl={entry.profile?.avatar_url}
+          nickname={entry.player_name}
+          rarity={entry.equipped_frame_rarity || (isTop3 ? (position === 1 ? "legendary" : position === 2 ? "epic" : "rare") : "common")}
+          size="md"
+        />
         
         {/* Nome e Título */}
         <div className="flex-1 min-w-0 z-10">

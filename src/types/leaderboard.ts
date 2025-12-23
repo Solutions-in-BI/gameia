@@ -21,6 +21,8 @@ export interface LeaderboardEntry {
     avatar_url: string | null;
     selected_title: string | null;
   } | null;
+  // Moldura equipada do inventário (opcional)
+  equipped_frame_rarity?: "common" | "rare" | "epic" | "legendary" | null;
 }
 
 /** Dados para criar nova entrada */
