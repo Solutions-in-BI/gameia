@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { LeaderboardEntry } from "@/types/leaderboard";
 import { getTitleById, RARITY_COLORS } from "@/constants/titles";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { CompactAnimatedAvatar } from "./AnimatedAvatarFrame";
+import { PublicProfileModal } from "./PublicProfileModal";
+import { Eye } from "lucide-react";
 
 interface UserRankInfo {
   entry: LeaderboardEntry;
@@ -24,6 +27,16 @@ export function LeaderboardTable({
   highlightName,
   userRank 
 }: LeaderboardTableProps) {
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  const handleViewProfile = (userId: string | null | undefined) => {
+    if (userId) {
+      setSelectedUserId(userId);
+      setIsProfileOpen(true);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="text-center py-8 text-muted-foreground">
@@ -40,58 +53,60 @@ export function LeaderboardTable({
     );
   }
 
-  const getMedalEmoji = (position: number) => {
-    switch (position) {
-      case 1: return "🥇";
-      case 2: return "🥈";
-      case 3: return "🥉";
-      default: return `${position}º`;
-    }
-  };
-
   // Verifica se o usuário está fora do top 10
   const showUserRank = userRank && userRank.position > 10;
 
   return (
-    <div className="space-y-3">
-      {entries.map((entry, index) => (
-        <LeaderboardRow
-          key={entry.id}
-          entry={entry}
-          position={index + 1}
-          gameType={gameType}
-          index={index}
-          isHighlighted={
-            (highlightName && entry.player_name === highlightName) || 
-            (userRank && entry.user_id === userRank.entry.user_id)
-          }
-        />
-      ))}
-
-      {/* Separador e posição do usuário fora do top 10 */}
-      {showUserRank && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-        >
-          <div className="flex items-center gap-2 py-3">
-            <div className="flex-1 border-t border-dashed border-primary/30" />
-            <span className="text-xs text-primary/70 font-medium">sua posição</span>
-            <div className="flex-1 border-t border-dashed border-primary/30" />
-          </div>
-          
+    <>
+      <div className="space-y-3">
+        {entries.map((entry, index) => (
           <LeaderboardRow
-            entry={userRank.entry}
-            position={userRank.position}
+            key={entry.id}
+            entry={entry}
+            position={index + 1}
             gameType={gameType}
-            index={11}
-            isHighlighted={true}
-            isCurrentUser={true}
+            index={index}
+            isHighlighted={
+              (highlightName && entry.player_name === highlightName) || 
+              (userRank && entry.user_id === userRank.entry.user_id)
+            }
+            onViewProfile={() => handleViewProfile(entry.user_id)}
           />
-        </motion.div>
-      )}
-    </div>
+        ))}
+
+        {/* Separador e posição do usuário fora do top 10 */}
+        {showUserRank && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+          >
+            <div className="flex items-center gap-2 py-3">
+              <div className="flex-1 border-t border-dashed border-primary/30" />
+              <span className="text-xs text-primary/70 font-medium">sua posição</span>
+              <div className="flex-1 border-t border-dashed border-primary/30" />
+            </div>
+            
+            <LeaderboardRow
+              entry={userRank.entry}
+              position={userRank.position}
+              gameType={gameType}
+              index={11}
+              isHighlighted={true}
+              isCurrentUser={true}
+              onViewProfile={() => handleViewProfile(userRank.entry.user_id)}
+            />
+          </motion.div>
+        )}
+      </div>
+
+      {/* Modal de perfil público */}
+      <PublicProfileModal
+        userId={selectedUserId}
+        isOpen={isProfileOpen}
+        onClose={() => setIsProfileOpen(false)}
+      />
+    </>
   );
 }
 
@@ -103,6 +118,7 @@ interface LeaderboardRowProps {
   isHighlighted?: boolean;
   isCurrentUser?: boolean;
   index: number;
+  onViewProfile?: () => void;
 }
 
 // Estilos especiais para top 3
@@ -133,9 +149,10 @@ const TOP_STYLES = {
   },
 };
 
-function LeaderboardRow({ entry, position, gameType, isHighlighted, isCurrentUser, index }: LeaderboardRowProps) {
+function LeaderboardRow({ entry, position, gameType, isHighlighted, isCurrentUser, index, onViewProfile }: LeaderboardRowProps) {
   const isTop3 = position <= 3;
   const topStyle = isTop3 ? TOP_STYLES[position as 1 | 2 | 3] : null;
+  const canViewProfile = !!entry.user_id;
 
   // Busca título do jogador
   const title = entry.profile?.selected_title ? getTitleById(entry.profile.selected_title) : null;
@@ -146,7 +163,9 @@ function LeaderboardRow({ entry, position, gameType, isHighlighted, isCurrentUse
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.05, duration: 0.3 }}
-      className="relative"
+      className="relative group"
+      onClick={canViewProfile ? onViewProfile : undefined}
+      style={{ cursor: canViewProfile ? "pointer" : "default" }}
     >
       {/* Partículas animadas para top 3 */}
       {isTop3 && topStyle && (
@@ -256,26 +275,43 @@ function LeaderboardRow({ entry, position, gameType, isHighlighted, isCurrentUse
         </div>
         
         {/* Score com destaque */}
-        <div className="text-right flex-shrink-0 z-10">
-          <motion.span 
-            className={cn(
-              "text-xl font-bold",
-              isTop3 
-                ? position === 1 
-                  ? "text-yellow-500" 
-                  : position === 2 
-                    ? "text-slate-400" 
-                    : "text-amber-600"
-                : "text-primary"
-            )}
-            animate={position === 1 ? { scale: [1, 1.05, 1] } : {}}
-            transition={{ duration: 1.5, repeat: Infinity }}
-          >
-            {entry.score.toLocaleString()}
-          </motion.span>
-          <span className="text-sm text-muted-foreground ml-1">
-            {gameType === "memory" ? "mov" : "pts"}
-          </span>
+        <div className="text-right flex-shrink-0 z-10 flex items-center gap-2">
+          <div>
+            <motion.span 
+              className={cn(
+                "text-xl font-bold",
+                isTop3 
+                  ? position === 1 
+                    ? "text-yellow-500" 
+                    : position === 2 
+                      ? "text-slate-400" 
+                      : "text-amber-600"
+                  : "text-primary"
+              )}
+              animate={position === 1 ? { scale: [1, 1.05, 1] } : {}}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            >
+              {entry.score.toLocaleString()}
+            </motion.span>
+            <span className="text-sm text-muted-foreground ml-1">
+              {gameType === "memory" ? "mov" : "pts"}
+            </span>
+          </div>
+          
+          {/* Botão ver perfil */}
+          {canViewProfile && (
+            <motion.button
+              className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-all"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onViewProfile?.();
+              }}
+            >
+              <Eye className="w-4 h-4" />
+            </motion.button>
+          )}
         </div>
       </div>
     </motion.div>
