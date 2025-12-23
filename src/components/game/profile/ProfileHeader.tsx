@@ -27,6 +27,8 @@ interface ProfileHeaderProps {
   profile: Profile | null;
   user: User | null;
   coins: number;
+  level: number;
+  xp: number;
   topRanks: Record<string, number>;
   selectedTitle: GameTitle | null;
   equippedAvatar: InventoryItem | undefined;
@@ -39,6 +41,8 @@ export function ProfileHeader({
   profile,
   user,
   coins,
+  level,
+  xp,
   topRanks,
   selectedTitle,
   equippedAvatar,
@@ -224,6 +228,23 @@ export function ProfileHeader({
             
             <p className="text-muted-foreground text-xs sm:text-sm mt-1 truncate">{user?.email}</p>
             
+            {/* Level e XP */}
+            <div className="mt-3">
+              <div className="flex items-center gap-3 mb-2">
+                <LevelBadge level={level} xp={xp} size="lg" showProgress showTitle />
+              </div>
+              <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full transition-all duration-500"
+                  style={{ width: `${xp % 100}%` }}
+                />
+              </div>
+              <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                <span>Nível {level}</span>
+                <span>{xp % 100}/100 XP</span>
+              </div>
+            </div>
+
             {/* Moedas e Loja */}
             <div className="flex items-center gap-2 mt-3 flex-wrap">
               <div className="flex items-center gap-1.5 bg-yellow-500/20 border border-yellow-500/30 rounded-lg px-2.5 py-1">

@@ -1,10 +1,14 @@
-import { Gamepad2, Brain, Trophy, LogIn, LogOut, User, ShoppingBag, Coins } from "lucide-react";
+import { Gamepad2, Brain, Trophy, LogIn, LogOut, User, ShoppingBag, Coins, Flame } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { GameType } from "@/types/game";
 import { useAchievements } from "@/hooks/useAchievements";
 import { useAuth } from "@/hooks/useAuth";
 import { useMarketplace } from "@/hooks/useMarketplace";
+import { useLevel } from "@/hooks/useLevel";
 import { ThemeToggle } from "../common/ThemeToggle";
+import { LevelBadge } from "../common/LevelBadge";
+import { WeeklyChallenge, SAMPLE_CHALLENGES } from "../common/WeeklyChallenge";
 
 /**
  * ===========================================
@@ -62,6 +66,7 @@ export function GameMenu({ onSelectGame, onOpenProfile, onOpenMarketplace }: Gam
   const { getProgress } = useAchievements();
   const { profile, isAuthenticated, signOut } = useAuth();
   const { coins } = useMarketplace();
+  const { level, xp } = useLevel();
   const progress = getProgress();
 
   const handleLogout = async () => {
@@ -74,6 +79,9 @@ export function GameMenu({ onSelectGame, onOpenProfile, onOpenMarketplace }: Gam
       <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
         {isAuthenticated && profile ? (
           <>
+            {/* Level Badge */}
+            <LevelBadge level={level} xp={xp} size="md" showProgress />
+            
             <button
               onClick={onOpenProfile}
               className="flex items-center gap-2 bg-card border border-border rounded-xl px-3 py-2 hover:bg-muted transition-all hover:scale-105 shadow-sm"
@@ -161,7 +169,7 @@ export function GameMenu({ onSelectGame, onOpenProfile, onOpenMarketplace }: Gam
         </div>
 
         {/* Grid de Jogos */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
           {GAMES.map((game, index) => (
             <GameCard
               key={game.id}
@@ -171,6 +179,18 @@ export function GameMenu({ onSelectGame, onOpenProfile, onOpenMarketplace }: Gam
             />
           ))}
         </div>
+
+        {/* Desafios Semanais (apenas para logados) */}
+        {isAuthenticated && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="mt-6"
+          >
+            <WeeklyChallenge challenges={SAMPLE_CHALLENGES} />
+          </motion.div>
+        )}
       </div>
     </div>
   );

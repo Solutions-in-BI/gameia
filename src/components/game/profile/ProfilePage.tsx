@@ -19,6 +19,7 @@ import { useLeaderboard } from "@/hooks/useLeaderboard";
 import { useAuth } from "@/hooks/useAuth";
 import { useMarketplace } from "@/hooks/useMarketplace";
 import { useTitles } from "@/hooks/useTitles";
+import { useLevel } from "@/hooks/useLevel";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -40,6 +41,7 @@ export function ProfilePage({ onBack, onOpenMarketplace }: ProfilePageProps) {
   const { profile, user, signOut, refreshProfile } = useAuth();
   const { coins, getEquippedItem } = useMarketplace();
   const { getAllTitlesWithStatus, selectedTitle, selectTitle, checkAndUnlockTitles } = useTitles();
+  const { level, xp } = useLevel();
   
   const achievements = getAchievementsWithStatus();
   const progress = getProgress();
@@ -140,6 +142,8 @@ export function ProfilePage({ onBack, onOpenMarketplace }: ProfilePageProps) {
             profile={profile}
             user={user}
             coins={coins}
+            level={level}
+            xp={xp}
             topRanks={topRanks}
             selectedTitle={selectedTitle}
             equippedAvatar={equippedAvatar}

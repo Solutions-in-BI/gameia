@@ -12,7 +12,16 @@ interface MarketplacePageProps {
 }
 
 type Tab = "shop" | "inventory";
-type Category = "all" | "avatar" | "frame";
+type Category = "all" | "avatar" | "frame" | "effect" | "banner" | "boost";
+
+const CATEGORY_LABELS: Record<Category, { label: string; icon: string }> = {
+  all: { label: "Todos", icon: "🛒" },
+  avatar: { label: "Avatares", icon: "😎" },
+  frame: { label: "Molduras", icon: "🖼️" },
+  effect: { label: "Efeitos", icon: "✨" },
+  banner: { label: "Banners", icon: "🎨" },
+  boost: { label: "Boosts", icon: "🚀" },
+};
 
 const RARITY_COLORS = {
   common: "border-muted-foreground/30 bg-muted/20",
@@ -96,26 +105,34 @@ export function MarketplacePage({ onBack }: MarketplacePageProps) {
           className="space-y-4"
         >
           {/* Filtros */}
-          <div className="flex justify-center gap-2 mb-4">
-            {(["all", "avatar", "frame"] as Category[]).map(cat => (
-              <button
-                key={cat}
-                onClick={() => setCategory(cat)}
-                className={cn(
-                  "px-4 py-2 rounded-lg border text-sm font-medium transition-all",
-                  category === cat
-                    ? "bg-primary/20 border-primary text-primary"
-                    : "bg-card border-border text-muted-foreground hover:border-primary/50"
-                )}
-              >
-                {cat === "all" ? "Todos" : cat === "avatar" ? "Avatares" : "Molduras"}
-              </button>
-            ))}
+          <div className="flex flex-wrap justify-center gap-2 mb-4">
+            {(Object.keys(CATEGORY_LABELS) as Category[]).map(cat => {
+              const { label, icon } = CATEGORY_LABELS[cat];
+              return (
+                <button
+                  key={cat}
+                  onClick={() => setCategory(cat)}
+                  className={cn(
+                    "px-3 py-2 rounded-lg border text-sm font-medium transition-all flex items-center gap-1.5",
+                    category === cat
+                      ? "bg-primary/20 border-primary text-primary"
+                      : "bg-card border-border text-muted-foreground hover:border-primary/50"
+                  )}
+                >
+                  <span>{icon}</span>
+                  <span className="hidden sm:inline">{label}</span>
+                </button>
+              );
+            })}
           </div>
 
           {/* Grid de itens */}
           {isLoading ? (
             <div className="text-center py-8 text-muted-foreground">Carregando...</div>
+          ) : filteredItems.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              Nenhum item nesta categoria
+            </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
               {filteredItems.map(item => (
