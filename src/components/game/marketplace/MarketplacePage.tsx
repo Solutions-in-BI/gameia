@@ -12,7 +12,7 @@ interface MarketplacePageProps {
 }
 
 type Tab = "shop" | "inventory";
-type Category = "all" | "avatar" | "frame" | "effect" | "banner" | "boost";
+type Category = "all" | "avatar" | "frame" | "effect" | "banner" | "boost" | "title" | "pet";
 
 const CATEGORY_LABELS: Record<Category, { label: string; icon: string }> = {
   all: { label: "Todos", icon: "🛒" },
@@ -21,6 +21,8 @@ const CATEGORY_LABELS: Record<Category, { label: string; icon: string }> = {
   effect: { label: "Efeitos", icon: "✨" },
   banner: { label: "Banners", icon: "🎨" },
   boost: { label: "Boosts", icon: "🚀" },
+  title: { label: "Títulos", icon: "📜" },
+  pet: { label: "Pets", icon: "🐾" },
 };
 
 const RARITY_COLORS = {
@@ -244,6 +246,19 @@ interface InventoryCardProps {
 }
 
 function InventoryCard({ item, isEquipped, onToggle }: InventoryCardProps) {
+  const getCategoryLabel = (category: string) => {
+    const labels: Record<string, string> = {
+      avatar: "Avatar",
+      frame: "Moldura",
+      effect: "Efeito",
+      banner: "Banner",
+      boost: "Boost",
+      title: "Título",
+      pet: "Pet",
+    };
+    return labels[category] || category;
+  };
+
   return (
     <div className={cn(
       "relative bg-card border-2 rounded-xl p-4 transition-all",
@@ -255,7 +270,14 @@ function InventoryCard({ item, isEquipped, onToggle }: InventoryCardProps) {
         </div>
       )}
 
-      <div className="text-5xl text-center mb-3 mt-2">
+      {/* Badge de categoria */}
+      <div className="absolute top-2 left-2">
+        <span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
+          {getCategoryLabel(item.category)}
+        </span>
+      </div>
+
+      <div className="text-5xl text-center mb-3 mt-4">
         {item.icon}
       </div>
 

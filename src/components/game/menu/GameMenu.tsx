@@ -193,18 +193,38 @@ export function GameMenu({ onSelectGame, onOpenProfile, onOpenMarketplace }: Gam
           ))}
         </div>
 
-        {/* Desafios Semanais (apenas para logados) */}
+        {/* Streak Diário e Desafios (apenas para logados) */}
         {isAuthenticated && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="mt-6"
-          >
-            <WeeklyChallenge challenges={SAMPLE_CHALLENGES} />
-          </motion.div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
+            {/* Streak Diário */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <DailyStreak
+                currentStreak={streak.currentStreak}
+                longestStreak={streak.longestStreak}
+                lastPlayedAt={streak.lastPlayedAt || undefined}
+                canClaimToday={canClaimToday}
+                onClaim={claimDailyReward}
+              />
+            </motion.div>
+
+            {/* Desafios Semanais */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              <WeeklyChallenge challenges={SAMPLE_CHALLENGES} />
+            </motion.div>
+          </div>
         )}
       </div>
+
+      {/* Modal de Amigos */}
+      <FriendsPage isOpen={showFriends} onClose={() => setShowFriends(false)} />
     </div>
   );
 }

@@ -49,6 +49,8 @@ export function ProfilePage({ onBack, onOpenMarketplace }: ProfilePageProps) {
   
   const equippedAvatar = getEquippedItem("avatar");
   const equippedFrame = getEquippedItem("frame");
+  const equippedBanner = getEquippedItem("banner");
+  const equippedPet = getEquippedItem("pet");
 
   // Busca posição do usuário em todos os rankings e verifica títulos
   useEffect(() => {
@@ -148,6 +150,8 @@ export function ProfilePage({ onBack, onOpenMarketplace }: ProfilePageProps) {
             selectedTitle={selectedTitle}
             equippedAvatar={equippedAvatar}
             equippedFrame={equippedFrame}
+            equippedBanner={equippedBanner}
+            equippedPet={equippedPet}
             onOpenMarketplace={onOpenMarketplace}
             onRefreshProfile={refreshProfile}
           />

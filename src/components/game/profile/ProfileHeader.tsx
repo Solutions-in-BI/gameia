@@ -33,6 +33,8 @@ interface ProfileHeaderProps {
   selectedTitle: GameTitle | null;
   equippedAvatar: InventoryItem | undefined;
   equippedFrame: InventoryItem | undefined;
+  equippedBanner: InventoryItem | undefined;
+  equippedPet: InventoryItem | undefined;
   onOpenMarketplace: () => void;
   onRefreshProfile: () => void;
 }
@@ -47,6 +49,8 @@ export function ProfileHeader({
   selectedTitle,
   equippedAvatar,
   equippedFrame,
+  equippedBanner,
+  equippedPet,
   onOpenMarketplace,
   onRefreshProfile,
 }: ProfileHeaderProps) {
@@ -134,8 +138,24 @@ export function ProfileHeader({
 
   return (
     <div className="space-y-4">
-      {/* Card Principal */}
-      <div className="bg-card border border-border rounded-xl p-4 sm:p-6">
+      {/* Card Principal com Banner */}
+      <div 
+        className="bg-card border border-border rounded-xl overflow-hidden"
+        style={{
+          background: equippedBanner?.item?.icon 
+            ? `linear-gradient(135deg, var(--card) 0%, var(--card) 100%)`
+            : undefined,
+        }}
+      >
+        {/* Banner Background */}
+        {equippedBanner?.item && (
+          <div className="h-24 sm:h-32 bg-gradient-to-r from-primary/20 via-secondary/20 to-primary/20 flex items-center justify-center relative overflow-hidden">
+            <span className="text-6xl sm:text-8xl opacity-30">{equippedBanner.item.icon}</span>
+            <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
+          </div>
+        )}
+
+        <div className={cn("p-4 sm:p-6", equippedBanner?.item && "-mt-12 relative z-10")}>
         <div className="flex items-start gap-4 sm:gap-6">
           {/* Avatar Animado */}
           <div className="relative group flex-shrink-0">
@@ -261,8 +281,22 @@ export function ProfileHeader({
             </div>
           </div>
         </div>
+        </div>
       </div>
 
+      {/* Pet Equipado */}
+      {equippedPet?.item && (
+        <div className="bg-card border border-border rounded-xl p-4">
+          <h3 className="text-sm font-medium text-muted-foreground mb-3">🐾 Pet Companheiro</h3>
+          <div className="flex items-center gap-3">
+            <span className="text-4xl">{equippedPet.item.icon}</span>
+            <div>
+              <p className="font-medium text-foreground">{equippedPet.item.name}</p>
+              <p className="text-xs text-muted-foreground">{equippedPet.item.description}</p>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Badges do Top 3 */}
       {topBadges.length > 0 && (
         <div className="bg-card border border-border rounded-xl p-4">

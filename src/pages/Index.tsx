@@ -7,6 +7,7 @@ import { TetrisGame } from "@/components/game/tetris/TetrisGame";
 import { GameMenu } from "@/components/game/menu/GameMenu";
 import { ProfilePage } from "@/components/game/profile/ProfilePage";
 import { MarketplacePage } from "@/components/game/marketplace/MarketplacePage";
+import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 
 /**
  * ===========================================
@@ -20,6 +21,9 @@ type PageType = GameType | "profile" | "marketplace";
 
 const Index = () => {
   const [currentPage, setCurrentPage] = useState<PageType>("menu");
+  
+  // Ativa notificações em tempo real para presentes e amizades
+  useRealtimeNotifications();
 
   const handleSelectGame = (game: Exclude<GameType, "menu">) => {
     setCurrentPage(game);
