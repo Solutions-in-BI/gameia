@@ -242,6 +242,222 @@ export type Database = {
         }
         Relationships: []
       }
+      quiz_answers: {
+        Row: {
+          answer_index: number
+          created_at: string
+          id: string
+          is_correct: boolean
+          match_id: string
+          question_id: string
+          time_taken: number
+          user_id: string
+        }
+        Insert: {
+          answer_index: number
+          created_at?: string
+          id?: string
+          is_correct: boolean
+          match_id: string
+          question_id: string
+          time_taken: number
+          user_id: string
+        }
+        Update: {
+          answer_index?: number
+          created_at?: string
+          id?: string
+          is_correct?: boolean
+          match_id?: string
+          question_id?: string
+          time_taken?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_answers_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_bets: {
+        Row: {
+          bet_on_player_id: string
+          coins_bet: number
+          coins_won: number | null
+          created_at: string
+          id: string
+          is_won: boolean | null
+          match_id: string
+          user_id: string
+        }
+        Insert: {
+          bet_on_player_id: string
+          coins_bet: number
+          coins_won?: number | null
+          created_at?: string
+          id?: string
+          is_won?: boolean | null
+          match_id: string
+          user_id: string
+        }
+        Update: {
+          bet_on_player_id?: string
+          coins_bet?: number
+          coins_won?: number | null
+          created_at?: string
+          id?: string
+          is_won?: boolean | null
+          match_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_bets_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_categories: {
+        Row: {
+          color: string
+          created_at: string
+          description: string | null
+          icon: string
+          id: string
+          is_active: boolean
+          name: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          description?: string | null
+          icon?: string
+          id?: string
+          is_active?: boolean
+          name: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          description?: string | null
+          icon?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+        }
+        Relationships: []
+      }
+      quiz_matches: {
+        Row: {
+          category_id: string
+          created_at: string
+          current_question: number
+          finished_at: string | null
+          id: string
+          player1_id: string
+          player1_score: number
+          player2_id: string | null
+          player2_score: number
+          questions: Json | null
+          status: Database["public"]["Enums"]["quiz_match_status"]
+          winner_id: string | null
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          current_question?: number
+          finished_at?: string | null
+          id?: string
+          player1_id: string
+          player1_score?: number
+          player2_id?: string | null
+          player2_score?: number
+          questions?: Json | null
+          status?: Database["public"]["Enums"]["quiz_match_status"]
+          winner_id?: string | null
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          current_question?: number
+          finished_at?: string | null
+          id?: string
+          player1_id?: string
+          player1_score?: number
+          player2_id?: string | null
+          player2_score?: number
+          questions?: Json | null
+          status?: Database["public"]["Enums"]["quiz_match_status"]
+          winner_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_matches_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_questions: {
+        Row: {
+          category_id: string
+          correct_answer: number
+          created_at: string
+          difficulty: Database["public"]["Enums"]["quiz_difficulty"]
+          explanation: string | null
+          id: string
+          options: Json
+          question: string
+          xp_reward: number
+        }
+        Insert: {
+          category_id: string
+          correct_answer: number
+          created_at?: string
+          difficulty?: Database["public"]["Enums"]["quiz_difficulty"]
+          explanation?: string | null
+          id?: string
+          options: Json
+          question: string
+          xp_reward?: number
+        }
+        Update: {
+          category_id?: string
+          correct_answer?: number
+          created_at?: string
+          difficulty?: Database["public"]["Enums"]["quiz_difficulty"]
+          explanation?: string | null
+          id?: string
+          options?: Json
+          question?: string
+          xp_reward?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_questions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_achievements: {
         Row: {
           achievement_id: string
@@ -425,6 +641,8 @@ export type Database = {
     Enums: {
       friendship_status: "pending" | "accepted" | "blocked"
       gift_status: "pending" | "accepted" | "rejected"
+      quiz_difficulty: "easy" | "medium" | "hard"
+      quiz_match_status: "waiting" | "in_progress" | "finished" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -554,6 +772,8 @@ export const Constants = {
     Enums: {
       friendship_status: ["pending", "accepted", "blocked"],
       gift_status: ["pending", "accepted", "rejected"],
+      quiz_difficulty: ["easy", "medium", "hard"],
+      quiz_match_status: ["waiting", "in_progress", "finished", "cancelled"],
     },
   },
 } as const

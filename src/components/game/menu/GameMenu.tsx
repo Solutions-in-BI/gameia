@@ -32,11 +32,19 @@ interface GameMenuProps {
 // Configuração dos jogos disponíveis
 const GAMES = [
   {
+    id: "quiz" as const,
+    title: "Quiz Battle",
+    description: "Teste seus conhecimentos em marketing, projetos e mais!",
+    icon: Brain,
+    colorClass: "primary",
+    tags: ["Educativo", "Apostas"],
+  },
+  {
     id: "memory" as const,
     title: "Jogo da Memória",
     description: "Encontre todos os pares de cartas. Teste sua memória!",
     icon: Brain,
-    colorClass: "primary",
+    colorClass: "secondary",
     tags: ["3 dificuldades", "Recordes"],
   },
   {
@@ -44,7 +52,7 @@ const GAMES = [
     title: "Snake",
     description: "Controle a cobra e colete comida. Jogo clássico!",
     icon: Gamepad2,
-    colorClass: "secondary",
+    colorClass: "primary",
     tags: ["Velocidade crescente", "Recorde"],
   },
   {
@@ -52,7 +60,7 @@ const GAMES = [
     title: "Dino Runner",
     description: "Pule e abaixe para desviar dos obstáculos!",
     icon: Gamepad2,
-    colorClass: "primary",
+    colorClass: "secondary",
     tags: ["Pássaros voadores", "Abaixar"],
   },
   {
@@ -60,7 +68,7 @@ const GAMES = [
     title: "Tetris",
     description: "Encaixe as peças e limpe linhas. Clássico eterno!",
     icon: Gamepad2,
-    colorClass: "secondary",
+    colorClass: "primary",
     tags: ["Níveis", "Hard drop"],
   },
 ];

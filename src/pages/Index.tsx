@@ -4,6 +4,7 @@ import { MemoryGame } from "@/components/game/memory/MemoryGame";
 import { SnakeGame } from "@/components/game/snake/SnakeGame";
 import { DinoGame } from "@/components/game/dino/DinoGame";
 import { TetrisGame } from "@/components/game/tetris/TetrisGame";
+import { QuizGame } from "@/components/game/quiz/QuizGame";
 import { GameMenu } from "@/components/game/menu/GameMenu";
 import { ProfilePage } from "@/components/game/profile/ProfilePage";
 import { MarketplacePage } from "@/components/game/marketplace/MarketplacePage";
@@ -42,6 +43,8 @@ const Index = () => {
       return <DinoGame onBack={handleBackToMenu} />;
     case "tetris":
       return <TetrisGame onBack={handleBackToMenu} />;
+    case "quiz":
+      return <QuizGame onBack={handleBackToMenu} />;
     case "profile":
       return <ProfilePage onBack={handleBackToMenu} onOpenMarketplace={() => setCurrentPage("marketplace")} />;
     case "marketplace":
