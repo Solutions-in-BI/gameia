@@ -14,6 +14,136 @@ export type Database = {
   }
   public: {
     Tables: {
+      friend_group_members: {
+        Row: {
+          group_id: string
+          id: string
+          joined_at: string
+          user_id: string
+        }
+        Insert: {
+          group_id: string
+          id?: string
+          joined_at?: string
+          user_id: string
+        }
+        Update: {
+          group_id?: string
+          id?: string
+          joined_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "friend_group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "friend_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      friend_groups: {
+        Row: {
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          max_members: number | null
+          name: string
+          owner_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          max_members?: number | null
+          name: string
+          owner_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          max_members?: number | null
+          name?: string
+          owner_id?: string
+        }
+        Relationships: []
+      }
+      friendships: {
+        Row: {
+          addressee_id: string
+          created_at: string
+          id: string
+          requester_id: string
+          status: Database["public"]["Enums"]["friendship_status"]
+          updated_at: string
+        }
+        Insert: {
+          addressee_id: string
+          created_at?: string
+          id?: string
+          requester_id: string
+          status?: Database["public"]["Enums"]["friendship_status"]
+          updated_at?: string
+        }
+        Update: {
+          addressee_id?: string
+          created_at?: string
+          id?: string
+          requester_id?: string
+          status?: Database["public"]["Enums"]["friendship_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      gifts: {
+        Row: {
+          coins_spent: number
+          created_at: string
+          id: string
+          item_id: string
+          message: string | null
+          receiver_id: string
+          responded_at: string | null
+          sender_id: string
+          status: Database["public"]["Enums"]["gift_status"]
+        }
+        Insert: {
+          coins_spent: number
+          created_at?: string
+          id?: string
+          item_id: string
+          message?: string | null
+          receiver_id: string
+          responded_at?: string | null
+          sender_id: string
+          status?: Database["public"]["Enums"]["gift_status"]
+        }
+        Update: {
+          coins_spent?: number
+          created_at?: string
+          id?: string
+          item_id?: string
+          message?: string | null
+          receiver_id?: string
+          responded_at?: string | null
+          sender_id?: string
+          status?: Database["public"]["Enums"]["gift_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gifts_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leaderboard: {
         Row: {
           created_at: string
@@ -231,6 +361,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_streaks: {
+        Row: {
+          created_at: string
+          current_streak: number
+          id: string
+          last_claimed_at: string | null
+          last_played_at: string | null
+          longest_streak: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_claimed_at?: string | null
+          last_played_at?: string | null
+          longest_streak?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_claimed_at?: string | null
+          last_played_at?: string | null
+          longest_streak?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_titles: {
         Row: {
           id: string
@@ -260,7 +423,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      friendship_status: "pending" | "accepted" | "blocked"
+      gift_status: "pending" | "accepted" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -387,6 +551,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      friendship_status: ["pending", "accepted", "blocked"],
+      gift_status: ["pending", "accepted", "rejected"],
+    },
   },
 } as const
