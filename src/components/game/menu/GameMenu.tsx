@@ -1,4 +1,5 @@
-import { Gamepad2, Brain, Trophy, LogIn, LogOut, User, ShoppingBag, Coins, Flame } from "lucide-react";
+import { useState } from "react";
+import { Gamepad2, Brain, Trophy, LogIn, LogOut, User, ShoppingBag, Coins, Flame, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { GameType } from "@/types/game";
@@ -6,9 +7,12 @@ import { useAchievements } from "@/hooks/useAchievements";
 import { useAuth } from "@/hooks/useAuth";
 import { useMarketplace } from "@/hooks/useMarketplace";
 import { useLevel } from "@/hooks/useLevel";
+import { useStreak } from "@/hooks/useStreak";
 import { ThemeToggle } from "../common/ThemeToggle";
 import { LevelBadge } from "../common/LevelBadge";
 import { WeeklyChallenge, SAMPLE_CHALLENGES } from "../common/WeeklyChallenge";
+import { DailyStreak } from "../common/DailyStreak";
+import { FriendsPage } from "../friends/FriendsPage";
 
 /**
  * ===========================================
@@ -67,6 +71,8 @@ export function GameMenu({ onSelectGame, onOpenProfile, onOpenMarketplace }: Gam
   const { profile, isAuthenticated, signOut } = useAuth();
   const { coins } = useMarketplace();
   const { level, xp } = useLevel();
+  const { streak, canClaimToday, claimDailyReward } = useStreak();
+  const [showFriends, setShowFriends] = useState(false);
   const progress = getProgress();
 
   const handleLogout = async () => {
@@ -91,6 +97,13 @@ export function GameMenu({ onSelectGame, onOpenProfile, onOpenMarketplace }: Gam
                 {profile.nickname?.charAt(0).toUpperCase() || "?"}
               </div>
               <span className="text-sm font-medium text-foreground hidden sm:inline">{profile.nickname}</span>
+            </button>
+            <button
+              onClick={() => setShowFriends(true)}
+              className="p-2.5 rounded-xl bg-card border border-border hover:bg-muted transition-all hover:scale-105 shadow-sm"
+              title="Amigos"
+            >
+              <Users size={18} className="text-primary" />
             </button>
             <button
               onClick={handleLogout}

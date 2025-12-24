@@ -12,6 +12,8 @@ import { useLeaderboard } from "@/hooks/useLeaderboard";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useMarketplace } from "@/hooks/useMarketplace";
+import { useLevel } from "@/hooks/useLevel";
+import { useStreak } from "@/hooks/useStreak";
 
 interface DinoGameProps {
   onBack: () => void;
@@ -24,6 +26,8 @@ export function DinoGame({ onBack }: DinoGameProps) {
   const { profile, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const { addCoins } = useMarketplace();
+  const { addGameXP } = useLevel();
+  const { recordPlay } = useStreak();
 
   const [unlockedAchievement, setUnlockedAchievement] = useState<string | null>(null);
   const [hasCheckedAchievements, setHasCheckedAchievements] = useState(false);
@@ -37,6 +41,14 @@ export function DinoGame({ onBack }: DinoGameProps) {
       checkAndUnlock({ game: "dino", score }).then((unlocked) => {
         if (unlocked.length > 0) setUnlockedAchievement(unlocked[0]);
       });
+
+      // Registra play para streak
+      recordPlay();
+
+      // Adiciona XP
+      if (isAuthenticated) {
+        addGameXP(score);
+      }
 
       // Adiciona moedas baseado na pontuação
       const earnedCoins = Math.floor(score / 10);

@@ -14,6 +14,8 @@ import { useLeaderboard } from "@/hooks/useLeaderboard";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useMarketplace } from "@/hooks/useMarketplace";
+import { useLevel } from "@/hooks/useLevel";
+import { useStreak } from "@/hooks/useStreak";
 
 interface MemoryGameProps {
   onBack: () => void;
@@ -40,6 +42,8 @@ export function MemoryGame({ onBack }: MemoryGameProps) {
   const { profile, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const { addCoins } = useMarketplace();
+  const { addGameXP } = useLevel();
+  const { recordPlay } = useStreak();
 
   const [unlockedAchievement, setUnlockedAchievement] = useState<string | null>(null);
   const [hasCheckedAchievements, setHasCheckedAchievements] = useState(false);
@@ -53,6 +57,15 @@ export function MemoryGame({ onBack }: MemoryGameProps) {
       checkAndUnlock({ game: "memory", moves, time, difficulty }).then((unlocked) => {
         if (unlocked.length > 0) setUnlockedAchievement(unlocked[0]);
       });
+
+      // Registra play para streak
+      recordPlay();
+
+      // Adiciona XP
+      if (isAuthenticated) {
+        const score = difficulty === "hard" ? 150 : difficulty === "medium" ? 100 : 50;
+        addGameXP(score);
+      }
 
       // Adiciona moedas baseado na dificuldade
       const difficultyBonus = difficulty === "hard" ? 15 : difficulty === "medium" ? 10 : 5;
