@@ -14,6 +14,88 @@ export type Database = {
   }
   public: {
     Tables: {
+      decision_options: {
+        Row: {
+          cost_score: number | null
+          created_at: string
+          feedback: string
+          id: string
+          impact_score: number | null
+          is_optimal: boolean | null
+          option_text: string
+          risk_score: number | null
+          scenario_id: string
+        }
+        Insert: {
+          cost_score?: number | null
+          created_at?: string
+          feedback: string
+          id?: string
+          impact_score?: number | null
+          is_optimal?: boolean | null
+          option_text: string
+          risk_score?: number | null
+          scenario_id: string
+        }
+        Update: {
+          cost_score?: number | null
+          created_at?: string
+          feedback?: string
+          id?: string
+          impact_score?: number | null
+          is_optimal?: boolean | null
+          option_text?: string
+          risk_score?: number | null
+          scenario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "decision_options_scenario_id_fkey"
+            columns: ["scenario_id"]
+            isOneToOne: false
+            referencedRelation: "decision_scenarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      decision_scenarios: {
+        Row: {
+          category_id: string | null
+          context: string
+          created_at: string
+          difficulty: string
+          id: string
+          title: string
+          xp_reward: number | null
+        }
+        Insert: {
+          category_id?: string | null
+          context: string
+          created_at?: string
+          difficulty?: string
+          id?: string
+          title: string
+          xp_reward?: number | null
+        }
+        Update: {
+          category_id?: string | null
+          context?: string
+          created_at?: string
+          difficulty?: string
+          id?: string
+          title?: string
+          xp_reward?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "decision_scenarios_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       friend_group_members: {
         Row: {
           group_id: string
@@ -367,6 +449,7 @@ export type Database = {
           created_at: string
           current_question: number
           finished_at: string | null
+          game_mode: string | null
           id: string
           player1_id: string
           player1_score: number
@@ -381,6 +464,7 @@ export type Database = {
           created_at?: string
           current_question?: number
           finished_at?: string | null
+          game_mode?: string | null
           id?: string
           player1_id: string
           player1_score?: number
@@ -395,6 +479,7 @@ export type Database = {
           created_at?: string
           current_question?: number
           finished_at?: string | null
+          game_mode?: string | null
           id?: string
           player1_id?: string
           player1_score?: number
@@ -458,6 +543,96 @@ export type Database = {
           },
         ]
       }
+      skill_tree: {
+        Row: {
+          category_id: string | null
+          created_at: string
+          description: string | null
+          icon: string
+          id: string
+          is_unlocked_by_default: boolean | null
+          level: number
+          name: string
+          parent_skill_id: string | null
+          xp_required: number
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          icon?: string
+          id?: string
+          is_unlocked_by_default?: boolean | null
+          level?: number
+          name: string
+          parent_skill_id?: string | null
+          xp_required?: number
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          icon?: string
+          id?: string
+          is_unlocked_by_default?: boolean | null
+          level?: number
+          name?: string
+          parent_skill_id?: string | null
+          xp_required?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skill_tree_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "skill_tree_parent_skill_id_fkey"
+            columns: ["parent_skill_id"]
+            isOneToOne: false
+            referencedRelation: "skill_tree"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      symbolic_rewards: {
+        Row: {
+          coins_required: number | null
+          created_at: string
+          description: string | null
+          icon: string
+          id: string
+          is_active: boolean | null
+          level_required: number | null
+          name: string
+          type: string
+        }
+        Insert: {
+          coins_required?: number | null
+          created_at?: string
+          description?: string | null
+          icon: string
+          id?: string
+          is_active?: boolean | null
+          level_required?: number | null
+          name: string
+          type: string
+        }
+        Update: {
+          coins_required?: number | null
+          created_at?: string
+          description?: string | null
+          icon?: string
+          id?: string
+          is_active?: boolean | null
+          level_required?: number | null
+          name?: string
+          type?: string
+        }
+        Relationships: []
+      }
       user_achievements: {
         Row: {
           achievement_id: string
@@ -478,6 +653,90 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_competency_profile: {
+        Row: {
+          consistency_score: number | null
+          decision_speed_avg: number | null
+          id: string
+          impact_focus: number | null
+          risk_tolerance: number | null
+          strengths: string[] | null
+          total_correct_decisions: number | null
+          total_scenarios_completed: number | null
+          updated_at: string
+          user_id: string
+          weaknesses: string[] | null
+        }
+        Insert: {
+          consistency_score?: number | null
+          decision_speed_avg?: number | null
+          id?: string
+          impact_focus?: number | null
+          risk_tolerance?: number | null
+          strengths?: string[] | null
+          total_correct_decisions?: number | null
+          total_scenarios_completed?: number | null
+          updated_at?: string
+          user_id: string
+          weaknesses?: string[] | null
+        }
+        Update: {
+          consistency_score?: number | null
+          decision_speed_avg?: number | null
+          id?: string
+          impact_focus?: number | null
+          risk_tolerance?: number | null
+          strengths?: string[] | null
+          total_correct_decisions?: number | null
+          total_scenarios_completed?: number | null
+          updated_at?: string
+          user_id?: string
+          weaknesses?: string[] | null
+        }
+        Relationships: []
+      }
+      user_decision_answers: {
+        Row: {
+          created_at: string
+          id: string
+          option_id: string
+          scenario_id: string
+          time_taken: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          option_id: string
+          scenario_id: string
+          time_taken: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          option_id?: string
+          scenario_id?: string
+          time_taken?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_decision_answers_option_id_fkey"
+            columns: ["option_id"]
+            isOneToOne: false
+            referencedRelation: "decision_options"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_decision_answers_scenario_id_fkey"
+            columns: ["scenario_id"]
+            isOneToOne: false
+            referencedRelation: "decision_scenarios"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_inventory: {
         Row: {
@@ -507,6 +766,82 @@ export type Database = {
             columns: ["item_id"]
             isOneToOne: false
             referencedRelation: "marketplace_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_rewards: {
+        Row: {
+          created_at: string
+          id: string
+          redeemed_at: string | null
+          reward_id: string
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          redeemed_at?: string | null
+          reward_id: string
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          redeemed_at?: string | null
+          reward_id?: string
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_rewards_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "symbolic_rewards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_skills: {
+        Row: {
+          created_at: string
+          id: string
+          is_unlocked: boolean | null
+          mastery_level: number | null
+          skill_id: string
+          unlocked_at: string | null
+          user_id: string
+          xp_earned: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_unlocked?: boolean | null
+          mastery_level?: number | null
+          skill_id: string
+          unlocked_at?: string | null
+          user_id: string
+          xp_earned?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_unlocked?: boolean | null
+          mastery_level?: number | null
+          skill_id?: string
+          unlocked_at?: string | null
+          user_id?: string
+          xp_earned?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_skills_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skill_tree"
             referencedColumns: ["id"]
           },
         ]
