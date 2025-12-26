@@ -42,7 +42,7 @@ export function CurriculumSection() {
         <p className="text-muted-foreground max-w-md mb-6">
           Faça login para visualizar seu perfil profissional que evolui com suas conquistas e competências demonstradas.
         </p>
-        <button className="btn-primary-skillpath">
+        <button className="btn-primary-gameia">
           Criar minha conta
         </button>
       </div>
@@ -52,7 +52,7 @@ export function CurriculumSection() {
   return (
     <div className="space-y-6">
       {/* Header do Currículo */}
-      <div className="skillpath-card p-6 sm:p-8">
+      <div className="gameia-card p-6 sm:p-8">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
           {/* Avatar e Nível */}
           <div className="relative">
@@ -121,7 +121,7 @@ export function CurriculumSection() {
       </div>
 
       {/* Competências Destacadas */}
-      <div className="skillpath-card p-6">
+      <div className="gameia-card p-6">
         <h3 className="text-lg font-display font-bold text-foreground mb-4 flex items-center gap-2">
           <GraduationCap className="w-5 h-5 text-primary" />
           Competências Demonstradas
@@ -172,7 +172,7 @@ export function CurriculumSection() {
       </div>
 
       {/* Histórico de Evolução */}
-      <div className="skillpath-card p-6">
+      <div className="gameia-card p-6">
         <h3 className="text-lg font-display font-bold text-foreground mb-4 flex items-center gap-2">
           <TrendingUp className="w-5 h-5 text-secondary" />
           Evolução Recente
@@ -215,14 +215,14 @@ function MetricCard({ icon: Icon, label, value, color }: MetricCardProps) {
     primary: "text-primary bg-primary/10",
     secondary: "text-secondary bg-secondary/10",
     accent: "text-accent bg-accent/10",
-    warning: "text-skillpath-warning bg-skillpath-warning/10",
+    warning: "text-gameia-warning bg-gameia-warning/10",
   };
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="stat-card-skillpath"
+      className="stat-card-gameia"
     >
       <div className={`w-10 h-10 rounded-xl ${colorClasses[color]} flex items-center justify-center mb-3`}>
         <Icon className="w-5 h-5" />

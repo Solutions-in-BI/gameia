@@ -1,10 +1,10 @@
 /**
- * SkillPath - Página Principal
+ * Gameia - Página Principal
  * Plataforma de Gamificação Empresarial
  */
 
 import { useState } from "react";
-import { AppShell, SkillPathSection } from "@/components/skillpath/layout/AppShell";
+import { AppShell, GameiaSection } from "@/components/skillpath/layout/AppShell";
 import { CurriculumSection } from "@/components/skillpath/curriculum/CurriculumSection";
 import { GamificationSection } from "@/components/skillpath/gamification/GamificationSection";
 import { GuidanceSection } from "@/components/skillpath/guidance/GuidanceSection";
@@ -12,7 +12,7 @@ import { UnifiedProfileSection } from "@/components/skillpath/profile/UnifiedPro
 import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 
 const Index = () => {
-  const [activeSection, setActiveSection] = useState<SkillPathSection>("gamification");
+  const [activeSection, setActiveSection] = useState<GameiaSection>("gamification");
   
   // Ativa notificações em tempo real
   useRealtimeNotifications();

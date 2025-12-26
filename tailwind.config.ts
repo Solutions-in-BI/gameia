@@ -53,12 +53,12 @@ export default {
           foreground: "hsl(var(--card-foreground))",
           hover: "hsl(var(--card-hover))",
         },
-        skillpath: {
-          success: "hsl(var(--skillpath-success))",
-          warning: "hsl(var(--skillpath-warning))",
-          info: "hsl(var(--skillpath-info))",
-          purple: "hsl(var(--skillpath-purple))",
-          teal: "hsl(var(--skillpath-teal))",
+        gameia: {
+          success: "hsl(var(--gameia-success))",
+          warning: "hsl(var(--gameia-warning))",
+          info: "hsl(var(--gameia-info))",
+          purple: "hsl(var(--gameia-purple))",
+          teal: "hsl(var(--gameia-teal))",
         },
         pillar: {
           curriculum: "hsl(var(--pillar-curriculum))",

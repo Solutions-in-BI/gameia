@@ -38,12 +38,12 @@
 
     --radius: 0.75rem;
 
-    /* SkillPath tokens */
-    --skillpath-success: 155 70% 45%;
-    --skillpath-warning: 38 95% 55%;
-    --skillpath-info: 200 85% 50%;
-    --skillpath-purple: 280 65% 55%;
-    --skillpath-teal: 175 65% 45%;
+    /* Gameia tokens */
+    --gameia-success: 155 70% 45%;
+    --gameia-warning: 38 95% 55%;
+    --gameia-info: 200 85% 50%;
+    --gameia-purple: 280 65% 55%;
+    --gameia-teal: 175 65% 45%;
 
     /* Pillar Colors */
     --pillar-curriculum: 235 70% 55%;
@@ -98,12 +98,12 @@
     --input: 225 20% 18%;
     --ring: 235 75% 60%;
 
-    /* SkillPath tokens */
-    --skillpath-success: 155 75% 50%;
-    --skillpath-warning: 38 95% 60%;
-    --skillpath-info: 200 90% 55%;
-    --skillpath-purple: 280 70% 60%;
-    --skillpath-teal: 175 70% 50%;
+    /* Gameia tokens */
+    --gameia-success: 155 75% 50%;
+    --gameia-warning: 38 95% 60%;
+    --gameia-info: 200 90% 55%;
+    --gameia-purple: 280 70% 60%;
+    --gameia-teal: 175 70% 50%;
 
     /* Pillar Colors */
     --pillar-curriculum: 235 75% 60%;
@@ -144,12 +144,12 @@
 }
 
 @layer components {
-  .skillpath-card {
+  .gameia-card {
     @apply relative bg-card border border-border rounded-2xl transition-all duration-300;
     box-shadow: var(--shadow-md);
   }
 
-  .skillpath-card:hover {
+  .gameia-card:hover {
     @apply border-primary/30;
     box-shadow: var(--shadow-lg);
     transform: translateY(-2px);
@@ -176,22 +176,22 @@
     background: linear-gradient(135deg, hsl(var(--pillar-guidance)), transparent);
   }
 
-  .btn-skillpath {
+  .btn-gameia {
     @apply px-6 py-3 rounded-xl font-semibold transition-all duration-300;
     font-family: 'Space Grotesk', sans-serif;
   }
 
-  .btn-primary-skillpath {
-    @apply btn-skillpath bg-primary text-primary-foreground hover:opacity-90;
+  .btn-primary-gameia {
+    @apply btn-gameia bg-primary text-primary-foreground hover:opacity-90;
     box-shadow: var(--shadow-glow-primary);
   }
 
-  .btn-primary-skillpath:hover {
+  .btn-primary-gameia:hover {
     transform: translateY(-1px);
     box-shadow: 0 0 30px hsl(var(--primary) / 0.4);
   }
 
-  .stat-card-skillpath {
+  .stat-card-gameia {
     @apply bg-card/80 backdrop-blur-sm border border-border rounded-xl p-5;
     box-shadow: var(--shadow-sm);
   }

@@ -36,7 +36,7 @@ export function GuidanceSection() {
         <p className="text-muted-foreground max-w-md mb-6">
           Faça login para descobrir seu caminho personalizado de desenvolvimento profissional.
         </p>
-        <button className="btn-primary-skillpath">
+        <button className="btn-primary-gameia">
           Começar agora
         </button>
       </div>
@@ -63,7 +63,7 @@ export function GuidanceSection() {
       </div>
 
       {/* Caminho Atual */}
-      <div className="skillpath-card p-6 bg-gradient-to-r from-accent/5 to-transparent border-accent/20">
+      <div className="gameia-card p-6 bg-gradient-to-r from-accent/5 to-transparent border-accent/20">
         <div className="flex items-center gap-4 mb-6">
           <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center">
             <Map className="w-6 h-6 text-accent" />
@@ -112,7 +112,7 @@ export function GuidanceSection() {
       </div>
 
       {/* Próximos Passos Recomendados */}
-      <div className="skillpath-card p-6">
+      <div className="gameia-card p-6">
         <div className="flex items-center gap-3 mb-4">
           <Sparkles className="w-5 h-5 text-primary" />
           <h2 className="font-display font-bold text-foreground">
@@ -141,7 +141,7 @@ export function GuidanceSection() {
       </div>
 
       {/* Árvore de Habilidades Resumida */}
-      <div className="skillpath-card p-6">
+      <div className="gameia-card p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <Target className="w-5 h-5 text-secondary" />
@@ -333,7 +333,7 @@ function InsightCard({ icon: Icon, title, description, detail, color }: InsightC
   };
 
   return (
-    <div className="stat-card-skillpath">
+    <div className="stat-card-gameia">
       <div className={cn(
         "w-10 h-10 rounded-xl flex items-center justify-center mb-3",
         colorClasses[color]
