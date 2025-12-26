@@ -22,11 +22,11 @@ import { useSkillTree } from "@/hooks/useSkillTree";
 
 export function CurriculumSection() {
   const { profile, isAuthenticated } = useAuth();
-  const { level, xp, progress, levelInfo } = useLevel();
+  const { level, xp, progress: levelProgress, levelInfo } = useLevel();
   const { getProgress } = useAchievements();
   const { skills } = useSkillTree();
 
-  const progress = getProgress();
+  const achievementProgress = getProgress();
   const unlockedSkills = skills.filter(s => s.isUnlocked).length;
   const masteredSkills = skills.filter(s => s.masteryLevel >= 3).length;
 
@@ -84,7 +84,7 @@ export function CurriculumSection() {
               <div className="progress-bar">
                 <div 
                   className="progress-fill" 
-                  style={{ width: `${progress}%` }}
+                  style={{ width: `${levelProgress}%` }}
                 />
               </div>
             </div>
@@ -103,7 +103,7 @@ export function CurriculumSection() {
         <MetricCard 
           icon={Award}
           label="Conquistas"
-          value={`${progress.unlocked}/${progress.total}`}
+          value={`${achievementProgress.unlocked}/${achievementProgress.total}`}
           color="secondary"
         />
         <MetricCard 
@@ -193,8 +193,8 @@ export function CurriculumSection() {
           />
           <TimelineItem 
             icon="⬆️"
-            title="Subiu para Nível {level}"
-            description={`Ganhou ${xpToNextLevel} XP`}
+            title={`Subiu para Nível ${level}`}
+            description={`${xp.toLocaleString()} XP acumulados`}
             time="3 dias atrás"
           />
         </div>
