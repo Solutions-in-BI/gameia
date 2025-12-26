@@ -1,5 +1,5 @@
 /**
- * Shell principal da aplicação SkillPath
+ * Shell principal da aplicação Gameia
  * Navegação unificada com os 3 pilares
  */
 
@@ -22,12 +22,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { cn } from "@/lib/utils";
 
-export type SkillPathSection = "curriculum" | "gamification" | "guidance" | "profile";
+export type GameiaSection = "curriculum" | "gamification" | "guidance" | "profile";
 
 interface AppShellProps {
   children: React.ReactNode;
-  activeSection: SkillPathSection;
-  onSectionChange: (section: SkillPathSection) => void;
+  activeSection: GameiaSection;
+  onSectionChange: (section: GameiaSection) => void;
 }
 
 const NAV_ITEMS = [
@@ -76,10 +76,10 @@ export function AppShell({ children, activeSection, onSectionChange }: AppShellP
             {/* Logo */}
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-lg font-display">S</span>
+                <span className="text-primary-foreground font-bold text-lg font-display">G</span>
               </div>
               <span className="font-display font-bold text-xl text-foreground hidden sm:block">
-                SkillPath
+                Gameia
               </span>
             </div>
 

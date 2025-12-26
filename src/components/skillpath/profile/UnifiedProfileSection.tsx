@@ -69,7 +69,7 @@ export function UnifiedProfileSection() {
   return (
     <div className="space-y-6">
       {/* Profile Header */}
-      <div className="skillpath-card p-6 sm:p-8">
+      <div className="gameia-card p-6 sm:p-8">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
           {/* Avatar */}
           <div className="relative">
@@ -78,7 +78,7 @@ export function UnifiedProfileSection() {
                 {profile?.nickname?.charAt(0).toUpperCase() || "?"}
               </span>
             </div>
-            <div className="absolute -bottom-2 -right-2 bg-skillpath-warning text-foreground px-3 py-1 rounded-full text-sm font-bold shadow-lg">
+            <div className="absolute -bottom-2 -right-2 bg-gameia-warning text-foreground px-3 py-1 rounded-full text-sm font-bold shadow-lg">
               Nv. {level}
             </div>
           </div>
@@ -175,9 +175,9 @@ export function UnifiedProfileSection() {
           </div>
 
           {/* Recent Achievements */}
-          <div className="skillpath-card p-6">
+          <div className="gameia-card p-6">
             <h3 className="font-display font-bold text-foreground mb-4 flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-skillpath-warning" />
+              <Trophy className="w-5 h-5 text-gameia-warning" />
               Conquistas Recentes
             </h3>
             <div className="grid sm:grid-cols-2 gap-3">
@@ -214,7 +214,7 @@ export function UnifiedProfileSection() {
           className="space-y-6"
         >
           {/* Progress */}
-          <div className="skillpath-card p-6">
+          <div className="gameia-card p-6">
             <div className="flex justify-between items-center mb-4">
               <span className="text-muted-foreground">Progresso Geral</span>
               <span className="text-foreground font-semibold">
@@ -272,7 +272,7 @@ function QuickStat({ icon: Icon, value, label, color }: QuickStatProps) {
   const colorClasses = {
     primary: "text-primary",
     secondary: "text-secondary",
-    warning: "text-skillpath-warning",
+    warning: "text-gameia-warning",
   };
 
   return (
@@ -297,11 +297,11 @@ function SummaryCard({ icon: Icon, label, value, trend, color }: SummaryCardProp
     primary: "text-primary bg-primary/10",
     secondary: "text-secondary bg-secondary/10",
     accent: "text-accent bg-accent/10",
-    warning: "text-skillpath-warning bg-skillpath-warning/10",
+    warning: "text-gameia-warning bg-gameia-warning/10",
   };
 
   return (
-    <div className="stat-card-skillpath">
+    <div className="stat-card-gameia">
       <div className={cn(
         "w-10 h-10 rounded-xl flex items-center justify-center mb-3",
         colorClasses[color]
@@ -322,7 +322,7 @@ interface StatDetailCardProps {
 
 function StatDetailCard({ label, value }: StatDetailCardProps) {
   return (
-    <div className="stat-card-skillpath">
+    <div className="stat-card-gameia">
       <div className="text-sm text-muted-foreground mb-1">{label}</div>
       <div className="text-2xl font-display font-bold text-foreground">
         {value.toLocaleString()}
