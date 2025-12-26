@@ -31,14 +31,14 @@ type ProfileTab = "overview" | "achievements" | "stats";
 
 export function UnifiedProfileSection() {
   const { profile, user, signOut, isAuthenticated } = useAuth();
-  const { level, xp, progress, levelInfo } = useLevel();
+  const { level, xp, progress: levelProgress, levelInfo } = useLevel();
   const { getAchievementsWithStatus, getProgress, stats } = useAchievements();
   const { coins } = useMarketplace();
   const { streak } = useStreak();
   const [activeTab, setActiveTab] = useState<ProfileTab>("overview");
 
   const achievements = getAchievementsWithStatus();
-  const progress = getProgress();
+  const achievementProgress = getProgress();
 
   if (!isAuthenticated) {
     return (
@@ -101,7 +101,7 @@ export function UnifiedProfileSection() {
               <div className="progress-bar">
                 <div 
                   className="progress-fill" 
-                  style={{ width: `${progress}%` }}
+                  style={{ width: `${levelProgress}%` }}
                 />
               </div>
             </div>
@@ -111,7 +111,7 @@ export function UnifiedProfileSection() {
           <div className="grid grid-cols-3 gap-4 sm:gap-6">
             <QuickStat icon={Coins} value={coins} label="Moedas" color="warning" />
             <QuickStat icon={Flame} value={streak.currentStreak} label="Streak" color="secondary" />
-            <QuickStat icon={Trophy} value={progress.unlocked} label="Conquistas" color="primary" />
+            <QuickStat icon={Trophy} value={achievementProgress.unlocked} label="Conquistas" color="primary" />
           </div>
         </div>
       </div>
@@ -154,8 +154,8 @@ export function UnifiedProfileSection() {
             <SummaryCard 
               icon={Award}
               label="Conquistas"
-              value={`${progress.unlocked}/${progress.total}`}
-              trend={`${progress.percentage}% completo`}
+              value={`${achievementProgress.unlocked}/${achievementProgress.total}`}
+              trend={`${achievementProgress.percentage}% completo`}
               color="secondary"
             />
             <SummaryCard 
@@ -218,13 +218,13 @@ export function UnifiedProfileSection() {
             <div className="flex justify-between items-center mb-4">
               <span className="text-muted-foreground">Progresso Geral</span>
               <span className="text-foreground font-semibold">
-                {progress.unlocked}/{progress.total}
+                {achievementProgress.unlocked}/{achievementProgress.total}
               </span>
             </div>
             <div className="progress-bar h-3">
               <div 
                 className="progress-fill" 
-                style={{ width: `${progress.percentage}%` }} 
+                style={{ width: `${achievementProgress.percentage}%` }} 
               />
             </div>
           </div>
