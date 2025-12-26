@@ -1,63 +1,42 @@
-import { useState } from "react";
-import { GameType } from "@/types/game";
-import { MemoryGame } from "@/components/game/memory/MemoryGame";
-import { SnakeGame } from "@/components/game/snake/SnakeGame";
-import { DinoGame } from "@/components/game/dino/DinoGame";
-import { TetrisGame } from "@/components/game/tetris/TetrisGame";
-import { EnterpriseQuiz } from "@/components/game/enterprise/EnterpriseQuiz";
-import { GameMenu } from "@/components/game/menu/GameMenu";
-import { ProfilePage } from "@/components/game/profile/ProfilePage";
-import { MarketplacePage } from "@/components/game/marketplace/MarketplacePage";
-import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
-
 /**
- * ===========================================
- * PÁGINA: Index
- * ===========================================
- * 
- * Página principal que gerencia qual jogo está ativo.
+ * SkillPath - Página Principal
+ * Plataforma de Gamificação Empresarial
  */
 
-type PageType = GameType | "profile" | "marketplace";
+import { useState } from "react";
+import { AppShell, SkillPathSection } from "@/components/skillpath/layout/AppShell";
+import { CurriculumSection } from "@/components/skillpath/curriculum/CurriculumSection";
+import { GamificationSection } from "@/components/skillpath/gamification/GamificationSection";
+import { GuidanceSection } from "@/components/skillpath/guidance/GuidanceSection";
+import { UnifiedProfileSection } from "@/components/skillpath/profile/UnifiedProfileSection";
+import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 
 const Index = () => {
-  const [currentPage, setCurrentPage] = useState<PageType>("menu");
+  const [activeSection, setActiveSection] = useState<SkillPathSection>("gamification");
   
-  // Ativa notificações em tempo real para presentes e amizades
+  // Ativa notificações em tempo real
   useRealtimeNotifications();
 
-  const handleSelectGame = (game: Exclude<GameType, "menu">) => {
-    setCurrentPage(game);
+  const renderSection = () => {
+    switch (activeSection) {
+      case "curriculum":
+        return <CurriculumSection />;
+      case "gamification":
+        return <GamificationSection />;
+      case "guidance":
+        return <GuidanceSection />;
+      case "profile":
+        return <UnifiedProfileSection />;
+      default:
+        return <GamificationSection />;
+    }
   };
 
-  const handleBackToMenu = () => {
-    setCurrentPage("menu");
-  };
-
-  switch (currentPage) {
-    case "memory":
-      return <MemoryGame onBack={handleBackToMenu} />;
-    case "snake":
-      return <SnakeGame onBack={handleBackToMenu} />;
-    case "dino":
-      return <DinoGame onBack={handleBackToMenu} />;
-    case "tetris":
-      return <TetrisGame onBack={handleBackToMenu} />;
-    case "quiz":
-      return <EnterpriseQuiz onBack={handleBackToMenu} />;
-    case "profile":
-      return <ProfilePage onBack={handleBackToMenu} onOpenMarketplace={() => setCurrentPage("marketplace")} />;
-    case "marketplace":
-      return <MarketplacePage onBack={handleBackToMenu} />;
-    default:
-      return (
-        <GameMenu 
-          onSelectGame={handleSelectGame} 
-          onOpenProfile={() => setCurrentPage("profile")}
-          onOpenMarketplace={() => setCurrentPage("marketplace")}
-        />
-      );
-  }
+  return (
+    <AppShell activeSection={activeSection} onSectionChange={setActiveSection}>
+      {renderSection()}
+    </AppShell>
+  );
 };
 
 export default Index;

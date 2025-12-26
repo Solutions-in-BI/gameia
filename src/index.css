@@ -2,109 +2,129 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 @layer base {
   :root {
-    --background: 222 47% 8%;
-    --foreground: 210 40% 98%;
+    --background: 220 20% 97%;
+    --foreground: 220 25% 10%;
 
-    --card: 222 47% 12%;
-    --card-foreground: 210 40% 98%;
-    --card-hover: 222 47% 16%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 25% 10%;
+    --card-hover: 220 20% 98%;
 
-    --popover: 222 47% 10%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 25% 10%;
 
-    --primary: 175 80% 50%;
-    --primary-foreground: 222 47% 8%;
-    --primary-glow: 175 80% 60%;
+    --primary: 235 70% 55%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 235 70% 65%;
 
-    --secondary: 15 80% 60%;
-    --secondary-foreground: 222 47% 8%;
+    --secondary: 165 60% 45%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 222 30% 18%;
-    --muted-foreground: 215 20% 55%;
+    --muted: 220 15% 92%;
+    --muted-foreground: 220 10% 45%;
 
-    --accent: 270 60% 60%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 280 65% 55%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 222 30% 20%;
-    --input: 222 30% 18%;
-    --ring: 175 80% 50%;
+    --border: 220 15% 88%;
+    --input: 220 15% 92%;
+    --ring: 235 70% 55%;
 
     --radius: 0.75rem;
 
-    /* Game specific tokens */
-    --game-success: 145 70% 50%;
-    --game-warning: 45 90% 55%;
-    --game-card-back: 222 47% 15%;
-    --game-card-matched: 145 70% 20%;
+    /* SkillPath tokens */
+    --skillpath-success: 155 70% 45%;
+    --skillpath-warning: 38 95% 55%;
+    --skillpath-info: 200 85% 50%;
+    --skillpath-purple: 280 65% 55%;
+    --skillpath-teal: 175 65% 45%;
+
+    /* Pillar Colors */
+    --pillar-curriculum: 235 70% 55%;
+    --pillar-gamification: 165 60% 45%;
+    --pillar-guidance: 280 65% 55%;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(175 80% 50%), hsl(200 80% 50%));
-    --gradient-secondary: linear-gradient(135deg, hsl(15 80% 60%), hsl(35 80% 55%));
-    --gradient-card: linear-gradient(145deg, hsl(222 47% 14%), hsl(222 47% 10%));
-    --gradient-hero: linear-gradient(180deg, hsl(222 47% 8%) 0%, hsl(222 47% 12%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(235 70% 55%), hsl(280 65% 55%));
+    --gradient-secondary: linear-gradient(135deg, hsl(165 60% 45%), hsl(200 70% 50%));
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(220 20% 98%));
+    --gradient-hero: linear-gradient(180deg, hsl(235 70% 55% / 0.05) 0%, hsl(220 20% 97%) 100%);
+    --gradient-mesh: radial-gradient(at 40% 20%, hsl(235 70% 55% / 0.08) 0px, transparent 50%),
+                     radial-gradient(at 80% 0%, hsl(280 65% 55% / 0.06) 0px, transparent 50%),
+                     radial-gradient(at 0% 50%, hsl(165 60% 45% / 0.06) 0px, transparent 50%);
 
     /* Shadows */
-    --shadow-glow-primary: 0 0 30px hsl(175 80% 50% / 0.3);
-    --shadow-glow-secondary: 0 0 30px hsl(15 80% 60% / 0.3);
-    --shadow-card: 0 4px 20px hsl(0 0% 0% / 0.3);
-    --shadow-card-hover: 0 8px 30px hsl(0 0% 0% / 0.4);
+    --shadow-sm: 0 1px 2px hsl(220 25% 10% / 0.04);
+    --shadow-md: 0 4px 12px hsl(220 25% 10% / 0.06);
+    --shadow-lg: 0 8px 24px hsl(220 25% 10% / 0.08);
+    --shadow-glow-primary: 0 0 20px hsl(235 70% 55% / 0.25);
+    --shadow-glow-secondary: 0 0 20px hsl(165 60% 45% / 0.25);
   }
 
-  .light {
-    --background: 210 40% 98%;
-    --foreground: 222 47% 11%;
+  .dark {
+    --background: 225 25% 8%;
+    --foreground: 220 15% 95%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --card-hover: 210 40% 96%;
+    --card: 225 25% 12%;
+    --card-foreground: 220 15% 95%;
+    --card-hover: 225 25% 15%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover: 225 25% 10%;
+    --popover-foreground: 220 15% 95%;
 
-    --primary: 175 80% 40%;
+    --primary: 235 75% 60%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 175 80% 50%;
+    --primary-glow: 235 75% 70%;
 
-    --secondary: 15 80% 55%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 165 65% 50%;
+    --secondary-foreground: 225 25% 8%;
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 225 20% 18%;
+    --muted-foreground: 220 10% 55%;
 
-    --accent: 270 60% 55%;
+    --accent: 280 70% 60%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84% 55%;
+    --destructive: 0 72% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 175 80% 40%;
+    --border: 225 20% 20%;
+    --input: 225 20% 18%;
+    --ring: 235 75% 60%;
 
-    /* Game specific tokens */
-    --game-success: 145 70% 45%;
-    --game-warning: 45 90% 50%;
-    --game-card-back: 210 40% 90%;
-    --game-card-matched: 145 70% 85%;
+    /* SkillPath tokens */
+    --skillpath-success: 155 75% 50%;
+    --skillpath-warning: 38 95% 60%;
+    --skillpath-info: 200 90% 55%;
+    --skillpath-purple: 280 70% 60%;
+    --skillpath-teal: 175 70% 50%;
+
+    /* Pillar Colors */
+    --pillar-curriculum: 235 75% 60%;
+    --pillar-gamification: 165 65% 50%;
+    --pillar-guidance: 280 70% 60%;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(175 80% 40%), hsl(200 80% 45%));
-    --gradient-secondary: linear-gradient(135deg, hsl(15 80% 55%), hsl(35 80% 50%));
-    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(210 40% 98%));
-    --gradient-hero: linear-gradient(180deg, hsl(210 40% 98%) 0%, hsl(210 40% 96%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(235 75% 60%), hsl(280 70% 60%));
+    --gradient-secondary: linear-gradient(135deg, hsl(165 65% 50%), hsl(200 75% 55%));
+    --gradient-card: linear-gradient(145deg, hsl(225 25% 14%), hsl(225 25% 10%));
+    --gradient-hero: linear-gradient(180deg, hsl(225 25% 8%) 0%, hsl(225 25% 12%) 100%);
+    --gradient-mesh: radial-gradient(at 40% 20%, hsl(235 75% 60% / 0.12) 0px, transparent 50%),
+                     radial-gradient(at 80% 0%, hsl(280 70% 60% / 0.08) 0px, transparent 50%),
+                     radial-gradient(at 0% 50%, hsl(165 65% 50% / 0.08) 0px, transparent 50%);
 
     /* Shadows */
-    --shadow-glow-primary: 0 0 30px hsl(175 80% 40% / 0.2);
-    --shadow-glow-secondary: 0 0 30px hsl(15 80% 55% / 0.2);
-    --shadow-card: 0 4px 20px hsl(0 0% 0% / 0.1);
-    --shadow-card-hover: 0 8px 30px hsl(0 0% 0% / 0.15);
+    --shadow-sm: 0 1px 2px hsl(0 0% 0% / 0.2);
+    --shadow-md: 0 4px 12px hsl(0 0% 0% / 0.3);
+    --shadow-lg: 0 8px 24px hsl(0 0% 0% / 0.4);
+    --shadow-glow-primary: 0 0 30px hsl(235 75% 60% / 0.3);
+    --shadow-glow-secondary: 0 0 30px hsl(165 65% 50% / 0.3);
   }
 }
 
@@ -115,92 +135,78 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
   }
 
-  h1, h2, h3, .game-title {
-    font-family: 'Orbitron', sans-serif;
+  h1, h2, h3, .display-text {
+    font-family: 'Space Grotesk', sans-serif;
   }
 }
 
 @layer components {
-  .game-card {
-    @apply relative cursor-pointer transition-all duration-300;
-    transform-style: preserve-3d;
-    perspective: 1000px;
+  .skillpath-card {
+    @apply relative bg-card border border-border rounded-2xl transition-all duration-300;
+    box-shadow: var(--shadow-md);
   }
 
-  .game-card-inner {
-    @apply relative w-full h-full transition-transform duration-500;
-    transform-style: preserve-3d;
+  .skillpath-card:hover {
+    @apply border-primary/30;
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
   }
 
-  .game-card.flipped .game-card-inner {
-    transform: rotateY(180deg);
+  .pillar-card {
+    @apply relative overflow-hidden rounded-2xl p-6 transition-all duration-300;
   }
 
-  .game-card-face {
-    @apply absolute inset-0 rounded-xl flex items-center justify-center text-4xl;
-    backface-visibility: hidden;
+  .pillar-card::before {
+    content: '';
+    @apply absolute inset-0 opacity-10;
   }
 
-  .game-card-back {
-    @apply bg-gradient-to-br from-muted to-card border-2 border-border;
-    box-shadow: var(--shadow-card);
+  .pillar-curriculum::before {
+    background: linear-gradient(135deg, hsl(var(--pillar-curriculum)), transparent);
   }
 
-  .game-card-front {
-    @apply bg-card border-2 border-primary/30;
-    transform: rotateY(180deg);
-    box-shadow: var(--shadow-glow-primary);
+  .pillar-gamification::before {
+    background: linear-gradient(135deg, hsl(var(--pillar-gamification)), transparent);
   }
 
-  .game-card.matched .game-card-front {
-    @apply border-[hsl(var(--game-success))]/50 bg-[hsl(var(--game-matched))];
-    box-shadow: 0 0 20px hsl(var(--game-success) / 0.3);
+  .pillar-guidance::before {
+    background: linear-gradient(135deg, hsl(var(--pillar-guidance)), transparent);
   }
 
-  .game-card:hover:not(.flipped):not(.matched) {
-    transform: translateY(-4px) scale(1.02);
-  }
-
-  .game-card:hover:not(.flipped):not(.matched) .game-card-back {
-    @apply border-primary/50;
-    box-shadow: var(--shadow-glow-primary);
-  }
-
-  .stat-card {
-    @apply bg-card/50 backdrop-blur-sm border border-border rounded-xl px-6 py-4;
-    box-shadow: var(--shadow-card);
-  }
-
-  .btn-game {
+  .btn-skillpath {
     @apply px-6 py-3 rounded-xl font-semibold transition-all duration-300;
-    font-family: 'Orbitron', sans-serif;
+    font-family: 'Space Grotesk', sans-serif;
   }
 
-  .btn-primary-game {
-    @apply btn-game bg-primary text-primary-foreground;
+  .btn-primary-skillpath {
+    @apply btn-skillpath bg-primary text-primary-foreground hover:opacity-90;
     box-shadow: var(--shadow-glow-primary);
   }
 
-  .btn-primary-game:hover {
-    @apply scale-105;
-    box-shadow: 0 0 40px hsl(var(--primary) / 0.5);
+  .btn-primary-skillpath:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 30px hsl(var(--primary) / 0.4);
   }
 
-  .btn-secondary-game {
-    @apply btn-game bg-secondary text-secondary-foreground;
-    box-shadow: var(--shadow-glow-secondary);
+  .stat-card-skillpath {
+    @apply bg-card/80 backdrop-blur-sm border border-border rounded-xl p-5;
+    box-shadow: var(--shadow-sm);
   }
 
-  .btn-secondary-game:hover {
-    @apply scale-105;
-    box-shadow: 0 0 40px hsl(var(--secondary) / 0.5);
+  .progress-bar {
+    @apply h-2 bg-muted rounded-full overflow-hidden;
   }
 
-  .neon-text {
-    text-shadow: 0 0 10px hsl(var(--primary) / 0.8), 0 0 30px hsl(var(--primary) / 0.4);
+  .progress-fill {
+    @apply h-full rounded-full transition-all duration-500 ease-out;
+    background: var(--gradient-primary);
+  }
+
+  .mesh-background {
+    background-image: var(--gradient-mesh);
   }
 }
 
@@ -209,39 +215,64 @@
     animation: float 3s ease-in-out infinite;
   }
 
-  .animate-pulse-glow {
-    animation: pulse-glow 2s ease-in-out infinite;
+  .animate-pulse-soft {
+    animation: pulse-soft 2s ease-in-out infinite;
   }
 
-  .animate-celebrate {
-    animation: celebrate 0.6s ease-out;
+  .animate-gradient {
+    animation: gradient 8s ease infinite;
+    background-size: 200% 200%;
   }
 
-  .animate-shake {
-    animation: shake 0.5s ease-in-out;
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: var(--gradient-primary);
   }
 }
 
 @keyframes float {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  50% { transform: translateY(-8px); }
 }
 
-@keyframes pulse-glow {
-  0%, 100% { opacity: 1; filter: brightness(1); }
-  50% { opacity: 0.8; filter: brightness(1.2); }
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
 }
 
-@keyframes celebrate {
-  0% { transform: scale(1); }
-  25% { transform: scale(1.1) rotate(-5deg); }
-  50% { transform: scale(1.15) rotate(5deg); }
-  75% { transform: scale(1.1) rotate(-3deg); }
-  100% { transform: scale(1) rotate(0); }
+@keyframes gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  75% { transform: translateX(5px); }
+/* Skill Tree Styles */
+.skill-node {
+  @apply relative transition-all duration-300;
+}
+
+.skill-node.locked {
+  @apply opacity-50 grayscale;
+}
+
+.skill-node.unlocked {
+  @apply opacity-100;
+}
+
+.skill-node.mastered {
+  box-shadow: 0 0 20px hsl(var(--secondary) / 0.5);
+}
+
+/* Level Ring Animation */
+@keyframes level-pulse {
+  0%, 100% { 
+    box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4);
+  }
+  50% { 
+    box-shadow: 0 0 0 8px hsl(var(--primary) / 0);
+  }
+}
+
+.level-ring {
+  animation: level-pulse 2s ease-in-out infinite;
 }

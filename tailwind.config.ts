@@ -14,8 +14,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
-        display: ['Orbitron', 'sans-serif'],
+        sans: ['Plus Jakarta Sans', 'sans-serif'],
+        display: ['Space Grotesk', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -53,11 +53,17 @@ export default {
           foreground: "hsl(var(--card-foreground))",
           hover: "hsl(var(--card-hover))",
         },
-        game: {
-          success: "hsl(var(--game-success))",
-          warning: "hsl(var(--game-warning))",
-          cardBack: "hsl(var(--game-card-back))",
-          cardMatched: "hsl(var(--game-card-matched))",
+        skillpath: {
+          success: "hsl(var(--skillpath-success))",
+          warning: "hsl(var(--skillpath-warning))",
+          info: "hsl(var(--skillpath-info))",
+          purple: "hsl(var(--skillpath-purple))",
+          teal: "hsl(var(--skillpath-teal))",
+        },
+        pillar: {
+          curriculum: "hsl(var(--pillar-curriculum))",
+          gamification: "hsl(var(--pillar-gamification))",
+          guidance: "hsl(var(--pillar-guidance))",
         },
       },
       borderRadius: {
@@ -79,51 +85,16 @@ export default {
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
         "scale-in": {
-          "0%": { transform: "scale(0.9)", opacity: "0" },
+          "0%": { transform: "scale(0.95)", opacity: "0" },
           "100%": { transform: "scale(1)", opacity: "1" },
         },
-        "coin-float": {
-          "0%": { 
-            opacity: "1", 
-            transform: "translateY(0) scale(1)" 
-          },
-          "50%": { 
-            opacity: "1", 
-            transform: "translateY(-100px) scale(1.2)" 
-          },
-          "100%": { 
-            opacity: "0", 
-            transform: "translateY(-200px) scale(0.5)" 
-          },
+        "slide-up": {
+          "0%": { transform: "translateY(20px)", opacity: "0" },
+          "100%": { transform: "translateY(0)", opacity: "1" },
         },
-        "coin-popup": {
-          "0%": { 
-            opacity: "0", 
-            transform: "translate(-50%, 20px) scale(0.5)" 
-          },
-          "20%": { 
-            opacity: "1", 
-            transform: "translate(-50%, 0) scale(1.1)" 
-          },
-          "40%": { 
-            transform: "translate(-50%, 0) scale(1)" 
-          },
-          "80%": { 
-            opacity: "1", 
-            transform: "translate(-50%, 0) scale(1)" 
-          },
-          "100%": { 
-            opacity: "0", 
-            transform: "translate(-50%, -30px) scale(0.8)" 
-          },
-        },
-        "spin-slow": {
-          "0%": { transform: "rotateY(0deg)" },
-          "100%": { transform: "rotateY(360deg)" },
-        },
-        "pulse-glow": {
-          "0%, 100%": { opacity: "1" },
-          "50%": { opacity: "0.5" },
+        "slide-in-right": {
+          "0%": { transform: "translateX(20px)", opacity: "0" },
+          "100%": { transform: "translateX(0)", opacity: "1" },
         },
       },
       animation: {
@@ -131,10 +102,8 @@ export default {
         "accordion-up": "accordion-up 0.2s ease-out",
         "fade-in": "fade-in 0.4s ease-out",
         "scale-in": "scale-in 0.3s ease-out",
-        "coin-float": "coin-float 1.5s ease-out forwards",
-        "coin-popup": "coin-popup 2s ease-out forwards",
-        "spin-slow": "spin-slow 1s linear infinite",
-        "pulse-glow": "pulse-glow 2s ease-in-out infinite",
+        "slide-up": "slide-up 0.4s ease-out",
+        "slide-in-right": "slide-in-right 0.4s ease-out",
       },
     },
   },
