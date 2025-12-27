@@ -104,23 +104,37 @@ export function useSalesGame() {
     const fetchGameData = async () => {
       setIsLoading(true);
       try {
-        // Fetch stages
+        // Fetch stages - global stages have organization_id = null
         const { data: stagesData, error: stagesError } = await supabase
           .from('sales_conversation_stages')
           .select('*')
           .order('stage_order');
         
-        if (stagesError) throw stagesError;
+        if (stagesError) {
+          console.error('Error fetching stages:', stagesError);
+          throw stagesError;
+        }
+        
+        console.log('Fetched stages:', stagesData?.length || 0);
         setStages(stagesData || []);
 
-        // Fetch personas
+        // Fetch personas - global personas have organization_id = null
         const { data: personasData, error: personasError } = await supabase
           .from('sales_client_personas')
           .select('*')
           .eq('is_active', true);
         
-        if (personasError) throw personasError;
+        if (personasError) {
+          console.error('Error fetching personas:', personasError);
+          throw personasError;
+        }
+        
+        console.log('Fetched personas:', personasData?.length || 0);
         setPersonas(personasData || []);
+
+        if (!stagesData?.length || !personasData?.length) {
+          console.warn('No game data found - stages:', stagesData?.length, 'personas:', personasData?.length);
+        }
       } catch (error) {
         console.error('Error fetching sales game data:', error);
         toast.error('Erro ao carregar dados do jogo');
@@ -130,7 +144,7 @@ export function useSalesGame() {
     };
 
     fetchGameData();
-  }, [currentOrg?.id]);
+  }, []);
 
   // Game timer
   useEffect(() => {
