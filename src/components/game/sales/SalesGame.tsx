@@ -14,22 +14,21 @@ export function SalesGame({ onBack }: SalesGameProps) {
     stages,
     personas,
     isLoading,
+    isGenerating,
     gameState,
     selectedPersona,
-    currentStage,
     currentStageIndex,
     messages,
+    responseOptions,
     rapport,
     score,
     skills,
     timeLeft,
     showFeedback,
     currentHint,
-    currentTemplate,
     startGame,
     handleResponse,
     resetGame,
-    totalStages,
     stagePerformance,
   } = useSalesGame();
 
@@ -56,18 +55,19 @@ export function SalesGame({ onBack }: SalesGameProps) {
           />
         )}
 
-        {gameState === 'playing' && selectedPersona && currentTemplate && (
+        {gameState === 'playing' && selectedPersona && (
           <SalesChat
             persona={selectedPersona}
             stages={stages}
             currentStageIndex={currentStageIndex}
             messages={messages}
-            responseOptions={currentTemplate.response_options}
+            responseOptions={responseOptions}
             rapport={rapport}
             score={score}
             timeLeft={timeLeft}
             hint={currentHint}
             feedback={showFeedback}
+            isGenerating={isGenerating}
             onResponse={handleResponse}
             onExit={() => resetGame()}
           />

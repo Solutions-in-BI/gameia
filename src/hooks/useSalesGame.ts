@@ -30,21 +30,10 @@ export interface SalesPersona {
 
 export interface ResponseOption {
   text: string;
-  rapport_change: number;
-  skill_tags: string[];
+  quality: 'optimal' | 'good' | 'neutral' | 'poor';
+  rapport_impact: number;
+  score_value: number;
   feedback: string;
-  is_optimal: boolean;
-  leads_to_next_stage: boolean;
-}
-
-export interface MessageTemplate {
-  id: string;
-  stage_key: string;
-  persona_personality: string | null;
-  sequence_order: number;
-  client_message: string;
-  response_options: ResponseOption[];
-  context_hint: string | null;
 }
 
 export interface ChatMessage {
@@ -56,13 +45,11 @@ export interface ChatMessage {
 }
 
 export interface SkillScore {
-  rapport_building: number;
-  needs_analysis: number;
-  product_knowledge: number;
-  value_proposition: number;
-  objection_handling: number;
-  closing_technique: number;
-  time_management: number;
+  rapport: number;
+  discovery: number;
+  presentation: number;
+  objection: number;
+  closing: number;
 }
 
 interface GameSession {
@@ -77,13 +64,11 @@ interface GameSession {
 }
 
 const INITIAL_SKILLS: SkillScore = {
-  rapport_building: 50,
-  needs_analysis: 50,
-  product_knowledge: 50,
-  value_proposition: 50,
-  objection_handling: 50,
-  closing_technique: 50,
-  time_management: 50,
+  rapport: 50,
+  discovery: 50,
+  presentation: 50,
+  objection: 50,
+  closing: 50,
 };
 
 const STAGE_ORDER = ['opening', 'discovery', 'presentation', 'objection', 'closing'];
@@ -95,15 +80,14 @@ export function useSalesGame() {
   // Game data
   const [stages, setStages] = useState<SalesStage[]>([]);
   const [personas, setPersonas] = useState<SalesPersona[]>([]);
-  const [templates, setTemplates] = useState<MessageTemplate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
   // Game state
   const [gameState, setGameState] = useState<'intro' | 'playing' | 'results'>('intro');
   const [selectedPersona, setSelectedPersona] = useState<SalesPersona | null>(null);
   const [currentStageKey, setCurrentStageKey] = useState<string>('opening');
-  const [currentSequence, setCurrentSequence] = useState(1);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [responseOptions, setResponseOptions] = useState<ResponseOption[]>([]);
   const [rapport, setRapport] = useState(50);
   const [score, setScore] = useState(0);
   const [skills, setSkills] = useState<SkillScore>(INITIAL_SKILLS);
@@ -113,6 +97,7 @@ export function useSalesGame() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState<{ text: string; isOptimal: boolean } | null>(null);
   const [currentHint, setCurrentHint] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   // Fetch game data from database
   useEffect(() => {
@@ -136,25 +121,6 @@ export function useSalesGame() {
         
         if (personasError) throw personasError;
         setPersonas(personasData || []);
-
-        // Fetch templates
-        const { data: templatesData, error: templatesError } = await supabase
-          .from('sales_message_templates')
-          .select('*')
-          .eq('is_active', true)
-          .order('sequence_order');
-        
-        if (templatesError) throw templatesError;
-        
-        // Parse response_options from JSON
-        const parsedTemplates = (templatesData || []).map(t => ({
-          ...t,
-          response_options: typeof t.response_options === 'string' 
-            ? JSON.parse(t.response_options) 
-            : t.response_options
-        })) as MessageTemplate[];
-        
-        setTemplates(parsedTemplates);
       } catch (error) {
         console.error('Error fetching sales game data:', error);
         toast.error('Erro ao carregar dados do jogo');
@@ -187,28 +153,66 @@ export function useSalesGame() {
   const currentStage = stages.find(s => s.stage_key === currentStageKey);
   const currentStageIndex = STAGE_ORDER.indexOf(currentStageKey);
 
-  // Get available templates for current stage and persona
-  const getAvailableTemplates = useCallback(() => {
-    if (!selectedPersona) return [];
-    
-    return templates.filter(t => 
-      t.stage_key === currentStageKey && 
-      (t.persona_personality === null || t.persona_personality === selectedPersona.personality)
-    ).sort((a, b) => a.sequence_order - b.sequence_order);
-  }, [templates, currentStageKey, selectedPersona]);
+  // Generate AI response
+  const generateAIResponse = useCallback(async (
+    persona: SalesPersona,
+    stage: SalesStage,
+    conversationHistory: ChatMessage[],
+    playerResponse?: string
+  ) => {
+    setIsGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-sales-response', {
+        body: {
+          persona: {
+            name: persona.name,
+            personality: persona.personality,
+            role: persona.role,
+            company_name: persona.company_name,
+            company_type: persona.company_type,
+            pain_points: persona.pain_points,
+            decision_factors: persona.decision_factors,
+          },
+          stage: {
+            stage_key: stage.stage_key,
+            stage_label: stage.stage_label,
+            description: stage.description,
+            tips: stage.tips,
+          },
+          conversation_history: conversationHistory.map(m => ({
+            sender: m.sender,
+            text: m.text
+          })),
+          player_response: playerResponse,
+          rapport,
+        }
+      });
 
-  // Get current template
-  const getCurrentTemplate = useCallback(() => {
-    const available = getAvailableTemplates();
-    return available.find(t => t.sequence_order === currentSequence) || available[0];
-  }, [getAvailableTemplates, currentSequence]);
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error generating AI response:', error);
+      // Fallback to basic response
+      return {
+        client_response: playerResponse 
+          ? "Interessante... Continue me contando mais sobre isso."
+          : "Olá! Estou ouvindo. O que você tem para me apresentar?",
+        response_options: [
+          { text: "Posso apresentar nossa solução?", quality: "good", rapport_impact: 5, score_value: 50, feedback: "Boa abordagem consultiva" },
+          { text: "Quais são seus maiores desafios hoje?", quality: "optimal", rapport_impact: 10, score_value: 80, feedback: "Excelente! Descoberta de necessidades" },
+          { text: "Temos os melhores preços do mercado!", quality: "poor", rapport_impact: -5, score_value: 20, feedback: "Evite focar em preço logo de início" },
+        ]
+      };
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [rapport]);
 
   // Start game with selected persona
   const startGame = useCallback(async (persona: SalesPersona) => {
     setSelectedPersona(persona);
     setGameState('playing');
     setCurrentStageKey('opening');
-    setCurrentSequence(1);
     setRapport(50);
     setScore(0);
     setSkills(INITIAL_SKILLS);
@@ -217,21 +221,23 @@ export function useSalesGame() {
     setStagePerformance({});
     setMessages([]);
     setShowFeedback(null);
+    setResponseOptions([]);
 
-    // Get first template for opening stage
-    const openingTemplates = templates.filter(t => 
-      t.stage_key === 'opening' && 
-      (t.persona_personality === null || t.persona_personality === persona.personality)
-    ).sort((a, b) => a.sequence_order - b.sequence_order);
-
-    const firstTemplate = openingTemplates[0];
-    if (firstTemplate) {
-      setMessages([{
+    // Get first AI message
+    const openingStage = stages.find(s => s.stage_key === 'opening');
+    if (openingStage) {
+      setCurrentHint(openingStage.tips);
+      
+      const aiResponse = await generateAIResponse(persona, openingStage, []);
+      
+      const clientMessage: ChatMessage = {
         id: `client-${Date.now()}`,
         sender: 'client',
-        text: firstTemplate.client_message
-      }]);
-      setCurrentHint(firstTemplate.context_hint);
+        text: aiResponse.client_response
+      };
+      
+      setMessages([clientMessage]);
+      setResponseOptions(aiResponse.response_options || []);
     }
 
     // Create session in database
@@ -260,48 +266,39 @@ export function useSalesGame() {
         console.error('Error creating session:', error);
       }
     }
-  }, [user, currentOrg, templates]);
+  }, [user, currentOrg, stages, generateAIResponse]);
 
   // Handle player response
-  const handleResponse = useCallback((option: ResponseOption) => {
+  const handleResponse = useCallback(async (option: ResponseOption) => {
+    if (!selectedPersona || !currentStage) return;
+
     // Add player message
     const playerMessage: ChatMessage = {
       id: `player-${Date.now()}`,
       sender: 'player',
       text: option.text,
       feedback: option.feedback,
-      isOptimal: option.is_optimal
+      isOptimal: option.quality === 'optimal'
     };
-    setMessages(prev => [...prev, playerMessage]);
+    
+    const updatedMessages = [...messages, playerMessage];
+    setMessages(updatedMessages);
 
     // Update rapport
-    const newRapport = Math.min(100, Math.max(0, rapport + option.rapport_change));
+    const newRapport = Math.min(100, Math.max(0, rapport + option.rapport_impact));
     setRapport(newRapport);
 
     // Update score
-    const points = option.is_optimal ? 20 : option.rapport_change > 0 ? 10 : 0;
-    setScore(prev => prev + points);
-
-    // Update skills
-    if (option.skill_tags && option.skill_tags.length > 0) {
-      setSkills(prev => {
-        const newSkills = { ...prev };
-        option.skill_tags.forEach(tag => {
-          const key = tag as keyof SkillScore;
-          if (key in newSkills) {
-            const change = option.is_optimal ? 10 : option.rapport_change > 0 ? 5 : -5;
-            newSkills[key] = Math.min(100, Math.max(0, newSkills[key] + change));
-          }
-        });
-        return newSkills;
-      });
-    }
+    setScore(prev => prev + option.score_value);
 
     // Show feedback
-    setShowFeedback({ text: option.feedback, isOptimal: option.is_optimal });
-    
-    // Determine next action after delay
-    setTimeout(() => {
+    setShowFeedback({ 
+      text: option.feedback, 
+      isOptimal: option.quality === 'optimal' || option.quality === 'good' 
+    });
+
+    // Generate AI response after delay
+    setTimeout(async () => {
       setShowFeedback(null);
 
       // Check for game end conditions
@@ -310,101 +307,87 @@ export function useSalesGame() {
         return;
       }
 
-      if (option.leads_to_next_stage) {
+      // Generate AI response
+      const aiResponse = await generateAIResponse(
+        selectedPersona,
+        currentStage,
+        updatedMessages,
+        option.text
+      );
+
+      // Check if we should advance stage
+      const shouldAdvance = aiResponse.should_advance_stage;
+      
+      if (shouldAdvance) {
         // Record stage performance
         const stageDuration = Math.round((Date.now() - stageStartTime) / 1000);
         setStagePerformance(prev => ({
           ...prev,
-          [currentStageKey]: { score: points, time: stageDuration }
+          [currentStageKey]: { score: option.score_value, time: stageDuration }
         }));
 
         // Move to next stage
         const nextStageIndex = currentStageIndex + 1;
         if (nextStageIndex >= STAGE_ORDER.length) {
-          // Game completed successfully
           endGame(newRapport >= 50);
-        } else {
-          const nextStageKey = STAGE_ORDER[nextStageIndex];
-          setCurrentStageKey(nextStageKey);
-          setCurrentSequence(1);
-          setStageStartTime(Date.now());
-
-          // Get first template for next stage
-          const nextTemplates = templates.filter(t => 
-            t.stage_key === nextStageKey && 
-            (t.persona_personality === null || 
-              (selectedPersona && t.persona_personality === selectedPersona.personality))
-          ).sort((a, b) => a.sequence_order - b.sequence_order);
-
-          const nextTemplate = nextTemplates[0];
-          if (nextTemplate) {
-            setTimeout(() => {
-              setMessages(prev => [...prev, {
-                id: `client-${Date.now()}`,
-                sender: 'client',
-                text: nextTemplate.client_message
-              }]);
-              setCurrentHint(nextTemplate.context_hint);
-            }, 500);
-          }
+          return;
         }
-      } else {
-        // Stay in same stage, next sequence
-        const availableTemplates = getAvailableTemplates();
-        const nextSequence = currentSequence + 1;
-        const nextTemplate = availableTemplates.find(t => t.sequence_order === nextSequence);
 
-        if (nextTemplate) {
-          setCurrentSequence(nextSequence);
-          setTimeout(() => {
-            setMessages(prev => [...prev, {
-              id: `client-${Date.now()}`,
-              sender: 'client',
-              text: nextTemplate.client_message
-            }]);
-            setCurrentHint(nextTemplate.context_hint);
-          }, 500);
-        } else {
-          // No more templates in this stage, force move to next
-          const nextStageIndex = currentStageIndex + 1;
-          if (nextStageIndex >= STAGE_ORDER.length) {
-            endGame(newRapport >= 50);
-          } else {
-            const nextStageKey = STAGE_ORDER[nextStageIndex];
-            setCurrentStageKey(nextStageKey);
-            setCurrentSequence(1);
-            setStageStartTime(Date.now());
+        const nextStageKey = STAGE_ORDER[nextStageIndex];
+        setCurrentStageKey(nextStageKey);
+        setStageStartTime(Date.now());
 
-            const nextTemplates = templates.filter(t => 
-              t.stage_key === nextStageKey && 
-              (t.persona_personality === null || 
-                (selectedPersona && t.persona_personality === selectedPersona.personality))
-            ).sort((a, b) => a.sequence_order - b.sequence_order);
+        const nextStage = stages.find(s => s.stage_key === nextStageKey);
+        if (nextStage) {
+          setCurrentHint(nextStage.tips);
+        }
+      }
 
-            const nextTemplate = nextTemplates[0];
-            if (nextTemplate) {
-              setTimeout(() => {
-                setMessages(prev => [...prev, {
-                  id: `client-${Date.now()}`,
-                  sender: 'client',
-                  text: nextTemplate.client_message
-                }]);
-                setCurrentHint(nextTemplate.context_hint);
-              }, 500);
+      // Update skills
+      if (aiResponse.skills_impact) {
+        setSkills(prev => {
+          const newSkills = { ...prev };
+          Object.entries(aiResponse.skills_impact).forEach(([key, value]) => {
+            if (key in newSkills) {
+              const typedKey = key as keyof SkillScore;
+              newSkills[typedKey] = Math.min(100, Math.max(0, prev[typedKey] + (value as number)));
             }
-          }
-        }
+          });
+          return newSkills;
+        });
+      }
+
+      // Add client response
+      const clientMessage: ChatMessage = {
+        id: `client-${Date.now()}`,
+        sender: 'client',
+        text: aiResponse.client_response
+      };
+      setMessages(prev => [...prev, clientMessage]);
+
+      // Set new response options
+      if (aiResponse.response_options) {
+        setResponseOptions(aiResponse.response_options);
+      } else {
+        // Generate new options if not provided
+        const newAiResponse = await generateAIResponse(
+          selectedPersona,
+          stages.find(s => s.stage_key === (shouldAdvance ? STAGE_ORDER[currentStageIndex + 1] : currentStageKey)) || currentStage,
+          [...updatedMessages, clientMessage]
+        );
+        setResponseOptions(newAiResponse.response_options || []);
       }
     }, 1500);
   }, [
-    rapport, 
-    stageStartTime, 
-    currentStageKey, 
-    currentStageIndex, 
-    currentSequence, 
-    templates, 
-    selectedPersona, 
-    getAvailableTemplates
+    selectedPersona,
+    currentStage,
+    messages,
+    rapport,
+    stageStartTime,
+    currentStageKey,
+    currentStageIndex,
+    stages,
+    generateAIResponse
   ]);
 
   // End game
@@ -439,8 +422,8 @@ export function useSalesGame() {
     setGameState('intro');
     setSelectedPersona(null);
     setCurrentStageKey('opening');
-    setCurrentSequence(1);
     setMessages([]);
+    setResponseOptions([]);
     setRapport(50);
     setScore(0);
     setSkills(INITIAL_SKILLS);
@@ -449,6 +432,7 @@ export function useSalesGame() {
     setSessionId(null);
     setShowFeedback(null);
     setCurrentHint(null);
+    setIsGenerating(false);
   }, []);
 
   // Format time
@@ -463,6 +447,7 @@ export function useSalesGame() {
     stages,
     personas,
     isLoading,
+    isGenerating,
     
     // Game state
     gameState,
@@ -471,6 +456,7 @@ export function useSalesGame() {
     currentStage,
     currentStageIndex,
     messages,
+    responseOptions,
     rapport,
     score,
     skills,
@@ -478,9 +464,6 @@ export function useSalesGame() {
     timeLeftSeconds: timeLeft,
     showFeedback,
     currentHint,
-    
-    // Current template
-    currentTemplate: getCurrentTemplate(),
     
     // Actions
     startGame,
