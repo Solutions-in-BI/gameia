@@ -14,6 +14,143 @@ export type Database = {
   }
   public: {
     Tables: {
+      badge_categories: {
+        Row: {
+          category_key: string
+          color: string | null
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          icon: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          category_key: string
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          category_key?: string
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      badge_requirements: {
+        Row: {
+          badge_id: string
+          created_at: string | null
+          id: string
+          is_required: boolean | null
+          requirement_key: string
+          requirement_operator: string | null
+          requirement_type: string
+          requirement_value: Json
+        }
+        Insert: {
+          badge_id: string
+          created_at?: string | null
+          id?: string
+          is_required?: boolean | null
+          requirement_key: string
+          requirement_operator?: string | null
+          requirement_type: string
+          requirement_value: Json
+        }
+        Update: {
+          badge_id?: string
+          created_at?: string | null
+          id?: string
+          is_required?: boolean | null
+          requirement_key?: string
+          requirement_operator?: string | null
+          requirement_type?: string
+          requirement_value?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "badge_requirements_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      badges: {
+        Row: {
+          badge_key: string
+          category_id: string | null
+          coins_reward: number | null
+          created_at: string | null
+          description: string | null
+          icon: string
+          id: string
+          is_active: boolean | null
+          is_secret: boolean | null
+          name: string
+          organization_id: string | null
+          rarity: string | null
+          xp_reward: number | null
+        }
+        Insert: {
+          badge_key: string
+          category_id?: string | null
+          coins_reward?: number | null
+          created_at?: string | null
+          description?: string | null
+          icon: string
+          id?: string
+          is_active?: boolean | null
+          is_secret?: boolean | null
+          name: string
+          organization_id?: string | null
+          rarity?: string | null
+          xp_reward?: number | null
+        }
+        Update: {
+          badge_key?: string
+          category_id?: string | null
+          coins_reward?: number | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string
+          id?: string
+          is_active?: boolean | null
+          is_secret?: boolean | null
+          name?: string
+          organization_id?: string | null
+          rarity?: string | null
+          xp_reward?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "badges_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "badge_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "badges_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       decision_options: {
         Row: {
           cost_score: number | null
@@ -182,6 +319,74 @@ export type Database = {
         }
         Relationships: []
       }
+      game_configurations: {
+        Row: {
+          coins_base_reward: number | null
+          coins_multiplier: number | null
+          created_at: string | null
+          description: string | null
+          difficulty_multipliers: Json | null
+          display_name: string
+          game_type: string
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          organization_id: string | null
+          skill_categories: string[] | null
+          streak_bonus_config: Json | null
+          time_bonus_config: Json | null
+          updated_at: string | null
+          xp_base_reward: number | null
+          xp_multiplier: number | null
+        }
+        Insert: {
+          coins_base_reward?: number | null
+          coins_multiplier?: number | null
+          created_at?: string | null
+          description?: string | null
+          difficulty_multipliers?: Json | null
+          display_name: string
+          game_type: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          organization_id?: string | null
+          skill_categories?: string[] | null
+          streak_bonus_config?: Json | null
+          time_bonus_config?: Json | null
+          updated_at?: string | null
+          xp_base_reward?: number | null
+          xp_multiplier?: number | null
+        }
+        Update: {
+          coins_base_reward?: number | null
+          coins_multiplier?: number | null
+          created_at?: string | null
+          description?: string | null
+          difficulty_multipliers?: Json | null
+          display_name?: string
+          game_type?: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          organization_id?: string | null
+          skill_categories?: string[] | null
+          streak_bonus_config?: Json | null
+          time_bonus_config?: Json | null
+          updated_at?: string | null
+          xp_base_reward?: number | null
+          xp_multiplier?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_configurations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gifts: {
         Row: {
           coins_spent: number
@@ -260,6 +465,47 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      level_configurations: {
+        Row: {
+          created_at: string | null
+          id: string
+          level: number
+          organization_id: string | null
+          perks: string[] | null
+          rewards: Json | null
+          title: string | null
+          xp_required: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          level: number
+          organization_id?: string | null
+          perks?: string[] | null
+          rewards?: Json | null
+          title?: string | null
+          xp_required: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          level?: number
+          organization_id?: string | null
+          perks?: string[] | null
+          rewards?: Json | null
+          title?: string | null
+          xp_required?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "level_configurations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -734,6 +980,39 @@ export type Database = {
           },
         ]
       }
+      reward_transactions: {
+        Row: {
+          amount: number | null
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          source_id: string | null
+          source_type: string
+          transaction_type: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          source_id?: string | null
+          source_type: string
+          transaction_type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          source_id?: string | null
+          source_type?: string
+          transaction_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       sales_client_personas: {
         Row: {
           avatar: string | null
@@ -1004,6 +1283,56 @@ export type Database = {
           },
         ]
       }
+      skill_configurations: {
+        Row: {
+          category: string | null
+          color: string | null
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          max_level: number | null
+          name: string
+          organization_id: string | null
+          related_games: string[] | null
+          skill_key: string
+        }
+        Insert: {
+          category?: string | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          max_level?: number | null
+          name: string
+          organization_id?: string | null
+          related_games?: string[] | null
+          skill_key: string
+        }
+        Update: {
+          category?: string | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          max_level?: number | null
+          name?: string
+          organization_id?: string | null
+          related_games?: string[] | null
+          skill_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skill_configurations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       skill_tree: {
         Row: {
           category_id: string | null
@@ -1094,6 +1423,47 @@ export type Database = {
         }
         Relationships: []
       }
+      system_settings: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          organization_id: string | null
+          setting_key: string
+          setting_value: Json
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          organization_id?: string | null
+          setting_key: string
+          setting_value: Json
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          organization_id?: string | null
+          setting_key?: string
+          setting_value?: Json
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "system_settings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_achievements: {
         Row: {
           achievement_id: string
@@ -1114,6 +1484,73 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_badge_progress: {
+        Row: {
+          badge_id: string
+          current_progress: Json | null
+          id: string
+          last_updated: string | null
+          user_id: string
+        }
+        Insert: {
+          badge_id: string
+          current_progress?: Json | null
+          id?: string
+          last_updated?: string | null
+          user_id: string
+        }
+        Update: {
+          badge_id?: string
+          current_progress?: Json | null
+          id?: string
+          last_updated?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badge_progress_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_badges: {
+        Row: {
+          badge_id: string
+          id: string
+          is_displayed: boolean | null
+          progress: Json | null
+          unlocked_at: string | null
+          user_id: string
+        }
+        Insert: {
+          badge_id: string
+          id?: string
+          is_displayed?: boolean | null
+          progress?: Json | null
+          unlocked_at?: string | null
+          user_id: string
+        }
+        Update: {
+          badge_id?: string
+          id?: string
+          is_displayed?: boolean | null
+          progress?: Json | null
+          unlocked_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_challenge_progress: {
         Row: {
@@ -1300,6 +1737,44 @@ export type Database = {
             columns: ["reward_id"]
             isOneToOne: false
             referencedRelation: "symbolic_rewards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_skill_levels: {
+        Row: {
+          current_level: number | null
+          current_xp: number | null
+          id: string
+          last_practiced: string | null
+          skill_id: string
+          total_xp: number | null
+          user_id: string
+        }
+        Insert: {
+          current_level?: number | null
+          current_xp?: number | null
+          id?: string
+          last_practiced?: string | null
+          skill_id: string
+          total_xp?: number | null
+          user_id: string
+        }
+        Update: {
+          current_level?: number | null
+          current_xp?: number | null
+          id?: string
+          last_practiced?: string | null
+          skill_id?: string
+          total_xp?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_skill_levels_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skill_configurations"
             referencedColumns: ["id"]
           },
         ]
