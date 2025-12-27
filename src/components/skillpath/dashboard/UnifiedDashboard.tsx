@@ -8,7 +8,6 @@ import { QuickStats } from "./QuickStats";
 import { GameHub } from "./GameHub";
 import { SocialHub } from "./SocialHub";
 import { OrganizationCard } from "./OrganizationCard";
-import { MarketplacePreview } from "./MarketplacePreview";
 import { DailyRewards } from "./DailyRewards";
 import { PlayerProfileCard } from "@/components/game/common/PlayerProfileCard";
 import { AchievementsBadges, BadgesCarousel, Badge } from "@/components/game/common/AchievementsBadges";
@@ -46,7 +45,7 @@ import {
 
 import type { DashboardTab } from "../layout/AppShell";
 
-type ActiveView = "dashboard" | "snake" | "memory" | "tetris" | "dino" | "quiz" | "decisions" | "sales" | "ai-game" | "marketplace" | "friends" | "organization" | "escape" | "projects" | "brainstorm" | "leader";
+type ActiveView = "dashboard" | "snake" | "memory" | "tetris" | "dino" | "quiz" | "decisions" | "sales" | "ai-game" | "friends" | "organization" | "escape" | "projects" | "brainstorm" | "leader";
 
 interface UnifiedDashboardProps {
   activeTab?: DashboardTab;
@@ -130,12 +129,11 @@ export function UnifiedDashboard({ activeTab = "dashboard", onTabChange }: Unifi
   if (activeView === "brainstorm") return <ComingSoonGame onBack={() => setActiveView("dashboard")} gameName="Brainstorm Battle" gameIcon={<Lightbulb className="w-12 h-12" />} description="Competição de ideias criativas com votação em tempo real" expectedFeatures={["Geração de ideias em tempo real", "Votação democrática", "Premiação por criatividade", "Histórico de melhores ideias"]} />;
   if (activeView === "leader") return <ComingSoonGame onBack={() => setActiveView("dashboard")} gameName="Líder Supremo" gameIcon={<TargetIcon className="w-12 h-12" />} description="Simulador de liderança com desafios de gestão de equipe" expectedFeatures={["Simulação realista de gestão", "Feedback 360°", "Cenários adaptativos", "Perfil de liderança"]} />;
   
-  if (activeView === "marketplace") return <MarketplacePage onBack={() => setActiveView("dashboard")} />;
   if (activeView === "friends") return <FriendsPage isOpen={true} onClose={() => setActiveView("dashboard")} />;
 
   // Handle game selection - all games now have proper views
   const handleSelectGame = (game: string) => {
-    const validViews: ActiveView[] = ["snake", "memory", "tetris", "dino", "quiz", "decisions", "sales", "ai-game", "marketplace", "friends", "escape", "projects", "brainstorm", "leader"];
+    const validViews: ActiveView[] = ["snake", "memory", "tetris", "dino", "quiz", "decisions", "sales", "ai-game", "friends", "escape", "projects", "brainstorm", "leader"];
     if (validViews.includes(game as ActiveView)) {
       setActiveView(game as ActiveView);
     }
@@ -217,14 +215,9 @@ export function UnifiedDashboard({ activeTab = "dashboard", onTabChange }: Unifi
           />
         </TabsContent>
 
-        {/* Store Tab */}
+        {/* Store Tab - Opens Marketplace directly */}
         <TabsContent value="store" className="mt-6">
-          <MarketplacePreview
-            items={items}
-            coins={coins}
-            onPurchase={purchaseItem}
-            onViewAll={() => setActiveView("marketplace")}
-          />
+          <MarketplacePage onBack={() => onTabChange?.("dashboard")} />
         </TabsContent>
 
         {/* Ranking Tab */}
