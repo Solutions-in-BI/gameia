@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Trophy, Target, Star, Filter, Search } from "lucide-react";
+import { ArrowLeft, Trophy, Target, Star, Rocket, Award, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTrails } from "@/hooks/useTrails";
-import { TrailCard } from "./TrailCard";
-import { TrailBadge } from "./TrailBadge";
-import { TrailDetailModal } from "./TrailDetailModal";
+import { InsigniaCard } from "./TrailCard";
+import { InsigniaBadge } from "./TrailBadge";
+import { InsigniaDetailModal } from "./TrailDetailModal";
 import { cn } from "@/lib/utils";
 
-interface TrailsPageProps {
+interface InsigniasPageProps {
   onBack?: () => void;
 }
 
@@ -21,27 +21,37 @@ const difficultyFilters = [
   { key: "expert", label: "Expert" },
 ];
 
-export function TrailsPage({ onBack }: TrailsPageProps) {
-  const { trails, missions, isLoading, getTrailProgress, isTrailCompleted, getOverallStats } = useTrails();
-  const [selectedTrailId, setSelectedTrailId] = useState<string | null>(null);
+// Mapear insígnias para formas únicas
+const insigniaShapes: Record<string, "star" | "rocket" | "shield" | "hexagon" | "crown" | "bolt" | "target" | "trophy"> = {
+  "fundamentos-vendas": "star",
+  "tecnicas-avancadas": "rocket",
+  "mestre-vendas": "crown",
+  "decisoes-estrategicas": "target",
+  "lideranca-essencial": "shield",
+  "comunicacao-eficaz": "bolt",
+};
+
+export function InsigniasPage({ onBack }: InsigniasPageProps) {
+  const { trails: insignias, missions, isLoading, getTrailProgress, isTrailCompleted, getOverallStats } = useTrails();
+  const [selectedInsigniaId, setSelectedInsigniaId] = useState<string | null>(null);
   const [difficultyFilter, setDifficultyFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
 
   const stats = getOverallStats();
 
-  // Filtrar trilhas
-  const filteredTrails = trails.filter(trail => {
-    const matchesDifficulty = difficultyFilter === "all" || trail.difficulty === difficultyFilter;
-    const matchesSearch = trail.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (trail.description?.toLowerCase().includes(searchQuery.toLowerCase()));
+  // Filtrar insígnias
+  const filteredInsignias = insignias.filter(insignia => {
+    const matchesDifficulty = difficultyFilter === "all" || insignia.difficulty === difficultyFilter;
+    const matchesSearch = insignia.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (insignia.description?.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesDifficulty && matchesSearch;
   });
 
-  // Separar trilhas completas das incompletas
-  const completedTrails = filteredTrails.filter(t => isTrailCompleted(t.id));
-  const inProgressTrails = filteredTrails.filter(t => !isTrailCompleted(t.id));
+  // Separar insígnias conquistadas das disponíveis
+  const unlockedInsignias = filteredInsignias.filter(t => isTrailCompleted(t.id));
+  const availableInsignias = filteredInsignias.filter(t => !isTrailCompleted(t.id));
 
-  const selectedTrail = selectedTrailId ? trails.find(t => t.id === selectedTrailId) : null;
+  const selectedInsignia = selectedInsigniaId ? insignias.find(t => t.id === selectedInsigniaId) : null;
 
   if (isLoading) {
     return (
@@ -63,10 +73,10 @@ export function TrailsPage({ onBack }: TrailsPageProps) {
           )}
           <div>
             <h1 className="text-2xl font-display font-bold text-foreground">
-              Trilhas de Aprendizado
+              Minhas Insígnias
             </h1>
             <p className="text-muted-foreground text-sm">
-              Complete missões e ganhe insígnias exclusivas
+              Evolua nos jogos empresariais e conquiste insígnias exclusivas
             </p>
           </div>
         </div>
@@ -79,9 +89,9 @@ export function TrailsPage({ onBack }: TrailsPageProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <Trophy className="w-6 h-6 text-primary mb-2" />
+          <Award className="w-6 h-6 text-primary mb-2" />
           <p className="text-2xl font-bold text-foreground">{stats.completedTrails}</p>
-          <p className="text-xs text-muted-foreground">Trilhas Completas</p>
+          <p className="text-xs text-muted-foreground">Insígnias Conquistadas</p>
         </motion.div>
 
         <motion.div
@@ -92,7 +102,7 @@ export function TrailsPage({ onBack }: TrailsPageProps) {
         >
           <Target className="w-6 h-6 text-emerald-500 mb-2" />
           <p className="text-2xl font-bold text-foreground">{stats.completedMissions}</p>
-          <p className="text-xs text-muted-foreground">Missões Concluídas</p>
+          <p className="text-xs text-muted-foreground">Desafios Vencidos</p>
         </motion.div>
 
         <motion.div
@@ -101,9 +111,9 @@ export function TrailsPage({ onBack }: TrailsPageProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Star className="w-6 h-6 text-violet-500 mb-2" />
+          <Rocket className="w-6 h-6 text-violet-500 mb-2" />
           <p className="text-2xl font-bold text-foreground">{stats.totalTrails}</p>
-          <p className="text-xs text-muted-foreground">Total de Trilhas</p>
+          <p className="text-xs text-muted-foreground">Insígnias Disponíveis</p>
         </motion.div>
 
         <motion.div
@@ -112,36 +122,35 @@ export function TrailsPage({ onBack }: TrailsPageProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <div className="w-6 h-6 flex items-center justify-center text-amber-500 mb-2 text-lg">
-            %
-          </div>
+          <Star className="w-6 h-6 text-amber-500 mb-2" />
           <p className="text-2xl font-bold text-foreground">{stats.percentageComplete}%</p>
-          <p className="text-xs text-muted-foreground">Progresso Total</p>
+          <p className="text-xs text-muted-foreground">Evolução Total</p>
         </motion.div>
       </div>
 
-      {/* Completed Badges Showcase */}
-      {completedTrails.length > 0 && (
+      {/* Insígnias Conquistadas Showcase */}
+      {unlockedInsignias.length > 0 && (
         <motion.div
-          className="bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 border border-primary/20 rounded-xl p-4"
+          className="bg-gradient-to-r from-amber-500/5 via-amber-500/10 to-amber-500/5 border border-amber-500/20 rounded-xl p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >
           <h3 className="text-sm font-medium text-foreground mb-3 flex items-center gap-2">
-            <Trophy className="w-4 h-4 text-primary" />
-            Suas Insígnias Conquistadas
+            <Trophy className="w-4 h-4 text-amber-500" />
+            Suas Insígnias para a Camiseta 🎽
           </h3>
           <div className="flex flex-wrap gap-4">
-            {completedTrails.map((trail) => (
-              <TrailBadge
-                key={trail.id}
-                icon={trail.icon}
-                name={trail.name}
-                difficulty={trail.difficulty}
+            {unlockedInsignias.map((insignia) => (
+              <InsigniaBadge
+                key={insignia.id}
+                icon={insignia.icon}
+                name={insignia.name}
+                shape={insigniaShapes[insignia.trail_key] || "hexagon"}
+                difficulty={insignia.difficulty}
                 isUnlocked={true}
-                size="sm"
+                size="md"
                 showGlow
-                onClick={() => setSelectedTrailId(trail.id)}
+                onClick={() => setSelectedInsigniaId(insignia.id)}
               />
             ))}
           </div>
@@ -153,7 +162,7 @@ export function TrailsPage({ onBack }: TrailsPageProps) {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Buscar trilhas..."
+            placeholder="Buscar insígnias..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
@@ -174,26 +183,28 @@ export function TrailsPage({ onBack }: TrailsPageProps) {
         </div>
       </div>
 
-      {/* Trails Grid */}
+      {/* Insígnias Grid */}
       <div className="space-y-4">
-        {inProgressTrails.length > 0 && (
+        {availableInsignias.length > 0 && (
           <>
-            <h3 className="text-lg font-semibold text-foreground">
-              Trilhas Disponíveis
+            <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+              <Rocket className="w-5 h-5 text-primary" />
+              Insígnias para Conquistar
             </h3>
             <div className="grid gap-4 md:grid-cols-2">
-              {inProgressTrails.map((trail, index) => (
+              {availableInsignias.map((insignia, index) => (
                 <motion.div
-                  key={trail.id}
+                  key={insignia.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
                 >
-                  <TrailCard
-                    trail={trail}
-                    progress={getTrailProgress(trail.id)}
+                  <InsigniaCard
+                    trail={insignia}
+                    shape={insigniaShapes[insignia.trail_key] || "hexagon"}
+                    progress={getTrailProgress(insignia.id)}
                     isCompleted={false}
-                    onClick={() => setSelectedTrailId(trail.id)}
+                    onClick={() => setSelectedInsigniaId(insignia.id)}
                   />
                 </motion.div>
               ))}
@@ -201,24 +212,26 @@ export function TrailsPage({ onBack }: TrailsPageProps) {
           </>
         )}
 
-        {completedTrails.length > 0 && (
+        {unlockedInsignias.length > 0 && (
           <>
-            <h3 className="text-lg font-semibold text-foreground mt-6">
-              Trilhas Concluídas
+            <h3 className="text-lg font-semibold text-foreground mt-6 flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-amber-500" />
+              Insígnias Conquistadas
             </h3>
             <div className="grid gap-4 md:grid-cols-2">
-              {completedTrails.map((trail, index) => (
+              {unlockedInsignias.map((insignia, index) => (
                 <motion.div
-                  key={trail.id}
+                  key={insignia.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
                 >
-                  <TrailCard
-                    trail={trail}
-                    progress={getTrailProgress(trail.id)}
+                  <InsigniaCard
+                    trail={insignia}
+                    shape={insigniaShapes[insignia.trail_key] || "hexagon"}
+                    progress={getTrailProgress(insignia.id)}
                     isCompleted={true}
-                    onClick={() => setSelectedTrailId(trail.id)}
+                    onClick={() => setSelectedInsigniaId(insignia.id)}
                   />
                 </motion.div>
               ))}
@@ -226,26 +239,31 @@ export function TrailsPage({ onBack }: TrailsPageProps) {
           </>
         )}
 
-        {filteredTrails.length === 0 && (
+        {filteredInsignias.length === 0 && (
           <div className="text-center py-12">
+            <Award className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
             <p className="text-muted-foreground">
-              Nenhuma trilha encontrada com esses filtros.
+              Nenhuma insígnia encontrada com esses filtros.
             </p>
           </div>
         )}
       </div>
 
-      {/* Trail Detail Modal */}
+      {/* Insignia Detail Modal */}
       <AnimatePresence>
-        {selectedTrail && (
-          <TrailDetailModal
-            trail={selectedTrail}
-            missions={missions[selectedTrail.id] || []}
-            isOpen={!!selectedTrailId}
-            onClose={() => setSelectedTrailId(null)}
+        {selectedInsignia && (
+          <InsigniaDetailModal
+            trail={selectedInsignia}
+            shape={insigniaShapes[selectedInsignia.trail_key] || "hexagon"}
+            missions={missions[selectedInsignia.id] || []}
+            isOpen={!!selectedInsigniaId}
+            onClose={() => setSelectedInsigniaId(null)}
           />
         )}
       </AnimatePresence>
     </div>
   );
 }
+
+// Alias para compatibilidade
+export const TrailsPage = InsigniasPage;
