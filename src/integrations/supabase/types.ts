@@ -88,6 +88,65 @@ export type Database = {
           },
         ]
       }
+      badge_trails: {
+        Row: {
+          category: string | null
+          color: string | null
+          created_at: string
+          description: string | null
+          difficulty: string | null
+          display_order: number | null
+          estimated_hours: number | null
+          icon: string
+          id: string
+          is_active: boolean | null
+          name: string
+          organization_id: string | null
+          points_reward: number | null
+          trail_key: string
+        }
+        Insert: {
+          category?: string | null
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          difficulty?: string | null
+          display_order?: number | null
+          estimated_hours?: number | null
+          icon?: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          organization_id?: string | null
+          points_reward?: number | null
+          trail_key: string
+        }
+        Update: {
+          category?: string | null
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          difficulty?: string | null
+          display_order?: number | null
+          estimated_hours?: number | null
+          icon?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          organization_id?: string | null
+          points_reward?: number | null
+          trail_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "badge_trails_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       badges: {
         Row: {
           badge_key: string
@@ -1464,6 +1523,65 @@ export type Database = {
           },
         ]
       }
+      trail_missions: {
+        Row: {
+          coins_reward: number | null
+          created_at: string
+          description: string | null
+          id: string
+          instruction: string | null
+          is_required: boolean | null
+          mission_key: string
+          mission_type: string
+          name: string
+          order_index: number | null
+          target_value: number | null
+          time_limit_minutes: number | null
+          trail_id: string
+          xp_reward: number | null
+        }
+        Insert: {
+          coins_reward?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          instruction?: string | null
+          is_required?: boolean | null
+          mission_key: string
+          mission_type: string
+          name: string
+          order_index?: number | null
+          target_value?: number | null
+          time_limit_minutes?: number | null
+          trail_id: string
+          xp_reward?: number | null
+        }
+        Update: {
+          coins_reward?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          instruction?: string | null
+          is_required?: boolean | null
+          mission_key?: string
+          mission_type?: string
+          name?: string
+          order_index?: number | null
+          target_value?: number | null
+          time_limit_minutes?: number | null
+          trail_id?: string
+          xp_reward?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trail_missions_trail_id_fkey"
+            columns: ["trail_id"]
+            isOneToOne: false
+            referencedRelation: "badge_trails"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_achievements: {
         Row: {
           achievement_id: string
@@ -1706,6 +1824,44 @@ export type Database = {
           },
         ]
       }
+      user_mission_progress: {
+        Row: {
+          attempts: number | null
+          best_score: number | null
+          completed_at: string | null
+          current_value: number | null
+          id: string
+          mission_id: string
+          user_id: string
+        }
+        Insert: {
+          attempts?: number | null
+          best_score?: number | null
+          completed_at?: string | null
+          current_value?: number | null
+          id?: string
+          mission_id: string
+          user_id: string
+        }
+        Update: {
+          attempts?: number | null
+          best_score?: number | null
+          completed_at?: string | null
+          current_value?: number | null
+          id?: string
+          mission_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_mission_progress_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "trail_missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_rewards: {
         Row: {
           created_at: string
@@ -1939,6 +2095,44 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_trail_progress: {
+        Row: {
+          completed_at: string | null
+          current_mission_index: number | null
+          id: string
+          started_at: string | null
+          status: string | null
+          trail_id: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          current_mission_index?: number | null
+          id?: string
+          started_at?: string | null
+          status?: string | null
+          trail_id: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          current_mission_index?: number | null
+          id?: string
+          started_at?: string | null
+          status?: string | null
+          trail_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_trail_progress_trail_id_fkey"
+            columns: ["trail_id"]
+            isOneToOne: false
+            referencedRelation: "badge_trails"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
