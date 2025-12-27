@@ -734,6 +734,276 @@ export type Database = {
           },
         ]
       }
+      sales_client_personas: {
+        Row: {
+          avatar: string | null
+          company_name: string | null
+          company_type: string | null
+          created_at: string | null
+          decision_factors: string[] | null
+          difficulty: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          organization_id: string | null
+          pain_points: string[] | null
+          personality: string
+          role: string | null
+        }
+        Insert: {
+          avatar?: string | null
+          company_name?: string | null
+          company_type?: string | null
+          created_at?: string | null
+          decision_factors?: string[] | null
+          difficulty?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          organization_id?: string | null
+          pain_points?: string[] | null
+          personality: string
+          role?: string | null
+        }
+        Update: {
+          avatar?: string | null
+          company_name?: string | null
+          company_type?: string | null
+          created_at?: string | null
+          decision_factors?: string[] | null
+          difficulty?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          organization_id?: string | null
+          pain_points?: string[] | null
+          personality?: string
+          role?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_client_personas_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_conversation_stages: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          organization_id: string | null
+          stage_key: string
+          stage_label: string
+          stage_order: number
+          tips: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          organization_id?: string | null
+          stage_key: string
+          stage_label: string
+          stage_order: number
+          tips?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          organization_id?: string | null
+          stage_key?: string
+          stage_label?: string
+          stage_order?: number
+          tips?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_conversation_stages_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_game_sessions: {
+        Row: {
+          completed_at: string | null
+          conversation_history: Json | null
+          created_at: string | null
+          final_rapport: number | null
+          id: string
+          organization_id: string | null
+          persona_id: string | null
+          product_id: string | null
+          sale_closed: boolean | null
+          skills_measured: Json | null
+          stage_performance: Json | null
+          started_at: string | null
+          time_spent_seconds: number | null
+          total_score: number | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          conversation_history?: Json | null
+          created_at?: string | null
+          final_rapport?: number | null
+          id?: string
+          organization_id?: string | null
+          persona_id?: string | null
+          product_id?: string | null
+          sale_closed?: boolean | null
+          skills_measured?: Json | null
+          stage_performance?: Json | null
+          started_at?: string | null
+          time_spent_seconds?: number | null
+          total_score?: number | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          conversation_history?: Json | null
+          created_at?: string | null
+          final_rapport?: number | null
+          id?: string
+          organization_id?: string | null
+          persona_id?: string | null
+          product_id?: string | null
+          sale_closed?: boolean | null
+          skills_measured?: Json | null
+          stage_performance?: Json | null
+          started_at?: string | null
+          time_spent_seconds?: number | null
+          total_score?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_game_sessions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_game_sessions_persona_id_fkey"
+            columns: ["persona_id"]
+            isOneToOne: false
+            referencedRelation: "sales_client_personas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_game_sessions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "sales_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_message_templates: {
+        Row: {
+          client_message: string
+          context_hint: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          organization_id: string | null
+          persona_personality: string | null
+          response_options: Json
+          sequence_order: number | null
+          stage_key: string
+        }
+        Insert: {
+          client_message: string
+          context_hint?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          organization_id?: string | null
+          persona_personality?: string | null
+          response_options: Json
+          sequence_order?: number | null
+          stage_key: string
+        }
+        Update: {
+          client_message?: string
+          context_hint?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          organization_id?: string | null
+          persona_personality?: string | null
+          response_options?: Json
+          sequence_order?: number | null
+          stage_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_message_templates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_products: {
+        Row: {
+          common_objections: Json | null
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          key_benefits: string[] | null
+          name: string
+          organization_id: string | null
+          pricing_info: string | null
+          target_audience: string | null
+        }
+        Insert: {
+          common_objections?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          key_benefits?: string[] | null
+          name: string
+          organization_id?: string | null
+          pricing_info?: string | null
+          target_audience?: string | null
+        }
+        Update: {
+          common_objections?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          key_benefits?: string[] | null
+          name?: string
+          organization_id?: string | null
+          pricing_info?: string | null
+          target_audience?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_products_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       skill_tree: {
         Row: {
           category_id: string | null

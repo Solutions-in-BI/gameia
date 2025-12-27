@@ -1,95 +1,190 @@
 import { motion } from "framer-motion";
-import { Trophy, Target, Star, RotateCcw, ArrowLeft } from "lucide-react";
+import { Trophy, Target, Star, RotateCcw, ArrowLeft, TrendingUp, TrendingDown, CheckCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import type { SkillScore, SalesStage } from "@/hooks/useSalesGame";
 
 interface SalesResultsProps {
   score: number;
-  salesClosed: number;
-  totalClients: number;
+  rapport: number;
+  skills: SkillScore;
+  stagePerformance: Record<string, { score: number; time: number }>;
+  stages: SalesStage[];
+  saleClosed: boolean;
   onRestart: () => void;
   onBack: () => void;
 }
 
-export function SalesResults({ score, salesClosed, totalClients, onRestart, onBack }: SalesResultsProps) {
-  const percentage = Math.round((salesClosed / totalClients) * 100);
-  const xpEarned = score * 2 + salesClosed * 50;
-  const coinsEarned = salesClosed * 25;
+const SKILL_LABELS: Record<keyof SkillScore, string> = {
+  rapport_building: 'Construção de Rapport',
+  needs_analysis: 'Análise de Necessidades',
+  product_knowledge: 'Conhecimento do Produto',
+  value_proposition: 'Proposta de Valor',
+  objection_handling: 'Tratamento de Objeções',
+  closing_technique: 'Técnica de Fechamento',
+  time_management: 'Gestão de Tempo',
+};
+
+export function SalesResults({ 
+  score, 
+  rapport, 
+  skills, 
+  stagePerformance, 
+  stages,
+  saleClosed, 
+  onRestart, 
+  onBack 
+}: SalesResultsProps) {
+  const xpEarned = score * 2 + (saleClosed ? 100 : 0);
+  const coinsEarned = saleClosed ? 50 : Math.round(score / 2);
 
   const getPerformanceText = () => {
-    if (percentage >= 80) return { title: 'Vendedor Nato!', emoji: '🏆' };
-    if (percentage >= 60) return { title: 'Bom Desempenho!', emoji: '⭐' };
-    if (percentage >= 40) return { title: 'Pode Melhorar', emoji: '💪' };
-    return { title: 'Continue Praticando', emoji: '📚' };
+    if (saleClosed && rapport >= 80) return { title: 'Vendedor Nato!', emoji: '🏆', subtitle: 'Você fechou a venda com maestria!' };
+    if (saleClosed) return { title: 'Venda Fechada!', emoji: '🎉', subtitle: 'Parabéns, você conseguiu!' };
+    if (rapport >= 40) return { title: 'Quase lá!', emoji: '💪', subtitle: 'Continue praticando para fechar mais vendas.' };
+    return { title: 'Não foi dessa vez', emoji: '📚', subtitle: 'Revise as dicas e tente novamente.' };
   };
 
   const performance = getPerformanceText();
+
+  // Get top 3 skills and bottom 2 skills
+  const sortedSkills = Object.entries(skills).sort((a, b) => b[1] - a[1]);
+  const topSkills = sortedSkills.slice(0, 3);
+  const weakSkills = sortedSkills.slice(-2);
 
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0 }}
-      className="max-w-md mx-auto pt-8"
+      className="max-w-lg mx-auto pt-4"
     >
-      {/* Trophy */}
-      <div className="flex justify-center mb-6">
+      {/* Result Header */}
+      <div className="text-center mb-6">
         <motion.div 
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: "spring", delay: 0.2 }}
-          className="w-24 h-24 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center"
+          className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 ${
+            saleClosed 
+              ? 'bg-gradient-to-br from-green-500 to-emerald-500' 
+              : 'bg-gradient-to-br from-amber-500 to-orange-500'
+          }`}
         >
-          <span className="text-5xl">{performance.emoji}</span>
+          <span className="text-4xl">{performance.emoji}</span>
         </motion.div>
+        
+        <h1 className="text-2xl font-bold mb-1">{performance.title}</h1>
+        <p className="text-muted-foreground text-sm">{performance.subtitle}</p>
       </div>
 
-      <h1 className="text-2xl font-bold text-center mb-2">{performance.title}</h1>
-      <p className="text-center text-muted-foreground mb-8">
-        Você fechou {salesClosed} de {totalClients} vendas
-      </p>
+      {/* Sale Status */}
+      <div className={`flex items-center justify-center gap-2 mb-6 px-4 py-2 rounded-full mx-auto w-fit ${
+        saleClosed ? 'bg-green-500/20 text-green-400' : 'bg-amber-500/20 text-amber-400'
+      }`}>
+        {saleClosed ? (
+          <>
+            <CheckCircle className="w-5 h-5" />
+            <span className="font-semibold">Venda Concluída</span>
+          </>
+        ) : (
+          <>
+            <XCircle className="w-5 h-5" />
+            <span className="font-semibold">Venda Não Concluída</span>
+          </>
+        )}
+      </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-3 gap-3 mb-6">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-card/50 border border-border/50 rounded-xl p-4 text-center"
+          className="bg-card/50 border border-border/50 rounded-xl p-3 text-center"
         >
-          <Target className="w-6 h-6 text-cyan-400 mx-auto mb-2" />
-          <div className="text-2xl font-bold">{salesClosed}</div>
-          <div className="text-xs text-muted-foreground">Vendas</div>
+          <Target className="w-5 h-5 text-cyan-400 mx-auto mb-1" />
+          <div className="text-xl font-bold">{rapport}%</div>
+          <div className="text-xs text-muted-foreground">Rapport Final</div>
         </motion.div>
         
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="bg-card/50 border border-border/50 rounded-xl p-4 text-center"
+          className="bg-card/50 border border-border/50 rounded-xl p-3 text-center"
         >
-          <Star className="w-6 h-6 text-amber-400 mx-auto mb-2" />
-          <div className="text-2xl font-bold">{score}</div>
-          <div className="text-xs text-muted-foreground">Pontos</div>
+          <Star className="w-5 h-5 text-amber-400 mx-auto mb-1" />
+          <div className="text-xl font-bold">{score}</div>
+          <div className="text-xs text-muted-foreground">Pontuação</div>
         </motion.div>
         
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="bg-card/50 border border-border/50 rounded-xl p-4 text-center"
+          className="bg-card/50 border border-border/50 rounded-xl p-3 text-center"
         >
-          <Trophy className="w-6 h-6 text-purple-400 mx-auto mb-2" />
-          <div className="text-2xl font-bold">{percentage}%</div>
-          <div className="text-xs text-muted-foreground">Taxa</div>
+          <Trophy className="w-5 h-5 text-purple-400 mx-auto mb-1" />
+          <div className="text-xl font-bold">{Object.keys(stagePerformance).length}</div>
+          <div className="text-xs text-muted-foreground">Etapas</div>
         </motion.div>
       </div>
+
+      {/* Skills Analysis */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6 }}
+        className="bg-card/50 border border-border/50 rounded-xl p-4 mb-6"
+      >
+        <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+          <TrendingUp className="w-4 h-4 text-green-400" />
+          Suas Competências
+        </h3>
+        
+        <div className="space-y-3">
+          {topSkills.map(([key, value]) => (
+            <div key={key}>
+              <div className="flex items-center justify-between text-sm mb-1">
+                <span className="text-muted-foreground">
+                  {SKILL_LABELS[key as keyof SkillScore]}
+                </span>
+                <span className={`font-medium ${value >= 60 ? 'text-green-400' : value >= 40 ? 'text-amber-400' : 'text-red-400'}`}>
+                  {value}%
+                </span>
+              </div>
+              <Progress value={value} className="h-2" />
+            </div>
+          ))}
+        </div>
+
+        {weakSkills.some(([_, value]) => value < 50) && (
+          <div className="mt-4 pt-4 border-t border-border/50">
+            <h4 className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1">
+              <TrendingDown className="w-3 h-3" />
+              Áreas para Melhorar
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              {weakSkills
+                .filter(([_, value]) => value < 50)
+                .map(([key]) => (
+                  <span key={key} className="text-xs bg-amber-500/10 text-amber-400 px-2 py-1 rounded">
+                    {SKILL_LABELS[key as keyof SkillScore]}
+                  </span>
+                ))
+              }
+            </div>
+          </div>
+        )}
+      </motion.div>
 
       {/* Rewards */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
-        className="bg-gradient-to-r from-cyan-500/10 to-purple-500/10 border border-cyan-500/30 rounded-xl p-4 mb-8"
+        transition={{ delay: 0.7 }}
+        className="bg-gradient-to-r from-cyan-500/10 to-green-500/10 border border-cyan-500/30 rounded-xl p-4 mb-6"
       >
         <h3 className="text-sm font-semibold mb-3 text-center">Recompensas</h3>
         <div className="flex justify-center gap-8">
@@ -103,14 +198,14 @@ export function SalesResults({ score, salesClosed, totalClients, onRestart, onBa
       </motion.div>
 
       {/* Actions */}
-      <div className="flex gap-4">
+      <div className="flex gap-3">
         <Button variant="outline" onClick={onBack} className="flex-1">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Voltar
         </Button>
         <Button 
           onClick={onRestart} 
-          className="flex-1 bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white"
+          className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
         >
           <RotateCcw className="w-4 h-4 mr-2" />
           Jogar Novamente
