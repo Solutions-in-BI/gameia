@@ -1,6 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, Star, LogOut, ArrowRight, Lightbulb, Building2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Clock, Star, LogOut, ArrowRight, Lightbulb, Building2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SalesStageIndicator } from "./SalesStageIndicator";
 import { SalesFeedbackToast } from "./SalesFeedbackToast";
@@ -17,6 +16,7 @@ interface SalesChatProps {
   timeLeft: string;
   hint: string | null;
   feedback: { text: string; isOptimal: boolean } | null;
+  isGenerating?: boolean;
   onResponse: (option: ResponseOption) => void;
   onExit: () => void;
 }
@@ -32,6 +32,7 @@ export function SalesChat({
   timeLeft, 
   hint,
   feedback,
+  isGenerating,
   onResponse, 
   onExit 
 }: SalesChatProps) {
@@ -163,6 +164,23 @@ export function SalesChat({
             )}
           </motion.div>
         ))}
+        
+        {/* Typing indicator when generating */}
+        {isGenerating && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex justify-start"
+          >
+            <div className="max-w-[85%]">
+              <div className="text-xs text-muted-foreground mb-1">{persona.name}</div>
+              <div className="bg-card border border-border/50 rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">Digitando...</span>
+              </div>
+            </div>
+          </motion.div>
+        )}
       </div>
 
       {/* Response Options */}
@@ -171,22 +189,29 @@ export function SalesChat({
           Escolha sua resposta:
         </div>
         
-        {responseOptions.map((option, index) => (
-          <motion.button
-            key={index}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: index * 0.1 }}
-            onClick={() => onResponse(option)}
-            disabled={!!feedback}
-            className="w-full text-left bg-card/50 hover:bg-card/80 border border-border/50 hover:border-green-500/50 rounded-xl px-4 py-3 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <div className="flex items-start gap-3">
-              <ArrowRight className="w-4 h-4 text-green-400 group-hover:translate-x-1 transition-transform mt-0.5 flex-shrink-0" />
-              <span className="text-sm">{option.text}</span>
-            </div>
-          </motion.button>
-        ))}
+        {responseOptions.length > 0 ? (
+          responseOptions.map((option, index) => (
+            <motion.button
+              key={index}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1 }}
+              onClick={() => onResponse(option)}
+              disabled={!!feedback || isGenerating}
+              className="w-full text-left bg-card/50 hover:bg-card/80 border border-border/50 hover:border-green-500/50 rounded-xl px-4 py-3 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <div className="flex items-start gap-3">
+                <ArrowRight className="w-4 h-4 text-green-400 group-hover:translate-x-1 transition-transform mt-0.5 flex-shrink-0" />
+                <span className="text-sm">{option.text}</span>
+              </div>
+            </motion.button>
+          ))
+        ) : (
+          <div className="text-center py-4 text-muted-foreground">
+            <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2" />
+            <span className="text-sm">Gerando opções...</span>
+          </div>
+        )}
       </div>
 
       {/* Feedback Toast */}

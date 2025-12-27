@@ -16,13 +16,11 @@ interface SalesResultsProps {
 }
 
 const SKILL_LABELS: Record<keyof SkillScore, string> = {
-  rapport_building: 'Construção de Rapport',
-  needs_analysis: 'Análise de Necessidades',
-  product_knowledge: 'Conhecimento do Produto',
-  value_proposition: 'Proposta de Valor',
-  objection_handling: 'Tratamento de Objeções',
-  closing_technique: 'Técnica de Fechamento',
-  time_management: 'Gestão de Tempo',
+  rapport: 'Construção de Rapport',
+  discovery: 'Descoberta de Necessidades',
+  presentation: 'Apresentação de Valor',
+  objection: 'Tratamento de Objeções',
+  closing: 'Técnica de Fechamento',
 };
 
 export function SalesResults({ 
