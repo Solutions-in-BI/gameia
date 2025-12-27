@@ -1,8 +1,8 @@
 /**
- * Hook para gerenciar o jogo de cenários de decisão
+ * Hook para gerenciar o jogo de cenários de decisão com sistema de progressão
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 import { useToast } from "./use-toast";
@@ -35,8 +35,34 @@ export interface DecisionResult {
   xpEarned: number;
 }
 
+export interface ScenarioWithProgress extends DecisionScenario {
+  isCompleted: boolean;
+  isUnlocked: boolean;
+  isOptimalDecision: boolean | null;
+}
+
+export interface ProgressionStats {
+  easyCompleted: number;
+  easyTotal: number;
+  mediumCompleted: number;
+  mediumTotal: number;
+  hardCompleted: number;
+  hardTotal: number;
+  totalCompleted: number;
+  totalScenarios: number;
+  optimalDecisions: number;
+}
+
+// Requisitos para desbloquear níveis
+const UNLOCK_REQUIREMENTS = {
+  medium: 1, // Completar 1 cenário easy para desbloquear medium
+  hard: 2,   // Completar 2 cenários medium para desbloquear hard
+};
+
 interface UseDecisionGame {
   scenarios: DecisionScenario[];
+  scenariosWithProgress: ScenarioWithProgress[];
+  progressionStats: ProgressionStats;
   currentScenario: DecisionScenario | null;
   currentOptions: DecisionOption[];
   result: DecisionResult | null;
@@ -45,6 +71,7 @@ interface UseDecisionGame {
   makeDecision: (optionId: string, timeTaken: number) => Promise<void>;
   nextScenario: () => void;
   fetchScenarios: () => Promise<void>;
+  canAccessDifficulty: (difficulty: string) => boolean;
 }
 
 export function useDecisionGame(): UseDecisionGame {
@@ -53,16 +80,48 @@ export function useDecisionGame(): UseDecisionGame {
   const { addXP } = useLevel();
 
   const [scenarios, setScenarios] = useState<DecisionScenario[]>([]);
+  const [completedScenarios, setCompletedScenarios] = useState<Map<string, boolean>>(new Map());
   const [currentScenario, setCurrentScenario] = useState<DecisionScenario | null>(null);
   const [currentOptions, setCurrentOptions] = useState<DecisionOption[]>([]);
   const [result, setResult] = useState<DecisionResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Fetch completed scenarios for the user
+  const fetchCompletedScenarios = useCallback(async () => {
+    if (!user) {
+      setCompletedScenarios(new Map());
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from("user_decision_answers")
+        .select("scenario_id, option_id, decision_options!inner(is_optimal)")
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      const completedMap = new Map<string, boolean>();
+      (data || []).forEach((answer: any) => {
+        const isOptimal = answer.decision_options?.is_optimal ?? false;
+        // Se já tiver uma decisão ótima registrada, manter
+        if (!completedMap.has(answer.scenario_id) || isOptimal) {
+          completedMap.set(answer.scenario_id, isOptimal);
+        }
+      });
+
+      setCompletedScenarios(completedMap);
+    } catch (err) {
+      console.error("Erro ao buscar cenários completados:", err);
+    }
+  }, [user]);
 
   const fetchScenarios = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from("decision_scenarios")
         .select("*")
+        .order("difficulty", { ascending: true })
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -74,23 +133,92 @@ export function useDecisionGame(): UseDecisionGame {
 
   useEffect(() => {
     fetchScenarios();
-  }, [fetchScenarios]);
+    fetchCompletedScenarios();
+  }, [fetchScenarios, fetchCompletedScenarios]);
+
+  // Calcular estatísticas de progressão
+  const progressionStats = useMemo((): ProgressionStats => {
+    const byDifficulty = {
+      easy: { total: 0, completed: 0, optimal: 0 },
+      medium: { total: 0, completed: 0, optimal: 0 },
+      hard: { total: 0, completed: 0, optimal: 0 },
+    };
+
+    scenarios.forEach((s) => {
+      const diff = s.difficulty as keyof typeof byDifficulty;
+      if (byDifficulty[diff]) {
+        byDifficulty[diff].total++;
+        if (completedScenarios.has(s.id)) {
+          byDifficulty[diff].completed++;
+          if (completedScenarios.get(s.id)) {
+            byDifficulty[diff].optimal++;
+          }
+        }
+      }
+    });
+
+    return {
+      easyCompleted: byDifficulty.easy.completed,
+      easyTotal: byDifficulty.easy.total,
+      mediumCompleted: byDifficulty.medium.completed,
+      mediumTotal: byDifficulty.medium.total,
+      hardCompleted: byDifficulty.hard.completed,
+      hardTotal: byDifficulty.hard.total,
+      totalCompleted: completedScenarios.size,
+      totalScenarios: scenarios.length,
+      optimalDecisions: byDifficulty.easy.optimal + byDifficulty.medium.optimal + byDifficulty.hard.optimal,
+    };
+  }, [scenarios, completedScenarios]);
+
+  // Verificar se pode acessar uma dificuldade
+  const canAccessDifficulty = useCallback((difficulty: string): boolean => {
+    if (difficulty === "easy") return true;
+    
+    if (difficulty === "medium") {
+      return progressionStats.easyCompleted >= UNLOCK_REQUIREMENTS.medium;
+    }
+    
+    if (difficulty === "hard") {
+      return progressionStats.mediumCompleted >= UNLOCK_REQUIREMENTS.hard;
+    }
+    
+    return false;
+  }, [progressionStats]);
+
+  // Cenários com informações de progresso
+  const scenariosWithProgress = useMemo((): ScenarioWithProgress[] => {
+    return scenarios.map((scenario) => ({
+      ...scenario,
+      isCompleted: completedScenarios.has(scenario.id),
+      isUnlocked: canAccessDifficulty(scenario.difficulty),
+      isOptimalDecision: completedScenarios.has(scenario.id) 
+        ? completedScenarios.get(scenario.id) ?? null 
+        : null,
+    }));
+  }, [scenarios, completedScenarios, canAccessDifficulty]);
 
   const startScenario = useCallback(async (scenarioId: string) => {
+    const scenario = scenarios.find((s) => s.id === scenarioId);
+    if (!scenario) return;
+
+    // Verificar se está desbloqueado
+    if (!canAccessDifficulty(scenario.difficulty)) {
+      const requirement = scenario.difficulty === "medium" 
+        ? `Complete ${UNLOCK_REQUIREMENTS.medium} cenário(s) fácil(eis)`
+        : `Complete ${UNLOCK_REQUIREMENTS.hard} cenário(s) médio(s)`;
+      
+      toast({
+        title: "🔒 Cenário Bloqueado",
+        description: requirement,
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     setResult(null);
 
     try {
-      // Fetch scenario
-      const { data: scenario, error: scenarioError } = await supabase
-        .from("decision_scenarios")
-        .select("*")
-        .eq("id", scenarioId)
-        .single();
-
-      if (scenarioError) throw scenarioError;
-
-      // Fetch options
       const { data: options, error: optionsError } = await supabase
         .from("decision_options")
         .select("*")
@@ -98,7 +226,7 @@ export function useDecisionGame(): UseDecisionGame {
 
       if (optionsError) throw optionsError;
 
-      setCurrentScenario(scenario as DecisionScenario);
+      setCurrentScenario(scenario);
       setCurrentOptions((options || []) as DecisionOption[]);
     } catch (err) {
       console.error("Erro ao iniciar cenário:", err);
@@ -110,7 +238,7 @@ export function useDecisionGame(): UseDecisionGame {
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, [scenarios, canAccessDifficulty, toast]);
 
   const makeDecision = useCallback(
     async (optionId: string, timeTaken: number) => {
@@ -166,6 +294,13 @@ export function useDecisionGame(): UseDecisionGame {
             .eq("user_id", user.id);
         }
 
+        // Update local completed scenarios state
+        setCompletedScenarios((prev) => {
+          const newMap = new Map(prev);
+          newMap.set(currentScenario.id, selectedOption.is_optimal);
+          return newMap;
+        });
+
         setResult({
           option: selectedOption,
           timeTaken,
@@ -173,15 +308,31 @@ export function useDecisionGame(): UseDecisionGame {
           xpEarned,
         });
 
-        toast({
-          title: selectedOption.is_optimal ? "🎯 Decisão Ótima!" : "💡 Decisão Registrada",
-          description: `+${xpEarned} XP | +${coinsEarned} moedas`,
-        });
+        // Check if unlocked new difficulty
+        const newEasyCompleted = progressionStats.easyCompleted + (currentScenario.difficulty === "easy" && !completedScenarios.has(currentScenario.id) ? 1 : 0);
+        const newMediumCompleted = progressionStats.mediumCompleted + (currentScenario.difficulty === "medium" && !completedScenarios.has(currentScenario.id) ? 1 : 0);
+
+        if (currentScenario.difficulty === "easy" && newEasyCompleted === UNLOCK_REQUIREMENTS.medium) {
+          toast({
+            title: "🔓 Novo Nível Desbloqueado!",
+            description: "Cenários MÉDIOS agora estão disponíveis!",
+          });
+        } else if (currentScenario.difficulty === "medium" && newMediumCompleted === UNLOCK_REQUIREMENTS.hard) {
+          toast({
+            title: "🔓 Novo Nível Desbloqueado!",
+            description: "Cenários DIFÍCEIS agora estão disponíveis!",
+          });
+        } else {
+          toast({
+            title: selectedOption.is_optimal ? "🎯 Decisão Ótima!" : "💡 Decisão Registrada",
+            description: `+${xpEarned} XP | +${coinsEarned} moedas`,
+          });
+        }
       } catch (err) {
         console.error("Erro ao registrar decisão:", err);
       }
     },
-    [currentScenario, currentOptions, user, toast, addXP]
+    [currentScenario, currentOptions, user, toast, addXP, progressionStats, completedScenarios]
   );
 
   const updateCompetencyProfile = async (
@@ -191,7 +342,6 @@ export function useDecisionGame(): UseDecisionGame {
     if (!user) return;
 
     try {
-      // Fetch existing profile
       const { data: existing } = await supabase
         .from("user_competency_profile")
         .select("*")
@@ -201,27 +351,23 @@ export function useDecisionGame(): UseDecisionGame {
       const totalCompleted = (existing?.total_scenarios_completed || 0) + 1;
       const totalCorrect = (existing?.total_correct_decisions || 0) + (option.is_optimal ? 1 : 0);
 
-      // Calculate new averages
       const oldAvgSpeed = existing?.decision_speed_avg || 0;
       const newAvgSpeed = Math.floor(
         (oldAvgSpeed * (totalCompleted - 1) + timeTaken) / totalCompleted
       );
 
-      // Risk tolerance based on choices (higher risk_score = more risk-tolerant)
       const oldRiskTolerance = Number(existing?.risk_tolerance || 0.5);
       const riskFactor = option.risk_score / 100;
       const newRiskTolerance = Math.max(0, Math.min(1, 
         (oldRiskTolerance * (totalCompleted - 1) + riskFactor) / totalCompleted
       ));
 
-      // Impact focus (higher impact_score preference = more impact-focused)
       const oldImpactFocus = Number(existing?.impact_focus || 0.5);
-      const impactFactor = (option.impact_score + 100) / 200; // Normalize -100 to 100 → 0 to 1
+      const impactFactor = (option.impact_score + 100) / 200;
       const newImpactFocus = Math.max(0, Math.min(1,
         (oldImpactFocus * (totalCompleted - 1) + impactFactor) / totalCompleted
       ));
 
-      // Consistency score (ratio of optimal decisions)
       const newConsistency = totalCorrect / totalCompleted;
 
       await supabase.from("user_competency_profile").upsert({
@@ -247,6 +393,8 @@ export function useDecisionGame(): UseDecisionGame {
 
   return {
     scenarios,
+    scenariosWithProgress,
+    progressionStats,
     currentScenario,
     currentOptions,
     result,
@@ -255,5 +403,6 @@ export function useDecisionGame(): UseDecisionGame {
     makeDecision,
     nextScenario,
     fetchScenarios,
+    canAccessDifficulty,
   };
 }
