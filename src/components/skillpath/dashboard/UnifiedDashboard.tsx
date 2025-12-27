@@ -34,7 +34,7 @@ export function UnifiedDashboard() {
   const { streak, canClaimToday, isAtRisk, claimDailyReward, getTodayReward } = useStreak();
   const { friends, pendingGifts, sendFriendRequest, acceptFriendRequest, rejectFriendRequest, acceptGift, rejectGift } = useFriends();
   const { getProgress, stats } = useAchievements();
-  const { currentOrg, members, challenges, isAdmin, createOrganization, joinOrganization, completeChallenge } = useOrganization();
+  const { currentOrg, members, challenges, isAdmin, completeChallenge, refresh: refreshOrg } = useOrganization();
 
   const achievementProgress = getProgress();
   const pendingRequests = friends.filter(f => f.status === "pending" && !f.isRequester);
@@ -78,10 +78,9 @@ export function UnifiedDashboard() {
         members={members}
         challenges={challenges}
         isAdmin={isAdmin}
-        onCreateOrg={createOrganization}
-        onJoinOrg={joinOrganization}
         onCompleteChallenge={completeChallenge}
         onViewAll={() => setActiveView("organization")}
+        onRefresh={refreshOrg}
       />
 
       {/* Game Hub */}

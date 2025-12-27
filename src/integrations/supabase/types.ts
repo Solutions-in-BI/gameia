@@ -347,6 +347,53 @@ export type Database = {
           },
         ]
       }
+      organization_invites: {
+        Row: {
+          created_at: string
+          created_by: string
+          email: string | null
+          expires_at: string
+          id: string
+          invite_code: string
+          organization_id: string
+          role: Database["public"]["Enums"]["org_role"]
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          email?: string | null
+          expires_at?: string
+          id?: string
+          invite_code?: string
+          organization_id: string
+          role?: Database["public"]["Enums"]["org_role"]
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          email?: string | null
+          expires_at?: string
+          id?: string
+          invite_code?: string
+          organization_id?: string
+          role?: Database["public"]["Enums"]["org_role"]
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_invites_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_members: {
         Row: {
           department: string | null
@@ -354,6 +401,7 @@ export type Database = {
           is_active: boolean
           job_title: string | null
           joined_at: string
+          org_role: Database["public"]["Enums"]["org_role"] | null
           organization_id: string
           role: string
           user_id: string
@@ -364,6 +412,7 @@ export type Database = {
           is_active?: boolean
           job_title?: string | null
           joined_at?: string
+          org_role?: Database["public"]["Enums"]["org_role"] | null
           organization_id: string
           role?: string
           user_id: string
@@ -374,6 +423,7 @@ export type Database = {
           is_active?: boolean
           job_title?: string | null
           joined_at?: string
+          org_role?: Database["public"]["Enums"]["org_role"] | null
           organization_id?: string
           role?: string
           user_id?: string
@@ -1150,11 +1200,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      accept_invite: { Args: { p_invite_code: string }; Returns: Json }
+      is_org_admin: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       friendship_status: "pending" | "accepted" | "blocked"
       gift_status: "pending" | "accepted" | "rejected"
+      org_role: "owner" | "admin" | "manager" | "member"
       quiz_difficulty: "easy" | "medium" | "hard"
       quiz_match_status: "waiting" | "in_progress" | "finished" | "cancelled"
     }
@@ -1286,6 +1341,7 @@ export const Constants = {
     Enums: {
       friendship_status: ["pending", "accepted", "blocked"],
       gift_status: ["pending", "accepted", "rejected"],
+      org_role: ["owner", "admin", "manager", "member"],
       quiz_difficulty: ["easy", "medium", "hard"],
       quiz_match_status: ["waiting", "in_progress", "finished", "cancelled"],
     },
