@@ -105,7 +105,7 @@ export function PlayerProfileCard({
         <div className="p-3 rounded-xl bg-muted/30 border border-border/50 text-center">
           <Award className="w-5 h-5 text-purple-400 mx-auto mb-1" />
           <div className="text-xl font-bold text-foreground">{badges}</div>
-          <div className="text-[10px] text-muted-foreground">Badges</div>
+          <div className="text-[10px] text-muted-foreground">Insígnias</div>
         </div>
       </div>
     </motion.div>

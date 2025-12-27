@@ -29,7 +29,7 @@ import { UserSettingsDropdown } from "@/components/game/common/UserSettingsDropd
 import { StreakModal } from "@/components/game/common/StreakModal";
 
 export type GameiaSection = "gamification" | "guidance" | "profile";
-export type DashboardTab = "dashboard" | "badges" | "games" | "bets" | "skills" | "store" | "ranking";
+export type DashboardTab = "dashboard" | "badges" | "trainings" | "games" | "bets" | "skills" | "store" | "ranking";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -42,9 +42,9 @@ interface AppShellProps {
 // Header nav items with icons
 const HEADER_NAV_ITEMS: { id: DashboardTab; label: string; icon: React.ElementType }[] = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { id: "badges", label: "Badges", icon: Trophy },
+  { id: "badges", label: "Insígnias", icon: Trophy },
+  { id: "trainings", label: "Treinamentos", icon: Gamepad2 },
   { id: "games", label: "Jogos", icon: Gamepad2 },
-  { id: "bets", label: "Apostas", icon: Ticket },
   { id: "skills", label: "Skills", icon: Target },
   { id: "store", label: "Loja", icon: Store },
   { id: "ranking", label: "Ranking", icon: Crown },
