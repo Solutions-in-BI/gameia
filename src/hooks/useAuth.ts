@@ -18,110 +18,148 @@ export interface Profile {
   created_at: string;
 }
 
+function getDefaultNickname(user: User) {
+  const meta = (user.user_metadata as Record<string, unknown> | null) ?? {};
+  const metaNick = typeof meta.nickname === "string" ? meta.nickname.trim() : "";
+  const emailNick = user.email?.split("@")[0] ?? "";
+
+  return (metaNick || emailNick || "Usuário").slice(0, 20);
+}
+
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Busca perfil do usuário
-  const fetchProfile = useCallback(async (userId: string) => {
-    const { data } = await supabase
+  const ensureProfile = useCallback(async (authUser: User) => {
+    const { data, error } = await supabase
       .from("profiles")
       .select("*")
-      .eq("id", userId)
+      .eq("id", authUser.id)
       .maybeSingle();
-    
-    setProfile(data);
+
+    if (error) {
+      setProfile(null);
+      return;
+    }
+
+    if (data) {
+      setProfile(data as Profile);
+      return;
+    }
+
+    const nickname = getDefaultNickname(authUser);
+
+    const { data: created, error: createError } = await supabase
+      .from("profiles")
+      .upsert({ id: authUser.id, nickname }, { onConflict: "id" })
+      .select("*")
+      .maybeSingle();
+
+    if (!createError) {
+      setProfile((created as Profile) ?? null);
+    } else {
+      setProfile(null);
+    }
   }, []);
 
   useEffect(() => {
-    // Listener de mudança de auth
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          setTimeout(() => {
-            fetchProfile(session.user.id);
-          }, 0);
-        } else {
-          setProfile(null);
-        }
-      }
-    );
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
 
-    // Verifica sessão existente
+      if (session?.user) {
+        setTimeout(() => {
+          ensureProfile(session.user);
+        }, 0);
+      } else {
+        setProfile(null);
+      }
+    });
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      
+
       if (session?.user) {
-        fetchProfile(session.user.id);
+        ensureProfile(session.user);
       }
+
       setIsLoading(false);
     });
 
     return () => subscription.unsubscribe();
-  }, [fetchProfile]);
+  }, [ensureProfile]);
 
-  // Signup com email + senha + apelido
   const signUp = async (email: string, password: string, nickname: string) => {
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/`,
-        data: { nickname }
-      }
+        data: { nickname },
+      },
     });
+
+    if (!error && data.session?.user) {
+      await ensureProfile({
+        ...data.session.user,
+        user_metadata: { ...(data.session.user.user_metadata ?? {}), nickname },
+      } as User);
+    }
+
     return { error };
   };
 
-  // Login
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     return { error };
   };
 
-  // Logout
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
     return { error };
   };
 
-  // Atualiza perfil
-  const updateProfile = async (updates: { nickname?: string; avatar_url?: string; selected_title?: string | null }) => {
+  const updateProfile = async (updates: {
+    nickname?: string;
+    avatar_url?: string;
+    selected_title?: string | null;
+  }) => {
     if (!user) return { error: new Error("Usuário não autenticado") };
-    
-    const { error } = await supabase
-      .from("profiles")
-      .update(updates)
-      .eq("id", user.id);
-    
-    if (!error) {
-      setProfile(prev => prev ? { ...prev, ...updates } : null);
+
+    const payload: Record<string, unknown> = {
+      id: user.id,
+      ...updates,
+    };
+
+    if (!updates.nickname && !profile?.nickname) {
+      payload.nickname = getDefaultNickname(user);
     }
+
+    const { data, error } = await supabase
+      .from("profiles")
+      .upsert(payload, { onConflict: "id" })
+      .select("*")
+      .maybeSingle();
+
+    if (!error) {
+      setProfile((data as Profile) ?? null);
+    }
+
     return { error };
   };
 
-  // Reset de senha
   const resetPassword = async (email: string) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth?reset=true`
+      redirectTo: `${window.location.origin}/auth?reset=true`,
     });
     return { error };
   };
 
-  // Atualiza senha
   const updatePassword = async (newPassword: string) => {
-    const { error } = await supabase.auth.updateUser({
-      password: newPassword
-    });
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
     return { error };
   };
 
@@ -136,7 +174,8 @@ export function useAuth() {
     updateProfile,
     resetPassword,
     updatePassword,
-    refreshProfile: () => user && fetchProfile(user.id),
-    isAuthenticated: !!session
+    refreshProfile: () => user && ensureProfile(user),
+    isAuthenticated: !!session,
   };
 }
+

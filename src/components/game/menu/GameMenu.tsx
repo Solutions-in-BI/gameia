@@ -76,12 +76,15 @@ const GAMES = [
 export function GameMenu({ onSelectGame, onOpenProfile, onOpenMarketplace }: GameMenuProps) {
   const navigate = useNavigate();
   const { getProgress } = useAchievements();
-  const { profile, isAuthenticated, signOut } = useAuth();
+  const { user, profile, isAuthenticated, signOut } = useAuth();
   const { coins } = useMarketplace();
   const { level, xp } = useLevel();
   const { streak, canClaimToday, claimDailyReward } = useStreak();
   const [showFriends, setShowFriends] = useState(false);
   const progress = getProgress();
+
+  const displayName = profile?.nickname || user?.email?.split("@")[0] || "Conta";
+  const avatarInitial = displayName.charAt(0).toUpperCase() || "G";
 
   const handleLogout = async () => {
     await signOut();
@@ -91,22 +94,24 @@ export function GameMenu({ onSelectGame, onOpenProfile, onOpenMarketplace }: Gam
     <div className="min-h-screen bg-background flex items-center justify-center py-6 px-4 relative">
       {/* Header Actions */}
       <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
-        {isAuthenticated && profile ? (
+        {isAuthenticated ? (
           <>
             {/* Level Badge */}
             <LevelBadge level={level} xp={xp} size="md" showProgress />
             
             <button
+              type="button"
               onClick={onOpenProfile}
               className="flex items-center gap-2 bg-card border border-border rounded-xl px-3 py-2 hover:bg-muted transition-all hover:scale-105 shadow-sm"
               title="Ver Perfil"
             >
               <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-sm font-bold text-primary-foreground">
-                {profile.nickname?.charAt(0).toUpperCase() || "?"}
+                {avatarInitial}
               </div>
-              <span className="text-sm font-medium text-foreground hidden sm:inline">{profile.nickname}</span>
+              <span className="text-sm font-medium text-foreground hidden sm:inline">{displayName}</span>
             </button>
             <button
+              type="button"
               onClick={() => setShowFriends(true)}
               className="p-2.5 rounded-xl bg-card border border-border hover:bg-muted transition-all hover:scale-105 shadow-sm"
               title="Amigos"
@@ -114,6 +119,7 @@ export function GameMenu({ onSelectGame, onOpenProfile, onOpenMarketplace }: Gam
               <Users size={18} className="text-primary" />
             </button>
             <button
+              type="button"
               onClick={handleLogout}
               className="p-2.5 rounded-xl bg-card border border-border hover:bg-muted transition-all hover:scale-105 shadow-sm"
               title="Sair"
@@ -123,6 +129,7 @@ export function GameMenu({ onSelectGame, onOpenProfile, onOpenMarketplace }: Gam
           </>
         ) : (
           <button
+            type="button"
             onClick={() => navigate("/auth")}
             className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-xl text-sm font-medium 
                        hover:opacity-90 transition-all hover:scale-105 shadow-sm"
@@ -141,10 +148,7 @@ export function GameMenu({ onSelectGame, onOpenProfile, onOpenMarketplace }: Gam
             Game Zone
           </h1>
           <p className="text-muted-foreground text-sm sm:text-base">
-            {isAuthenticated && profile 
-              ? `Olá, ${profile.nickname}! Escolha um jogo`
-              : "Escolha um jogo para jogar"
-            }
+            {isAuthenticated ? `Olá, ${displayName}! Escolha um jogo` : "Escolha um jogo para jogar"}
           </p>
         </header>
 
