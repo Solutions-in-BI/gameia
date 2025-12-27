@@ -5,7 +5,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Brain, Target, Award, BarChart3, Lock } from "lucide-react";
+import { Brain, Target, Award, BarChart3, Lock, Sparkles } from "lucide-react";
 import { GameLayout } from "../common/GameLayout";
 import { useQuizGame, QuizCategory } from "@/hooks/useQuizGame";
 import { useSkillTree, SkillWithProgress } from "@/hooks/useSkillTree";
@@ -18,6 +18,7 @@ import { SkillTree } from "./SkillTree";
 import { DecisionScenarioCard } from "./DecisionScenarioCard";
 import { GameModeSelector, GameMode, getGameModeConfig } from "./GameModeSelector";
 import { CompetencyDashboard } from "./CompetencyDashboard";
+import { AIScenarioGenerator } from "./AIScenarioGenerator";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 
@@ -66,6 +67,7 @@ export function EnterpriseQuiz({ onBack }: EnterpriseQuizProps) {
     makeDecision,
     nextScenario,
     canAccessDifficulty,
+    fetchScenarios,
   } = useDecisionGame();
 
   // Fetch user coins
@@ -162,7 +164,7 @@ export function EnterpriseQuiz({ onBack }: EnterpriseQuizProps) {
       onBack={onBack}
     >
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid grid-cols-4 w-full">
+        <TabsList className="grid grid-cols-5 w-full">
           <TabsTrigger value="quiz" className="flex items-center gap-2">
             <Brain className="w-4 h-4" />
             <span className="hidden sm:inline">Quiz</span>
@@ -170,6 +172,10 @@ export function EnterpriseQuiz({ onBack }: EnterpriseQuizProps) {
           <TabsTrigger value="decisions" className="flex items-center gap-2">
             <Target className="w-4 h-4" />
             <span className="hidden sm:inline">Decisões</span>
+          </TabsTrigger>
+          <TabsTrigger value="game-ia" className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4" />
+            <span className="hidden sm:inline">Game IA</span>
           </TabsTrigger>
           <TabsTrigger value="skills" className="flex items-center gap-2">
             <Award className="w-4 h-4" />
@@ -429,6 +435,22 @@ export function EnterpriseQuiz({ onBack }: EnterpriseQuizProps) {
               </div>
 
               <SkillTree skills={skills} onSkillClick={handleSkillClick} />
+            </motion.div>
+          </TabsContent>
+
+          {/* Game IA Tab */}
+          <TabsContent value="game-ia" className="space-y-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+            >
+              <AIScenarioGenerator 
+                onScenarioGenerated={() => {
+                  // Refresh scenarios list
+                  fetchScenarios();
+                }} 
+              />
             </motion.div>
           </TabsContent>
 
