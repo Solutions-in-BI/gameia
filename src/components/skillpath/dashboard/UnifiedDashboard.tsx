@@ -125,38 +125,9 @@ export function UnifiedDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Navigation Tabs */}
+      {/* Navigation Tabs - controlled by parent AppShell */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="w-full justify-start gap-1 bg-card/50 border border-border/30 p-1 rounded-xl overflow-x-auto">
-          <TabsTrigger value="dashboard" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-            <LayoutDashboard className="w-4 h-4" />
-            <span className="hidden sm:inline">Dashboard</span>
-          </TabsTrigger>
-          <TabsTrigger value="badges" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-            <Trophy className="w-4 h-4" />
-            <span className="hidden sm:inline">Badges</span>
-          </TabsTrigger>
-          <TabsTrigger value="games" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-            <Gamepad2 className="w-4 h-4" />
-            <span className="hidden sm:inline">Jogos</span>
-          </TabsTrigger>
-          <TabsTrigger value="bets" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-            <Ticket className="w-4 h-4" />
-            <span className="hidden sm:inline">Apostas</span>
-          </TabsTrigger>
-          <TabsTrigger value="skills" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-            <Target className="w-4 h-4" />
-            <span className="hidden sm:inline">Skills</span>
-          </TabsTrigger>
-          <TabsTrigger value="store" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-            <Store className="w-4 h-4" />
-            <span className="hidden sm:inline">Loja</span>
-          </TabsTrigger>
-          <TabsTrigger value="ranking" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-            <Crown className="w-4 h-4" />
-            <span className="hidden sm:inline">Ranking</span>
-          </TabsTrigger>
-        </TabsList>
+        {/* TabsList removed - now in AppShell header */}
 
         {/* Dashboard Tab */}
         <TabsContent value="dashboard" className="space-y-6 mt-6">
