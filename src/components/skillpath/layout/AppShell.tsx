@@ -113,41 +113,63 @@ export function AppShell({
 
   return (
     <div className="min-h-screen bg-background mesh-background">
-      {/* Top Navigation Bar */}
+      {/* Top Navigation Bar - Single Line */}
       <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-14 gap-4">
             {/* Logo */}
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-lg font-display">G</span>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                <span className="text-primary-foreground font-bold text-sm font-display">G</span>
               </div>
-              <span className="font-display font-bold text-xl text-foreground hidden sm:block">
+              <span className="font-display font-bold text-lg text-foreground hidden lg:block">
                 Gameia
               </span>
             </div>
 
-            {/* Main Section Toggle (Treinar / Caminho) */}
-            <div className="hidden md:flex items-center gap-1 bg-muted/50 p-1 rounded-xl">
-              {MAIN_NAV_ITEMS.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => onSectionChange(item.id)}
-                  className={cn(
-                    "flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 font-medium text-sm",
-                    activeSection === item.id
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  <item.icon className="w-4 h-4" />
-                  <span>{item.shortLabel}</span>
-                </button>
-              ))}
-            </div>
+            {/* Center Navigation - Dashboard Tabs */}
+            {activeSection === "gamification" && (
+              <nav className="hidden md:flex items-center gap-0.5 bg-muted/50 p-1 rounded-xl overflow-x-auto flex-1 max-w-2xl mx-4">
+                {HEADER_NAV_ITEMS.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => handleTabClick(item.id)}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-200 text-sm whitespace-nowrap",
+                      activeTab === item.id
+                        ? "bg-primary text-primary-foreground font-medium shadow-sm"
+                        : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+                    )}
+                  >
+                    <item.icon className="w-4 h-4" />
+                    <span className="hidden lg:inline">{item.label}</span>
+                  </button>
+                ))}
+              </nav>
+            )}
 
-            {/* Right Actions */}
-            <div className="flex items-center gap-2">
+            {/* Section toggle + User - aligned to right */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {/* Main Section Toggle (Treinar / Caminho) */}
+              <div className="hidden md:flex items-center gap-0.5 bg-muted/50 p-1 rounded-xl">
+                {MAIN_NAV_ITEMS.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => onSectionChange(item.id)}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-200 font-medium text-sm",
+                      activeSection === item.id
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <item.icon className="w-4 h-4" />
+                    <span className="hidden xl:inline">{item.shortLabel}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* User dropdown or login */}
               {isAuthenticated ? (
                 <UserSettingsDropdown
                   displayName={displayName}
@@ -161,7 +183,7 @@ export function AppShell({
                 <button
                   type="button"
                   onClick={() => navigate("/auth")}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 transition-all"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 transition-all"
                 >
                   <LogIn className="w-4 h-4" />
                   <span className="hidden sm:inline">Entrar</span>
@@ -177,27 +199,6 @@ export function AppShell({
               </button>
             </div>
           </div>
-
-          {/* Sub Navigation (Dashboard Tabs) - Desktop only */}
-          {activeSection === "gamification" && (
-            <nav className="hidden md:flex items-center gap-1 pb-3 overflow-x-auto">
-              {HEADER_NAV_ITEMS.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => handleTabClick(item.id)}
-                  className={cn(
-                    "flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all duration-200 text-sm whitespace-nowrap",
-                    activeTab === item.id
-                      ? "bg-primary/10 text-primary font-medium"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                  )}
-                >
-                  <item.icon className="w-4 h-4" />
-                  <span>{item.label}</span>
-                </button>
-              ))}
-            </nav>
-          )}
         </div>
 
         {/* Mobile Navigation */}
