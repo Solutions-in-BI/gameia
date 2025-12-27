@@ -6,15 +6,10 @@ import { StatCard } from "../common/StatCard";
 import { SnakeBoard } from "./SnakeBoard";
 import { MobileControls } from "./MobileControls";
 import { GameOverlay } from "./GameOverlay";
-import { AchievementToast } from "../common/AchievementToast";
-import { CoinAnimation } from "../common/CoinAnimation";
 import { useSnakeGame } from "@/hooks/useSnakeGame";
-import { useAchievements } from "@/hooks/useAchievements";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { useMarketplace } from "@/hooks/useMarketplace";
-import { useLevel } from "@/hooks/useLevel";
 import { useStreak } from "@/hooks/useStreak";
 import { OPPOSITE_DIRECTIONS } from "@/constants/game";
 import { Direction } from "@/types/game";
@@ -24,8 +19,8 @@ import { Direction } from "@/types/game";
  * COMPONENTE: SnakeGame
  * ===========================================
  * 
- * Componente principal do jogo Snake.
- * Integrado com conquistas e ranking online.
+ * Jogo Snake para RECREAÇÃO apenas.
+ * NÃO gera XP nem Moedas - apenas diversão!
  */
 
 interface SnakeGameProps {
@@ -47,49 +42,20 @@ export function SnakeGame({ onBack }: SnakeGameProps) {
     resetGame,
   } = useSnakeGame();
 
-  const { checkAndUnlock } = useAchievements();
   const { addScore } = useLeaderboard("snake");
   const { profile, isAuthenticated } = useAuth();
   const { toast } = useToast();
-  const { addCoins } = useMarketplace();
-  const { addGameXP } = useLevel();
   const { recordPlay } = useStreak();
 
-  // Estado para toasts e animações
-  const [unlockedAchievement, setUnlockedAchievement] = useState<string | null>(null);
-  const [hasCheckedAchievements, setHasCheckedAchievements] = useState(false);
-  const [coinsEarned, setCoinsEarned] = useState(0);
-  const [showCoinAnimation, setShowCoinAnimation] = useState(false);
+  const [hasSavedScore, setHasSavedScore] = useState(false);
 
-  // Verifica conquistas e salva score quando game over
+  // Salva score quando game over (apenas recorde, sem XP/Coins)
   useEffect(() => {
-    if (isGameOver && score > 0 && !hasCheckedAchievements) {
-      setHasCheckedAchievements(true);
+    if (isGameOver && score > 0 && !hasSavedScore) {
+      setHasSavedScore(true);
       
-      checkAndUnlock({
-        game: "snake",
-        score,
-      }).then((unlocked) => {
-        if (unlocked.length > 0) {
-          setUnlockedAchievement(unlocked[0]);
-        }
-      });
-
       // Registra play para streak
       recordPlay();
-
-      // Adiciona XP
-      if (isAuthenticated) {
-        addGameXP(score);
-      }
-
-      // Adiciona moedas baseado na pontuação
-      const earnedCoins = Math.floor(score / 10);
-      if (earnedCoins > 0 && isAuthenticated) {
-        setCoinsEarned(earnedCoins);
-        setShowCoinAnimation(true);
-        addCoins(earnedCoins);
-      }
 
       if (isAuthenticated && profile && score >= 30) {
         addScore({
@@ -105,24 +71,15 @@ export function SnakeGame({ onBack }: SnakeGameProps) {
             });
           }
         });
-      } else if (score >= 30 && !isAuthenticated) {
-        toast({
-          title: "Faça login para salvar",
-          description: "Crie uma conta para competir no ranking!",
-        });
       }
     }
-  }, [isGameOver, score, checkAndUnlock, hasCheckedAchievements, isAuthenticated, profile, addScore, toast]);
+  }, [isGameOver, score, hasSavedScore, isAuthenticated, profile, addScore, toast, recordPlay]);
 
-  // Reset do estado quando reinicia
   const handleReset = () => {
-    setHasCheckedAchievements(false);
-    setShowCoinAnimation(false);
-    setCoinsEarned(0);
+    setHasSavedScore(false);
     resetGame();
   };
 
-  // Handler para controles mobile (valida direção oposta)
   const handleMobileDirection = (dir: Direction) => {
     if (OPPOSITE_DIRECTIONS[dir] !== direction) {
       changeDirection(dir);
@@ -133,7 +90,7 @@ export function SnakeGame({ onBack }: SnakeGameProps) {
   return (
     <GameLayout 
       title="Snake" 
-      subtitle="Use as setas ou WASD para mover"
+      subtitle="Jogo recreativo - apenas diversão!"
       maxWidth="2xl"
       onBack={onBack}
     >
@@ -175,22 +132,8 @@ export function SnakeGame({ onBack }: SnakeGameProps) {
           Reiniciar
         </GameButton>
       </div>
-
-      {/* Toast de Conquista */}
-      <AchievementToast
-        achievementId={unlockedAchievement}
-        onClose={() => setUnlockedAchievement(null)}
-      />
-
-      {/* Animação de Moedas */}
-      <CoinAnimation
-        amount={coinsEarned}
-        trigger={showCoinAnimation}
-        onComplete={() => setShowCoinAnimation(false)}
-      />
     </GameLayout>
   );
 }
 
-// Export default para manter compatibilidade
 export default SnakeGame;

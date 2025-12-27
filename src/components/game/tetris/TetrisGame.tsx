@@ -3,17 +3,21 @@ import { RotateCcw, Trophy, Pause, Play, Layers } from "lucide-react";
 import { GameLayout } from "../common/GameLayout";
 import { GameButton } from "../common/GameButton";
 import { StatCard } from "../common/StatCard";
-import { AchievementToast } from "../common/AchievementToast";
-import { CoinAnimation } from "../common/CoinAnimation";
 import { useTetrisGame } from "@/hooks/useTetrisGame";
-import { useAchievements } from "@/hooks/useAchievements";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { useMarketplace } from "@/hooks/useMarketplace";
-import { useLevel } from "@/hooks/useLevel";
 import { useStreak } from "@/hooks/useStreak";
 import { BOARD_WIDTH, BOARD_HEIGHT, CELL_SIZE, TETROMINOES, TETROMINO_COLORS, TetrominoType } from "@/constants/tetris";
+
+/**
+ * ===========================================
+ * COMPONENTE: TetrisGame
+ * ===========================================
+ * 
+ * Jogo Tetris para RECREAÇÃO apenas.
+ * NÃO gera XP nem Moedas - apenas diversão!
+ */
 
 interface TetrisGameProps {
   onBack: () => void;
@@ -27,47 +31,19 @@ export function TetrisGame({ onBack }: TetrisGameProps) {
     moveLeft, moveRight, rotate, softDrop, hardDrop
   } = useTetrisGame();
   
-  const { checkAndUnlock } = useAchievements();
   const { addScore } = useLeaderboard("tetris");
   const { profile, isAuthenticated } = useAuth();
   const { toast } = useToast();
-  const { addCoins } = useMarketplace();
-  const { addGameXP } = useLevel();
   const { recordPlay } = useStreak();
 
-  const [unlockedAchievement, setUnlockedAchievement] = useState<string | null>(null);
-  const [hasCheckedAchievements, setHasCheckedAchievements] = useState(false);
-  const [coinsEarned, setCoinsEarned] = useState(0);
-  const [showCoinAnimation, setShowCoinAnimation] = useState(false);
+  const [hasSavedScore, setHasSavedScore] = useState(false);
 
   useEffect(() => {
-    if (isGameOver && score > 0 && !hasCheckedAchievements) {
-      setHasCheckedAchievements(true);
+    if (isGameOver && score > 0 && !hasSavedScore) {
+      setHasSavedScore(true);
       
-      checkAndUnlock({ 
-        game: "tetris", 
-        score, 
-        lines: linesCleared, 
-        level 
-      }).then((unlocked) => {
-        if (unlocked.length > 0) setUnlockedAchievement(unlocked[0]);
-      });
-
       // Registra play para streak
       recordPlay();
-
-      // Adiciona XP
-      if (isAuthenticated) {
-        addGameXP(score);
-      }
-
-      // Adiciona moedas baseado na pontuação
-      const earnedCoins = Math.floor(score / 50);
-      if (earnedCoins > 0 && isAuthenticated) {
-        setCoinsEarned(earnedCoins);
-        setShowCoinAnimation(true);
-        addCoins(earnedCoins);
-      }
 
       if (isAuthenticated && profile && score >= 500) {
         addScore({
@@ -82,17 +58,15 @@ export function TetrisGame({ onBack }: TetrisGameProps) {
         });
       }
     }
-  }, [isGameOver, score, linesCleared, level, hasCheckedAchievements]);
+  }, [isGameOver, score, hasSavedScore, isAuthenticated, profile, addScore, toast, recordPlay]);
 
   const handleReset = () => {
     resetGame();
-    setHasCheckedAchievements(false);
-    setShowCoinAnimation(false);
-    setCoinsEarned(0);
+    setHasSavedScore(false);
   };
 
   return (
-    <GameLayout title="Tetris" subtitle="Encaixe as peças e limpe linhas!" onBack={onBack}>
+    <GameLayout title="Tetris" subtitle="Jogo recreativo - apenas diversão!" onBack={onBack}>
       {/* Estatísticas */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-4">
         <StatCard icon={Trophy} label="Pontos" value={score} iconColor="text-primary" />
@@ -186,14 +160,6 @@ export function TetrisGame({ onBack }: TetrisGameProps) {
           Reiniciar
         </GameButton>
       </div>
-
-      <AchievementToast achievementId={unlockedAchievement} onClose={() => setUnlockedAchievement(null)} />
-      
-      <CoinAnimation
-        amount={coinsEarned}
-        trigger={showCoinAnimation}
-        onComplete={() => setShowCoinAnimation(false)}
-      />
     </GameLayout>
   );
 }

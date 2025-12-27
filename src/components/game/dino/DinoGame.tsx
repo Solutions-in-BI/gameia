@@ -4,16 +4,20 @@ import { GameLayout } from "../common/GameLayout";
 import { GameButton } from "../common/GameButton";
 import { StatCard } from "../common/StatCard";
 import { DinoCanvas } from "./DinoCanvas";
-import { AchievementToast } from "../common/AchievementToast";
-import { CoinAnimation } from "../common/CoinAnimation";
 import { useDinoGame } from "@/hooks/useDinoGame";
-import { useAchievements } from "@/hooks/useAchievements";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { useMarketplace } from "@/hooks/useMarketplace";
-import { useLevel } from "@/hooks/useLevel";
 import { useStreak } from "@/hooks/useStreak";
+
+/**
+ * ===========================================
+ * COMPONENTE: DinoGame
+ * ===========================================
+ * 
+ * Jogo Dino Runner para RECREAÇÃO apenas.
+ * NÃO gera XP nem Moedas - apenas diversão!
+ */
 
 interface DinoGameProps {
   onBack: () => void;
@@ -21,42 +25,19 @@ interface DinoGameProps {
 
 export function DinoGame({ onBack }: DinoGameProps) {
   const { isPlaying, isGameOver, score, bestScore, dinoY, isJumping, isDucking, obstacles, jump, duck, resetGame } = useDinoGame();
-  const { checkAndUnlock } = useAchievements();
   const { addScore } = useLeaderboard("dino");
   const { profile, isAuthenticated } = useAuth();
   const { toast } = useToast();
-  const { addCoins } = useMarketplace();
-  const { addGameXP } = useLevel();
   const { recordPlay } = useStreak();
 
-  const [unlockedAchievement, setUnlockedAchievement] = useState<string | null>(null);
-  const [hasCheckedAchievements, setHasCheckedAchievements] = useState(false);
-  const [coinsEarned, setCoinsEarned] = useState(0);
-  const [showCoinAnimation, setShowCoinAnimation] = useState(false);
+  const [hasSavedScore, setHasSavedScore] = useState(false);
 
   useEffect(() => {
-    if (isGameOver && score > 0 && !hasCheckedAchievements) {
-      setHasCheckedAchievements(true);
+    if (isGameOver && score > 0 && !hasSavedScore) {
+      setHasSavedScore(true);
       
-      checkAndUnlock({ game: "dino", score }).then((unlocked) => {
-        if (unlocked.length > 0) setUnlockedAchievement(unlocked[0]);
-      });
-
       // Registra play para streak
       recordPlay();
-
-      // Adiciona XP
-      if (isAuthenticated) {
-        addGameXP(score);
-      }
-
-      // Adiciona moedas baseado na pontuação
-      const earnedCoins = Math.floor(score / 10);
-      if (earnedCoins > 0 && isAuthenticated) {
-        setCoinsEarned(earnedCoins);
-        setShowCoinAnimation(true);
-        addCoins(earnedCoins);
-      }
 
       if (isAuthenticated && profile && score >= 50) {
         addScore({
@@ -69,23 +50,19 @@ export function DinoGame({ onBack }: DinoGameProps) {
             toast({ title: "Score salvo!", description: `${score} pontos salvos no ranking.` });
           }
         });
-      } else if (score >= 50 && !isAuthenticated) {
-        toast({ title: "Faça login para salvar", description: "Crie uma conta para competir no ranking!" });
       }
     }
-  }, [isGameOver, score, checkAndUnlock, hasCheckedAchievements, isAuthenticated, profile, addScore, toast]);
+  }, [isGameOver, score, hasSavedScore, isAuthenticated, profile, addScore, toast, recordPlay]);
 
   const handleReset = () => {
-    setHasCheckedAchievements(false);
-    setShowCoinAnimation(false);
-    setCoinsEarned(0);
+    setHasSavedScore(false);
     resetGame();
   };
 
   return (
     <GameLayout 
       title="Dino Runner" 
-      subtitle="Pressione ESPAÇO ou clique para pular"
+      subtitle="Jogo recreativo - apenas diversão!"
       maxWidth="4xl"
       onBack={onBack}
     >
@@ -169,14 +146,6 @@ export function DinoGame({ onBack }: DinoGameProps) {
           Reiniciar
         </GameButton>
       </div>
-
-      <AchievementToast achievementId={unlockedAchievement} onClose={() => setUnlockedAchievement(null)} />
-      
-      <CoinAnimation
-        amount={coinsEarned}
-        trigger={showCoinAnimation}
-        onComplete={() => setShowCoinAnimation(false)}
-      />
     </GameLayout>
   );
 }
