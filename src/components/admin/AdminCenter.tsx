@@ -1,6 +1,6 @@
 /**
  * Admin Center B2B - Painel Administrativo para Organizações
- * Acessado via subdomínio ou rota /admin
+ * Acessado via rota /admin
  */
 
 import { useState, useEffect } from "react";
@@ -20,12 +20,25 @@ import {
   Shield,
   ChevronRight,
   Loader2,
+  Gamepad2,
+  Award,
+  TrendingUp,
+  Target,
+  ArrowLeft,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useOrganization } from "@/hooks/useOrganization";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { GameConfigSettings } from "./settings/GameConfigSettings";
+import { BadgeConfigSettings } from "./settings/BadgeConfigSettings";
+import { LevelConfigSettings } from "./settings/LevelConfigSettings";
+import { SkillConfigSettings } from "./settings/SkillConfigSettings";
+import { OrganizationSettings } from "./settings/OrganizationSettings";
 
 type AdminTab = "overview" | "members" | "invites" | "challenges" | "settings";
 
@@ -35,6 +48,7 @@ export function AdminCenter() {
   const [activeTab, setActiveTab] = useState<AdminTab>("overview");
   const [invites, setInvites] = useState<any[]>([]);
   const isOrgOwner = isAdmin;
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [isCreatingInvite, setIsCreatingInvite] = useState(false);
 
@@ -161,6 +175,15 @@ export function AdminCenter() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/")}
+                className="mr-2"
+              >
+                <ArrowLeft className="w-4 h-4 mr-1" />
+                Voltar
+              </Button>
               <span className="px-3 py-1 bg-primary/10 text-primary text-sm font-medium rounded-full">
                 <Crown className="w-4 h-4 inline mr-1" />
                 Admin
@@ -423,12 +446,46 @@ export function AdminCenter() {
             animate={{ opacity: 1, y: 0 }}
             className="gameia-card p-6"
           >
-            <h3 className="font-display font-bold text-foreground mb-4">
-              Configurações da Organização
-            </h3>
-            <p className="text-muted-foreground">
-              Em breve: configurações avançadas da organização
-            </p>
+            <Tabs defaultValue="organization" className="w-full">
+              <TabsList className="grid w-full grid-cols-5 mb-6">
+                <TabsTrigger value="organization" className="gap-1.5">
+                  <Building2 className="w-4 h-4" />
+                  <span className="hidden sm:inline">Empresa</span>
+                </TabsTrigger>
+                <TabsTrigger value="games" className="gap-1.5">
+                  <Gamepad2 className="w-4 h-4" />
+                  <span className="hidden sm:inline">Jogos</span>
+                </TabsTrigger>
+                <TabsTrigger value="badges" className="gap-1.5">
+                  <Award className="w-4 h-4" />
+                  <span className="hidden sm:inline">Badges</span>
+                </TabsTrigger>
+                <TabsTrigger value="levels" className="gap-1.5">
+                  <TrendingUp className="w-4 h-4" />
+                  <span className="hidden sm:inline">Níveis</span>
+                </TabsTrigger>
+                <TabsTrigger value="skills" className="gap-1.5">
+                  <Target className="w-4 h-4" />
+                  <span className="hidden sm:inline">Skills</span>
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="organization">
+                <OrganizationSettings />
+              </TabsContent>
+              <TabsContent value="games">
+                <GameConfigSettings />
+              </TabsContent>
+              <TabsContent value="badges">
+                <BadgeConfigSettings />
+              </TabsContent>
+              <TabsContent value="levels">
+                <LevelConfigSettings />
+              </TabsContent>
+              <TabsContent value="skills">
+                <SkillConfigSettings />
+              </TabsContent>
+            </Tabs>
           </motion.div>
         )}
       </main>

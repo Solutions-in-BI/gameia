@@ -3,6 +3,7 @@
  */
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Settings, 
@@ -14,7 +15,8 @@ import {
   Bell,
   Volume2,
   VolumeX,
-  ChevronDown
+  ChevronDown,
+  Building2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -28,6 +30,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { useTheme } from "@/hooks/useTheme";
 import { usePreferences } from "@/hooks/usePreferences";
+import { useOrganization } from "@/hooks/useOrganization";
 
 interface UserSettingsDropdownProps {
   displayName: string;
@@ -46,8 +49,10 @@ export function UserSettingsDropdown({
   onViewStreak,
   onLogout,
 }: UserSettingsDropdownProps) {
+  const navigate = useNavigate();
   const { isDark, toggleTheme } = useTheme();
   const { preferences, updatePreference } = usePreferences();
+  const { isAdmin, currentOrg } = useOrganization();
   
   const avatarInitial = displayName.charAt(0).toUpperCase() || "G";
 
@@ -111,6 +116,23 @@ export function UserSettingsDropdown({
             <span className="text-sm font-bold text-orange-500">{streak} dias</span>
           )}
         </DropdownMenuItem>
+
+        {/* Admin Access - Only visible for admins with organization */}
+        {isAdmin && currentOrg && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem 
+              onClick={() => navigate("/admin")} 
+              className="gap-3 p-3 cursor-pointer bg-primary/5 hover:bg-primary/10"
+            >
+              <Building2 className="w-4 h-4 text-primary" />
+              <div className="flex-1">
+                <span className="font-medium">Admin Center</span>
+                <p className="text-xs text-muted-foreground">{currentOrg.name}</p>
+              </div>
+            </DropdownMenuItem>
+          </>
+        )}
 
         <DropdownMenuSeparator />
 
