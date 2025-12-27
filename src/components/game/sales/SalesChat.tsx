@@ -1,30 +1,37 @@
-import { motion } from "framer-motion";
-import { Clock, Star, LogOut, ArrowRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Clock, Star, LogOut, ArrowRight, Lightbulb, Building2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import type { Client, Message, Response } from "./SalesGame";
+import { SalesStageIndicator } from "./SalesStageIndicator";
+import { SalesFeedbackToast } from "./SalesFeedbackToast";
+import type { SalesPersona, SalesStage, ChatMessage, ResponseOption } from "@/hooks/useSalesGame";
 
 interface SalesChatProps {
-  client: Client;
-  messages: Message[];
-  responses: Response[];
+  persona: SalesPersona;
+  stages: SalesStage[];
+  currentStageIndex: number;
+  messages: ChatMessage[];
+  responseOptions: ResponseOption[];
   rapport: number;
   score: number;
-  salesClosed: number;
   timeLeft: string;
-  onResponse: (response: Response) => void;
+  hint: string | null;
+  feedback: { text: string; isOptimal: boolean } | null;
+  onResponse: (option: ResponseOption) => void;
   onExit: () => void;
 }
 
 export function SalesChat({ 
-  client, 
+  persona,
+  stages,
+  currentStageIndex,
   messages, 
-  responses, 
+  responseOptions, 
   rapport, 
   score, 
-  salesClosed, 
   timeLeft, 
+  hint,
+  feedback,
   onResponse, 
   onExit 
 }: SalesChatProps) {
@@ -35,6 +42,13 @@ export function SalesChat({
     return 'from-red-500 to-rose-400';
   };
 
+  const getRapportStatus = () => {
+    if (rapport >= 70) return 'Excelente';
+    if (rapport >= 50) return 'Bom';
+    if (rapport >= 30) return 'Regular';
+    return 'Crítico';
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -42,53 +56,51 @@ export function SalesChat({
       exit={{ opacity: 0 }}
       className="max-w-2xl mx-auto"
     >
+      {/* Stage Indicator */}
+      <SalesStageIndicator stages={stages} currentStageIndex={currentStageIndex} />
+
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 bg-card/50 border border-border/50 rounded-full px-4 py-2">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 bg-card/50 border border-border/50 rounded-full px-3 py-1.5">
             <Clock className="w-4 h-4 text-cyan-400" />
-            <span className="font-mono font-bold">{timeLeft}</span>
+            <span className="font-mono font-bold text-sm">{timeLeft}</span>
           </div>
-          <div className="flex items-center gap-2 bg-card/50 border border-border/50 rounded-full px-4 py-2">
+          <div className="flex items-center gap-2 bg-card/50 border border-border/50 rounded-full px-3 py-1.5">
             <Star className="w-4 h-4 text-amber-400" />
-            <span className="font-bold">{score}</span>
+            <span className="font-bold text-sm">{score}</span>
           </div>
         </div>
         
-        <div className="flex items-center gap-3">
-          <Badge variant="outline" className="border-cyan-500/50 text-cyan-400">
-            {salesClosed} VENDAS
-          </Badge>
-          <Button variant="ghost" size="sm" onClick={onExit}>
-            SAIR
-          </Button>
-        </div>
+        <Button variant="ghost" size="sm" onClick={onExit} className="text-muted-foreground">
+          <LogOut className="w-4 h-4 mr-1" />
+          Sair
+        </Button>
       </div>
 
       {/* Client Card */}
-      <div className="bg-card/50 border border-border/50 rounded-xl p-4 mb-6">
+      <div className="bg-card/50 border border-border/50 rounded-xl p-4 mb-4">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500/20 to-cyan-500/20 flex items-center justify-center text-2xl">
-              {client.avatar}
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-500/20 to-emerald-500/20 flex items-center justify-center text-2xl">
+              {persona.avatar || '👤'}
             </div>
             <div>
-              <h3 className="font-bold">{client.name}</h3>
-              <p className="text-sm text-muted-foreground">{client.company}</p>
-              <div className="flex gap-2 mt-2">
-                {client.interests.map((interest) => (
-                  <Badge key={interest} variant="secondary" className="text-xs">
-                    {interest}
-                  </Badge>
-                ))}
-              </div>
+              <h3 className="font-bold">{persona.name}</h3>
+              <p className="text-sm text-muted-foreground flex items-center gap-1">
+                <Building2 className="w-3 h-3" />
+                {persona.role} {persona.company_name && `• ${persona.company_name}`}
+              </p>
             </div>
           </div>
           
           <div className="text-right">
-            <div className="text-sm text-muted-foreground mb-1">Rapport</div>
-            <div className="text-lg font-bold text-cyan-400">{rapport}%</div>
-            <div className="w-32 h-2 bg-muted rounded-full overflow-hidden mt-1">
+            <div className="text-xs text-muted-foreground mb-1">Rapport</div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-muted-foreground">{getRapportStatus()}</span>
+              <span className="text-lg font-bold text-cyan-400">{rapport}%</span>
+            </div>
+            <div className="w-24 h-2 bg-muted rounded-full overflow-hidden mt-1">
               <motion.div 
                 className={`h-full bg-gradient-to-r ${getRapportColor()}`}
                 initial={{ width: 0 }}
@@ -100,27 +112,51 @@ export function SalesChat({
         </div>
       </div>
 
+      {/* Context Hint */}
+      <AnimatePresence>
+        {hint && !feedback && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mb-4"
+          >
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2 flex items-start gap-2">
+              <Lightbulb className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-amber-200">{hint}</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Chat Messages */}
-      <div className="space-y-4 mb-6 min-h-[200px]">
-        {messages.map((message) => (
+      <div className="space-y-3 mb-6 min-h-[180px] max-h-[300px] overflow-y-auto">
+        {messages.map((message, index) => (
           <motion.div
             key={message.id}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.05 }}
             className={`flex ${message.sender === 'player' ? 'justify-end' : 'justify-start'}`}
           >
             {message.sender === 'client' && (
-              <div className="max-w-[80%]">
-                <div className="text-xs text-muted-foreground mb-1">{client.name}</div>
-                <div className="bg-card border border-border/50 rounded-xl rounded-tl-none px-4 py-3">
+              <div className="max-w-[85%]">
+                <div className="text-xs text-muted-foreground mb-1">{persona.name}</div>
+                <div className="bg-card border border-border/50 rounded-2xl rounded-tl-sm px-4 py-3 text-sm">
                   {message.text}
                 </div>
               </div>
             )}
             {message.sender === 'player' && (
-              <div className="max-w-[80%]">
+              <div className="max-w-[85%]">
                 <div className="text-xs text-muted-foreground mb-1 text-right">Você</div>
-                <div className="bg-gradient-to-r from-cyan-500/20 to-purple-500/20 border border-cyan-500/30 rounded-xl rounded-tr-none px-4 py-3">
+                <div className={`
+                  rounded-2xl rounded-tr-sm px-4 py-3 text-sm
+                  ${message.isOptimal 
+                    ? 'bg-green-500/20 border border-green-500/30' 
+                    : 'bg-gradient-to-r from-cyan-500/20 to-green-500/20 border border-cyan-500/30'
+                  }
+                `}>
                   {message.text}
                 </div>
               </div>
@@ -130,28 +166,31 @@ export function SalesChat({
       </div>
 
       {/* Response Options */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-          <span className="w-4 h-4 border border-muted-foreground/50 rounded" />
+      <div className="space-y-2">
+        <div className="text-xs text-muted-foreground mb-2">
           Escolha sua resposta:
         </div>
         
-        {responses.map((response, index) => (
+        {responseOptions.map((option, index) => (
           <motion.button
-            key={response.id}
+            key={index}
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: index * 0.1 }}
-            onClick={() => onResponse(response)}
-            className="w-full text-left bg-gradient-to-r from-cyan-500/10 to-purple-500/10 hover:from-cyan-500/20 hover:to-purple-500/20 border border-cyan-500/30 hover:border-cyan-400/50 rounded-xl px-4 py-4 transition-all group"
+            onClick={() => onResponse(option)}
+            disabled={!!feedback}
+            className="w-full text-left bg-card/50 hover:bg-card/80 border border-border/50 hover:border-green-500/50 rounded-xl px-4 py-3 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <div className="flex items-center gap-3">
-              <ArrowRight className="w-4 h-4 text-cyan-400 group-hover:translate-x-1 transition-transform" />
-              <span className="font-medium text-sm">{response.text}</span>
+            <div className="flex items-start gap-3">
+              <ArrowRight className="w-4 h-4 text-green-400 group-hover:translate-x-1 transition-transform mt-0.5 flex-shrink-0" />
+              <span className="text-sm">{option.text}</span>
             </div>
           </motion.button>
         ))}
       </div>
+
+      {/* Feedback Toast */}
+      <SalesFeedbackToast feedback={feedback} />
     </motion.div>
   );
 }
