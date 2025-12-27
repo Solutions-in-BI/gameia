@@ -26,23 +26,25 @@ import { SnakeGame } from "@/components/game/snake/SnakeGame";
 import { MemoryGame } from "@/components/game/memory/MemoryGame";
 import { TetrisGame } from "@/components/game/tetris/TetrisGame";
 import { DinoGame } from "@/components/game/dino/DinoGame";
-import { QuizGame } from "@/components/game/quiz/QuizGame";
-import { EnterpriseQuiz } from "@/components/game/enterprise/EnterpriseQuiz";
+import { QuizMasterGame } from "@/components/game/enterprise/QuizMasterGame";
+import { DecisionGame } from "@/components/game/enterprise/DecisionGame";
+import { AIScenarioGame } from "@/components/game/enterprise/AIScenarioGame";
 import { SalesGame } from "@/components/game/sales/SalesGame";
+import { ComingSoonGame } from "@/components/game/enterprise/ComingSoonGame";
 import { MarketplacePage } from "@/components/game/marketplace/MarketplacePage";
+import { Puzzle, Car, Lightbulb, Target as TargetIcon } from "lucide-react";
 import { FriendsPage } from "@/components/game/friends/FriendsPage";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   LayoutDashboard, 
   Trophy, 
   Ticket, 
-  Target, 
   Gamepad2, 
   Store, 
   Crown 
 } from "lucide-react";
 
-type ActiveView = "dashboard" | "snake" | "memory" | "tetris" | "dino" | "quiz" | "decisions" | "sales" | "marketplace" | "friends" | "organization" | "escape" | "projects" | "brainstorm" | "leader";
+type ActiveView = "dashboard" | "snake" | "memory" | "tetris" | "dino" | "quiz" | "decisions" | "sales" | "ai-game" | "marketplace" | "friends" | "organization" | "escape" | "projects" | "brainstorm" | "leader";
 
 export function UnifiedDashboard() {
   const [activeView, setActiveView] = useState<ActiveView>("dashboard");
@@ -104,24 +106,32 @@ export function UnifiedDashboard() {
   ] : [];
 
   // Render game or sub-page
+  // Casual games
   if (activeView === "snake") return <SnakeGame onBack={() => setActiveView("dashboard")} />;
   if (activeView === "memory") return <MemoryGame onBack={() => setActiveView("dashboard")} />;
   if (activeView === "tetris") return <TetrisGame onBack={() => setActiveView("dashboard")} />;
   if (activeView === "dino") return <DinoGame onBack={() => setActiveView("dashboard")} />;
-  if (activeView === "quiz") return <QuizGame onBack={() => setActiveView("dashboard")} />;
-  if (activeView === "decisions") return <SalesGame onBack={() => setActiveView("dashboard")} />;
+  
+  // Enterprise games - independent focused games
+  if (activeView === "quiz") return <QuizMasterGame onBack={() => setActiveView("dashboard")} />;
+  if (activeView === "decisions") return <DecisionGame onBack={() => setActiveView("dashboard")} />;
   if (activeView === "sales") return <SalesGame onBack={() => setActiveView("dashboard")} />;
+  if (activeView === "ai-game") return <AIScenarioGame onBack={() => setActiveView("dashboard")} />;
+  
+  // Coming soon games
+  if (activeView === "escape") return <ComingSoonGame onBack={() => setActiveView("dashboard")} gameName="Escape Room Virtual" gameIcon={<Puzzle className="w-12 h-12" />} description="Resolva enigmas em equipe para escapar antes do tempo acabar" expectedFeatures={["Puzzles colaborativos", "Chat em tempo real", "Rankings de equipe", "Múltiplas salas temáticas"]} />;
+  if (activeView === "projects") return <ComingSoonGame onBack={() => setActiveView("dashboard")} gameName="Corrida de Projetos" gameIcon={<Car className="w-12 h-12" />} description="Gerencie recursos e complete o projeto antes da concorrência" expectedFeatures={["Gestão de recursos", "Simulação de projetos reais", "Competição multiplayer", "Métricas de desempenho"]} />;
+  if (activeView === "brainstorm") return <ComingSoonGame onBack={() => setActiveView("dashboard")} gameName="Brainstorm Battle" gameIcon={<Lightbulb className="w-12 h-12" />} description="Competição de ideias criativas com votação em tempo real" expectedFeatures={["Geração de ideias em tempo real", "Votação democrática", "Premiação por criatividade", "Histórico de melhores ideias"]} />;
+  if (activeView === "leader") return <ComingSoonGame onBack={() => setActiveView("dashboard")} gameName="Líder Supremo" gameIcon={<TargetIcon className="w-12 h-12" />} description="Simulador de liderança com desafios de gestão de equipe" expectedFeatures={["Simulação realista de gestão", "Feedback 360°", "Cenários adaptativos", "Perfil de liderança"]} />;
+  
   if (activeView === "marketplace") return <MarketplacePage onBack={() => setActiveView("dashboard")} />;
   if (activeView === "friends") return <FriendsPage isOpen={true} onClose={() => setActiveView("dashboard")} />;
 
-  // Placeholder for unimplemented games
+  // Handle game selection - all games now have proper views
   const handleSelectGame = (game: string) => {
-    const validViews = ["snake", "memory", "tetris", "dino", "quiz", "decisions", "sales", "marketplace", "friends"];
-    if (validViews.includes(game)) {
+    const validViews: ActiveView[] = ["snake", "memory", "tetris", "dino", "quiz", "decisions", "sales", "ai-game", "marketplace", "friends", "escape", "projects", "brainstorm", "leader"];
+    if (validViews.includes(game as ActiveView)) {
       setActiveView(game as ActiveView);
-    } else {
-      // Show coming soon or redirect to quiz/decisions for enterprise games
-      setActiveView("quiz");
     }
   };
 
