@@ -22,7 +22,9 @@ import {
   Briefcase,
   Puzzle,
   MessageSquare,
-  Car
+  Car,
+  Sparkles,
+  Crown
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -79,7 +81,7 @@ const ENTERPRISE_GAMES: Game[] = [
     featured: true,
   },
   {
-    id: "decisions",
+    id: "sales",
     name: "Desafio de Vendas",
     description: "Simule negociações e feche o maior número de vendas possível",
     icon: <Briefcase className="w-16 h-16" />,
@@ -89,6 +91,30 @@ const ENTERPRISE_GAMES: Game[] = [
     xpReward: 300,
     coinsReward: 100,
     gradient: "from-amber-500/30 to-orange-600/30",
+  },
+  {
+    id: "decisions",
+    name: "Decisões Estratégicas",
+    description: "Enfrente cenários empresariais e tome decisões como um líder",
+    icon: <Target className="w-16 h-16" />,
+    difficulty: "medium",
+    players: "1",
+    duration: "20 min",
+    xpReward: 250,
+    coinsReward: 80,
+    gradient: "from-cyan-500/30 to-blue-600/30",
+  },
+  {
+    id: "ai-game",
+    name: "Game IA",
+    description: "Cenários únicos gerados por inteligência artificial",
+    icon: <Sparkles className="w-16 h-16" />,
+    difficulty: "medium",
+    players: "1",
+    duration: "15 min",
+    xpReward: 200,
+    coinsReward: 75,
+    gradient: "from-violet-500/30 to-purple-600/30",
   },
   {
     id: "escape",
@@ -112,7 +138,7 @@ const ENTERPRISE_GAMES: Game[] = [
     duration: "20 min",
     xpReward: 350,
     coinsReward: 120,
-    gradient: "from-cyan-500/30 to-blue-600/30",
+    gradient: "from-emerald-500/30 to-teal-600/30",
   },
   {
     id: "brainstorm",
@@ -124,13 +150,13 @@ const ENTERPRISE_GAMES: Game[] = [
     duration: "25 min",
     xpReward: 200,
     coinsReward: 80,
-    gradient: "from-emerald-500/30 to-teal-600/30",
+    gradient: "from-rose-500/30 to-orange-600/30",
   },
   {
     id: "leader",
     name: "Líder Supremo",
     description: "Simulador de liderança com desafios de gestão de equipe",
-    icon: <Target className="w-16 h-16" />,
+    icon: <Crown className="w-16 h-16" />,
     difficulty: "hard",
     players: "1",
     duration: "45 min",
