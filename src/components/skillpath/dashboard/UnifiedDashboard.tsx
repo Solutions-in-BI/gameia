@@ -16,7 +16,8 @@ import { PlayerProfileCard } from "@/components/game/common/PlayerProfileCard";
 import { BadgesCarousel, Badge } from "@/components/game/common/AchievementsBadges";
 import { BettingSection, Bet } from "@/components/game/bets/BettingSection";
 import { SkillTree } from "@/components/game/enterprise/SkillTree";
-import { TrailsPage } from "@/components/game/trails/TrailsPage";
+import { InsigniasPage } from "@/components/game/insignias/InsigniasPage";
+import { TrainingsPage } from "@/components/game/trainings/TrainingsPage";
 import { useLevel } from "@/hooks/useLevel";
 import { useMarketplace } from "@/hooks/useMarketplace";
 import { useStreak } from "@/hooks/useStreak";
@@ -180,9 +181,14 @@ export function UnifiedDashboard({ activeTab = "dashboard", onTabChange }: Unifi
           />
         </TabsContent>
 
-        {/* Badges Tab - Now shows Trails with Badges */}
+        {/* Badges Tab - Now shows Insignias */}
         <TabsContent value="badges" className="mt-6">
-          <TrailsPage />
+          <InsigniasPage />
+        </TabsContent>
+
+        {/* Trainings Tab - Educational content */}
+        <TabsContent value="trainings" className="mt-6">
+          <TrainingsPage />
         </TabsContent>
 
         {/* Games Tab */}
