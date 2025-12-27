@@ -44,11 +44,17 @@ import {
   Crown 
 } from "lucide-react";
 
+import type { DashboardTab } from "../layout/AppShell";
+
 type ActiveView = "dashboard" | "snake" | "memory" | "tetris" | "dino" | "quiz" | "decisions" | "sales" | "ai-game" | "marketplace" | "friends" | "organization" | "escape" | "projects" | "brainstorm" | "leader";
 
-export function UnifiedDashboard() {
+interface UnifiedDashboardProps {
+  activeTab?: DashboardTab;
+  onTabChange?: (tab: DashboardTab) => void;
+}
+
+export function UnifiedDashboard({ activeTab = "dashboard", onTabChange }: UnifiedDashboardProps) {
   const [activeView, setActiveView] = useState<ActiveView>("dashboard");
-  const [activeTab, setActiveTab] = useState("dashboard");
   
   const { profile } = useAuth();
   const { level, xp, progress } = useLevel();
@@ -138,7 +144,7 @@ export function UnifiedDashboard() {
   return (
     <div className="space-y-6">
       {/* Navigation Tabs - controlled by parent AppShell */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={(value) => onTabChange?.(value as DashboardTab)} className="w-full">
         {/* TabsList removed - now in AppShell header */}
 
         {/* Dashboard Tab */}
