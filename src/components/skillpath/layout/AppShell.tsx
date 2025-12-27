@@ -59,9 +59,12 @@ const NAV_ITEMS = [
 
 export function AppShell({ children, activeSection, onSectionChange }: AppShellProps) {
   const navigate = useNavigate();
-  const { profile, isAuthenticated, signOut } = useAuth();
+  const { user, profile, isAuthenticated, signOut } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const displayName = profile?.nickname || user?.email?.split("@")[0] || "Conta";
+  const avatarInitial = displayName.charAt(0).toUpperCase() || "G";
 
   const handleLogout = async () => {
     await signOut();
@@ -112,27 +115,27 @@ export function AppShell({ children, activeSection, onSectionChange }: AppShellP
                 {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </button>
 
-              {isAuthenticated && profile ? (
+              {isAuthenticated ? (
                 <>
                   <button
+                    type="button"
                     onClick={() => onSectionChange("profile")}
                     className={cn(
                       "flex items-center gap-2 px-3 py-2 rounded-xl transition-all",
-                      activeSection === "profile"
-                        ? "bg-primary/10"
-                        : "hover:bg-muted/50"
+                      activeSection === "profile" ? "bg-primary/10" : "hover:bg-muted/50"
                     )}
                   >
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
                       <span className="text-primary-foreground text-sm font-semibold">
-                        {profile.nickname?.charAt(0).toUpperCase() || "?"}
+                        {avatarInitial}
                       </span>
                     </div>
                     <span className="text-sm font-medium text-foreground hidden lg:block">
-                      {profile.nickname}
+                      {displayName}
                     </span>
                   </button>
                   <button
+                    type="button"
                     onClick={handleLogout}
                     className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all hidden sm:flex"
                     title="Sair"
@@ -142,6 +145,7 @@ export function AppShell({ children, activeSection, onSectionChange }: AppShellP
                 </>
               ) : (
                 <button
+                  type="button"
                   onClick={() => navigate("/auth")}
                   className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 transition-all"
                 >

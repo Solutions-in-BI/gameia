@@ -42,7 +42,7 @@ export default function Auth() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
-  const { signUp, signIn, resetPassword, updatePassword, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { signUp, signIn, resetPassword, updatePassword, profile, isAuthenticated, isLoading: authLoading } = useAuth();
   
   const [mode, setMode] = useState<AuthMode>("login");
   const [isLoading, setIsLoading] = useState(false);
@@ -61,10 +61,10 @@ export default function Auth() {
 
   // Redireciona se já logado (exceto no reset)
   useEffect(() => {
-    if (!authLoading && isAuthenticated && mode !== "reset") {
+    if (!authLoading && isAuthenticated && profile && mode !== "reset") {
       navigate("/");
     }
-  }, [isAuthenticated, authLoading, navigate, mode]);
+  }, [isAuthenticated, profile, authLoading, navigate, mode]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,10 +118,10 @@ export default function Auth() {
             variant: "destructive"
           });
         } else {
-          toast({
-            title: "Conta criada!",
-            description: "Bem-vindo ao Arcade Games!"
-          });
+           toast({
+             title: "Conta criada!",
+             description: "Bem-vindo à Gameia!"
+           });
           navigate("/");
         }
       } else if (mode === "forgot") {
@@ -196,8 +196,8 @@ export default function Auth() {
 
   const getSubtitle = () => {
     switch (mode) {
-      case "login": return "Acesse sua conta para salvar scores";
-      case "signup": return "Crie sua conta para competir no ranking";
+      case "login": return "Acesse sua conta para acompanhar sua evolução";
+      case "signup": return "Crie sua conta (gratuita para pessoas físicas)";
       case "forgot": return "Digite seu email para receber o link de recuperação";
       case "reset": return "Digite sua nova senha";
     }
