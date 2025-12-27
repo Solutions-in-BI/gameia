@@ -159,7 +159,6 @@ export function UnifiedDashboard({ activeTab = "dashboard", onTabChange }: Unifi
               xpToNextLevel={xpToNextLevel}
               xpProgress={progress}
               coins={coins}
-              streak={streak.currentStreak}
               ranking={5}
               badges={achievementProgress.unlocked}
               title={profile?.selected_title || undefined}
@@ -259,16 +258,6 @@ export function UnifiedDashboard({ activeTab = "dashboard", onTabChange }: Unifi
           </div>
         </TabsContent>
       </Tabs>
-
-      {/* Daily Rewards - Always visible */}
-      <DailyRewards
-        currentStreak={streak.currentStreak}
-        longestStreak={streak.longestStreak}
-        canClaim={canClaimToday}
-        isAtRisk={isAtRisk}
-        todayReward={getTodayReward()}
-        onClaim={claimDailyReward}
-      />
     </div>
   );
 }

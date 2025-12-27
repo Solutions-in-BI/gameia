@@ -12,7 +12,6 @@ import {
   LogOut,
   BarChart3,
   Target,
-  Flame,
   Coins,
   Crown,
   Zap,
@@ -27,7 +26,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useLevel } from "@/hooks/useLevel";
 import { useAchievements } from "@/hooks/useAchievements";
 import { useMarketplace } from "@/hooks/useMarketplace";
-import { useStreak } from "@/hooks/useStreak";
 import { useSkillTree } from "@/hooks/useSkillTree";
 import { cn } from "@/lib/utils";
 
@@ -38,7 +36,6 @@ export function UnifiedProfileSection() {
   const { level, xp, progress: levelProgress, levelInfo } = useLevel();
   const { getAchievementsWithStatus, getProgress, stats } = useAchievements();
   const { coins } = useMarketplace();
-  const { streak } = useStreak();
   const { skills } = useSkillTree();
   const [activeTab, setActiveTab] = useState<ProfileTab>("overview");
 
@@ -134,9 +131,8 @@ export function UnifiedProfileSection() {
           </div>
 
           {/* Quick Stats Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <QuickStatBadge icon={Coins} value={coins} label="Moedas" color="warning" />
-            <QuickStatBadge icon={Flame} value={streak.currentStreak} label="Streak" color="secondary" />
             <QuickStatBadge icon={Target} value={unlockedSkills.length} label="Skills" color="accent" />
             <QuickStatBadge icon={Trophy} value={achievementProgress.unlocked} label="Conquistas" color="primary" />
           </div>
@@ -187,10 +183,10 @@ export function UnifiedProfileSection() {
                 detail={`${achievementProgress.percentage}% completo`}
               />
               <StatCard
-                icon={Flame}
-                label="Maior Streak"
-                value={streak.longestStreak}
-                detail={`Atual: ${streak.currentStreak} dias`}
+                icon={Star}
+                label="Skills Dominadas"
+                value={masteredSkills.length}
+                detail={`${unlockedSkills.length} desbloqueadas`}
               />
               <StatCard
                 icon={Star}
@@ -423,7 +419,6 @@ export function UnifiedProfileSection() {
               <StatDetailCard label="Partidas Snake" value={stats.snakeGamesPlayed} />
               <StatDetailCard label="XP Total" value={xp} />
               <StatDetailCard label="Moedas Acumuladas" value={coins} />
-              <StatDetailCard label="Dias de Streak" value={streak.longestStreak} />
               <StatDetailCard label="Skills Desbloqueadas" value={unlockedSkills.length} />
               <StatDetailCard label="Skills Dominadas" value={masteredSkills.length} />
               <StatDetailCard label="Conquistas" value={achievementProgress.unlocked} />

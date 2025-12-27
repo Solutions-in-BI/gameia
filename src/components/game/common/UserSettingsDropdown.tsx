@@ -70,14 +70,6 @@ export function UserSettingsDropdown({
             )}
           </div>
           
-          {/* Streak badge */}
-          {streak > 0 && (
-            <div className="flex items-center gap-1 bg-orange-500/20 border border-orange-500/30 rounded-lg px-1.5 py-0.5">
-              <Flame className="w-3 h-3 text-orange-500" />
-              <span className="text-xs font-bold text-orange-500">{streak}</span>
-            </div>
-          )}
-          
           <ChevronDown className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
         </button>
       </DropdownMenuTrigger>
