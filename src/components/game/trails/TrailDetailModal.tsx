@@ -1,13 +1,14 @@
 import { motion } from "framer-motion";
-import { X, Clock, Target, Coins, Sparkles, CheckCircle2, Circle, Play } from "lucide-react";
+import { X, Clock, Target, Coins, Sparkles, CheckCircle2, Play, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { TrailBadge } from "./TrailBadge";
+import { InsigniaBadge } from "./TrailBadge";
 import { Trail, TrailMission, useTrails } from "@/hooks/useTrails";
 import { cn } from "@/lib/utils";
 
-interface TrailDetailModalProps {
+interface InsigniaDetailModalProps {
   trail: Trail;
+  shape?: "star" | "rocket" | "shield" | "hexagon" | "crown" | "bolt" | "target" | "trophy";
   missions: TrailMission[];
   isOpen: boolean;
   onClose: () => void;
@@ -20,12 +21,12 @@ const missionTypeIcons: Record<string, string> = {
 };
 
 const missionTypeLabels: Record<string, string> = {
-  quiz: "Quiz",
+  quiz: "Quiz Empresarial",
   sales: "Simulação de Vendas",
-  decision: "Tomada de Decisão",
+  decision: "Decisão Estratégica",
 };
 
-export function TrailDetailModal({ trail, missions, isOpen, onClose }: TrailDetailModalProps) {
+export function InsigniaDetailModal({ trail, shape = "hexagon", missions, isOpen, onClose }: InsigniaDetailModalProps) {
   const { getTrailProgress, isTrailCompleted, missionProgress, startTrail } = useTrails();
   
   const progress = getTrailProgress(trail.id);
@@ -33,7 +34,7 @@ export function TrailDetailModal({ trail, missions, isOpen, onClose }: TrailDeta
 
   const handleStartTrail = async () => {
     await startTrail(trail.id);
-    // TODO: Navegar para primeira missão
+    // TODO: Navegar para primeiro desafio
   };
 
   if (!isOpen) return null;
@@ -65,9 +66,10 @@ export function TrailDetailModal({ trail, missions, isOpen, onClose }: TrailDeta
           </Button>
 
           <div className="flex items-start gap-4">
-            <TrailBadge
+            <InsigniaBadge
               icon={trail.icon}
               name=""
+              shape={shape}
               difficulty={trail.difficulty}
               isUnlocked={completed}
               size="lg"
@@ -79,7 +81,7 @@ export function TrailDetailModal({ trail, missions, isOpen, onClose }: TrailDeta
                 {trail.name}
               </h2>
               <p className="text-muted-foreground mt-1">
-                {trail.description || "Complete as missões para ganhar esta insígnia"}
+                {trail.description || "Evolua nos jogos empresariais para conquistar esta insígnia"}
               </p>
 
               <div className="flex flex-wrap gap-3 mt-4 text-sm">
@@ -91,7 +93,7 @@ export function TrailDetailModal({ trail, missions, isOpen, onClose }: TrailDeta
                 )}
                 <span className="flex items-center gap-1 text-muted-foreground">
                   <Target className="w-4 h-4" />
-                  {missions.length} missões
+                  {missions.length} desafios
                 </span>
                 {trail.points_reward && (
                   <span className="flex items-center gap-1 text-amber-500">
@@ -107,7 +109,7 @@ export function TrailDetailModal({ trail, missions, isOpen, onClose }: TrailDeta
           <div className="mt-6">
             <div className="flex justify-between text-sm mb-2">
               <span className="text-muted-foreground">
-                {progress.completed} de {progress.total} missões concluídas
+                {progress.completed} de {progress.total} desafios vencidos
               </span>
               <span className={cn(
                 "font-medium",
@@ -132,11 +134,11 @@ export function TrailDetailModal({ trail, missions, isOpen, onClose }: TrailDeta
           </div>
         </div>
 
-        {/* Missões */}
         <ScrollArea className="max-h-[400px]">
           <div className="p-6 space-y-3">
-            <h3 className="text-lg font-semibold text-foreground mb-4">
-              Missões
+            <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+              <Target className="w-5 h-5 text-primary" />
+              Desafios para Conquistar
             </h3>
             
             {missions.map((mission, index) => {
@@ -227,17 +229,17 @@ export function TrailDetailModal({ trail, missions, isOpen, onClose }: TrailDeta
         {/* Footer */}
         <div className="p-4 border-t border-border bg-muted/30">
           {completed ? (
-            <div className="flex items-center justify-center gap-2 text-emerald-500">
-              <CheckCircle2 className="w-5 h-5" />
-              <span className="font-medium">Trilha Concluída! Insígnia Desbloqueada</span>
+            <div className="flex items-center justify-center gap-2 text-amber-500">
+              <Award className="w-5 h-5" />
+              <span className="font-medium">Insígnia Conquistada! Pronta para a camiseta 🎽</span>
             </div>
           ) : progress.completed === 0 ? (
             <Button className="w-full" onClick={handleStartTrail}>
-              Iniciar Trilha
+              Começar Jornada
             </Button>
           ) : (
             <Button className="w-full">
-              Continuar Trilha
+              Continuar Jornada
             </Button>
           )}
         </div>
@@ -245,3 +247,6 @@ export function TrailDetailModal({ trail, missions, isOpen, onClose }: TrailDeta
     </motion.div>
   );
 }
+
+// Alias para compatibilidade
+export const TrailDetailModal = InsigniaDetailModal;

@@ -1,11 +1,12 @@
 import { motion } from "framer-motion";
-import { Clock, Target, ChevronRight, CheckCircle2, Lock } from "lucide-react";
+import { Clock, Target, ChevronRight, CheckCircle2, Star, Rocket, Shield, Award, Crown, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { TrailBadge } from "./TrailBadge";
+import { InsigniaBadge } from "./TrailBadge";
 import { Trail } from "@/hooks/useTrails";
 
-interface TrailCardProps {
+interface InsigniaCardProps {
   trail: Trail;
+  shape?: "star" | "rocket" | "shield" | "hexagon" | "crown" | "bolt" | "target" | "trophy";
   progress: {
     total: number;
     completed: number;
@@ -29,7 +30,7 @@ const difficultyColors: Record<string, string> = {
   expert: "text-rose-500 bg-rose-500/10",
 };
 
-export function TrailCard({ trail, progress, isCompleted, onClick }: TrailCardProps) {
+export function InsigniaCard({ trail, shape = "hexagon", progress, isCompleted, onClick }: InsigniaCardProps) {
   return (
     <motion.div
       className={cn(
@@ -42,10 +43,11 @@ export function TrailCard({ trail, progress, isCompleted, onClick }: TrailCardPr
       whileTap={{ scale: 0.98 }}
     >
       <div className="flex gap-4">
-        {/* Badge */}
-        <TrailBadge
+        {/* Insígnia */}
+        <InsigniaBadge
           icon={trail.icon}
           name={trail.name}
+          shape={shape}
           difficulty={trail.difficulty}
           isUnlocked={isCompleted}
           size="md"
@@ -60,7 +62,7 @@ export function TrailCard({ trail, progress, isCompleted, onClick }: TrailCardPr
                 {trail.name}
               </h3>
               <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-                {trail.description || "Complete as missões para ganhar esta insígnia"}
+                {trail.description || "Evolua para conquistar esta insígnia"}
               </p>
             </div>
             <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
@@ -84,7 +86,7 @@ export function TrailCard({ trail, progress, isCompleted, onClick }: TrailCardPr
             )}
             <span className="flex items-center gap-1">
               <Target className="w-3 h-3" />
-              {progress.total} missões
+              {progress.total} desafios
             </span>
           </div>
 
@@ -92,7 +94,7 @@ export function TrailCard({ trail, progress, isCompleted, onClick }: TrailCardPr
           <div className="mt-3">
             <div className="flex items-center justify-between text-xs mb-1">
               <span className="text-muted-foreground">
-                {progress.completed}/{progress.total} concluídas
+                {progress.completed}/{progress.total} vencidos
               </span>
               <span className={cn(
                 "font-medium",
@@ -118,12 +120,15 @@ export function TrailCard({ trail, progress, isCompleted, onClick }: TrailCardPr
         </div>
       </div>
 
-      {/* Completed badge */}
+      {/* Completed indicator */}
       {isCompleted && (
-        <div className="absolute -top-2 -right-2 bg-emerald-500 text-white p-1 rounded-full shadow-lg">
-          <CheckCircle2 className="w-4 h-4" />
+        <div className="absolute -top-2 -right-2 bg-amber-500 text-white p-1 rounded-full shadow-lg">
+          <Award className="w-4 h-4" />
         </div>
       )}
     </motion.div>
   );
 }
+
+// Alias para compatibilidade
+export const TrailCard = InsigniaCard;
