@@ -28,6 +28,7 @@ import { TetrisGame } from "@/components/game/tetris/TetrisGame";
 import { DinoGame } from "@/components/game/dino/DinoGame";
 import { QuizGame } from "@/components/game/quiz/QuizGame";
 import { EnterpriseQuiz } from "@/components/game/enterprise/EnterpriseQuiz";
+import { SalesGame } from "@/components/game/sales/SalesGame";
 import { MarketplacePage } from "@/components/game/marketplace/MarketplacePage";
 import { FriendsPage } from "@/components/game/friends/FriendsPage";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -41,7 +42,7 @@ import {
   Crown 
 } from "lucide-react";
 
-type ActiveView = "dashboard" | "snake" | "memory" | "tetris" | "dino" | "quiz" | "decisions" | "marketplace" | "friends" | "organization" | "escape" | "projects" | "brainstorm" | "leader";
+type ActiveView = "dashboard" | "snake" | "memory" | "tetris" | "dino" | "quiz" | "decisions" | "sales" | "marketplace" | "friends" | "organization" | "escape" | "projects" | "brainstorm" | "leader";
 
 export function UnifiedDashboard() {
   const [activeView, setActiveView] = useState<ActiveView>("dashboard");
@@ -108,13 +109,14 @@ export function UnifiedDashboard() {
   if (activeView === "tetris") return <TetrisGame onBack={() => setActiveView("dashboard")} />;
   if (activeView === "dino") return <DinoGame onBack={() => setActiveView("dashboard")} />;
   if (activeView === "quiz") return <QuizGame onBack={() => setActiveView("dashboard")} />;
-  if (activeView === "decisions") return <EnterpriseQuiz onBack={() => setActiveView("dashboard")} />;
+  if (activeView === "decisions") return <SalesGame onBack={() => setActiveView("dashboard")} />;
+  if (activeView === "sales") return <SalesGame onBack={() => setActiveView("dashboard")} />;
   if (activeView === "marketplace") return <MarketplacePage onBack={() => setActiveView("dashboard")} />;
   if (activeView === "friends") return <FriendsPage isOpen={true} onClose={() => setActiveView("dashboard")} />;
 
   // Placeholder for unimplemented games
   const handleSelectGame = (game: string) => {
-    const validViews = ["snake", "memory", "tetris", "dino", "quiz", "decisions", "marketplace", "friends"];
+    const validViews = ["snake", "memory", "tetris", "dino", "quiz", "decisions", "sales", "marketplace", "friends"];
     if (validViews.includes(game)) {
       setActiveView(game as ActiveView);
     } else {
