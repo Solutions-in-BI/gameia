@@ -5,7 +5,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Brain, Target, Award, BarChart3 } from "lucide-react";
+import { Brain, Target, Award, BarChart3, Lock } from "lucide-react";
 import { GameLayout } from "../common/GameLayout";
 import { useQuizGame, QuizCategory } from "@/hooks/useQuizGame";
 import { useSkillTree, SkillWithProgress } from "@/hooks/useSkillTree";
@@ -57,12 +57,15 @@ export function EnterpriseQuiz({ onBack }: EnterpriseQuizProps) {
 
   const {
     scenarios,
+    scenariosWithProgress,
+    progressionStats,
     currentScenario,
     currentOptions,
     result: decisionResult,
     startScenario,
     makeDecision,
     nextScenario,
+    canAccessDifficulty,
   } = useDecisionGame();
 
   // Fetch user coins
@@ -268,44 +271,145 @@ export function EnterpriseQuiz({ onBack }: EnterpriseQuizProps) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
             >
+              {/* Header com progresso */}
               <div className="p-6 bg-gradient-to-br from-accent/10 to-accent/5 rounded-xl border border-accent/20 mb-6">
-                <h2 className="text-xl font-bold mb-2">Simulador de Decisões</h2>
-                <p className="text-muted-foreground">
-                  Enfrente cenários reais de negócios. Não existe certo ou errado, 
-                  apenas impacto, custo e risco. Aprenda a pensar como um líder.
-                </p>
-              </div>
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h2 className="text-xl font-bold">Simulador de Decisões</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Complete cenários para desbloquear níveis mais difíceis
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-primary">
+                      {progressionStats.totalCompleted}/{progressionStats.totalScenarios}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Completados</div>
+                  </div>
+                </div>
 
-              <div className="grid gap-4">
-                {scenarios.map((scenario) => (
-                  <motion.button
-                    key={scenario.id}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => startScenario(scenario.id)}
-                    className="p-4 bg-card/50 rounded-xl border border-border text-left hover:border-accent/50 transition-all"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold">{scenario.title}</h3>
-                      <span className={`text-xs px-2 py-1 rounded-full ${
-                        scenario.difficulty === "hard" 
-                          ? "bg-red-500/20 text-red-500"
-                          : scenario.difficulty === "medium"
-                          ? "bg-yellow-500/20 text-yellow-500"
-                          : "bg-green-500/20 text-green-500"
-                      }`}>
-                        {scenario.difficulty}
+                {/* Barra de progresso por dificuldade */}
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="p-3 bg-green-500/10 rounded-lg border border-green-500/20">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-medium text-green-500">Fácil</span>
+                      <span className="text-xs text-muted-foreground">
+                        {progressionStats.easyCompleted}/{progressionStats.easyTotal}
                       </span>
                     </div>
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {scenario.context}
-                    </p>
-                    <div className="mt-2 text-xs text-primary">
-                      +{scenario.xp_reward} XP
+                    <div className="h-1.5 bg-green-500/20 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-green-500 rounded-full transition-all"
+                        style={{ width: `${progressionStats.easyTotal > 0 ? (progressionStats.easyCompleted / progressionStats.easyTotal) * 100 : 0}%` }}
+                      />
                     </div>
-                  </motion.button>
-                ))}
+                  </div>
+                  <div className={`p-3 rounded-lg border ${canAccessDifficulty("medium") ? "bg-yellow-500/10 border-yellow-500/20" : "bg-muted/50 border-border opacity-60"}`}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className={`text-xs font-medium ${canAccessDifficulty("medium") ? "text-yellow-500" : "text-muted-foreground"}`}>
+                        {canAccessDifficulty("medium") ? "Médio" : "🔒 Médio"}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {progressionStats.mediumCompleted}/{progressionStats.mediumTotal}
+                      </span>
+                    </div>
+                    <div className="h-1.5 bg-yellow-500/20 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-yellow-500 rounded-full transition-all"
+                        style={{ width: `${progressionStats.mediumTotal > 0 ? (progressionStats.mediumCompleted / progressionStats.mediumTotal) * 100 : 0}%` }}
+                      />
+                    </div>
+                  </div>
+                  <div className={`p-3 rounded-lg border ${canAccessDifficulty("hard") ? "bg-red-500/10 border-red-500/20" : "bg-muted/50 border-border opacity-60"}`}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className={`text-xs font-medium ${canAccessDifficulty("hard") ? "text-red-500" : "text-muted-foreground"}`}>
+                        {canAccessDifficulty("hard") ? "Difícil" : "🔒 Difícil"}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {progressionStats.hardCompleted}/{progressionStats.hardTotal}
+                      </span>
+                    </div>
+                    <div className="h-1.5 bg-red-500/20 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-red-500 rounded-full transition-all"
+                        style={{ width: `${progressionStats.hardTotal > 0 ? (progressionStats.hardCompleted / progressionStats.hardTotal) * 100 : 0}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
+
+              {/* Lista de cenários por dificuldade */}
+              {["easy", "medium", "hard"].map((difficulty) => {
+                const diffScenarios = scenariosWithProgress.filter((s) => s.difficulty === difficulty);
+                if (diffScenarios.length === 0) return null;
+
+                const isLocked = !canAccessDifficulty(difficulty);
+                const diffLabel = difficulty === "easy" ? "Fácil" : difficulty === "medium" ? "Médio" : "Difícil";
+                const diffColor = difficulty === "easy" ? "green" : difficulty === "medium" ? "yellow" : "red";
+
+                return (
+                  <div key={difficulty} className="mb-6">
+                    <h3 className={`text-sm font-semibold mb-3 flex items-center gap-2 ${isLocked ? "text-muted-foreground" : `text-${diffColor}-500`}`}>
+                      {isLocked && <Lock className="w-4 h-4" />}
+                      Nível {diffLabel}
+                      {isLocked && (
+                        <span className="text-xs font-normal text-muted-foreground ml-2">
+                          {difficulty === "medium" 
+                            ? `(Complete 1 cenário fácil)` 
+                            : `(Complete 2 cenários médios)`}
+                        </span>
+                      )}
+                    </h3>
+                    <div className="grid gap-3">
+                      {diffScenarios.map((scenario) => (
+                        <motion.button
+                          key={scenario.id}
+                          whileHover={scenario.isUnlocked ? { scale: 1.01 } : {}}
+                          whileTap={scenario.isUnlocked ? { scale: 0.99 } : {}}
+                          onClick={() => scenario.isUnlocked && startScenario(scenario.id)}
+                          disabled={!scenario.isUnlocked}
+                          className={`p-4 rounded-xl border text-left transition-all ${
+                            !scenario.isUnlocked 
+                              ? "bg-muted/30 border-border opacity-50 cursor-not-allowed"
+                              : scenario.isCompleted
+                              ? "bg-card/50 border-primary/30 hover:border-primary/50"
+                              : "bg-card/50 border-border hover:border-accent/50"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              {scenario.isCompleted && (
+                                <span className={scenario.isOptimalDecision ? "text-green-500" : "text-yellow-500"}>
+                                  {scenario.isOptimalDecision ? "🎯" : "✓"}
+                                </span>
+                              )}
+                              <h4 className="font-semibold">{scenario.title}</h4>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {!scenario.isUnlocked && <Lock className="w-4 h-4 text-muted-foreground" />}
+                              <span className={`text-xs px-2 py-1 rounded-full bg-${diffColor}-500/20 text-${diffColor}-500`}>
+                                {diffLabel}
+                              </span>
+                            </div>
+                          </div>
+                          <p className="text-sm text-muted-foreground line-clamp-2">
+                            {scenario.context}
+                          </p>
+                          <div className="mt-2 flex items-center justify-between">
+                            <span className="text-xs text-primary">+{scenario.xp_reward} XP</span>
+                            {scenario.isCompleted && (
+                              <span className="text-xs text-muted-foreground">
+                                {scenario.isOptimalDecision ? "Decisão ótima" : "Pode melhorar"}
+                              </span>
+                            )}
+                          </div>
+                        </motion.button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </motion.div>
           </TabsContent>
 
