@@ -214,14 +214,29 @@ export function MarketplacePage({ onBack }: MarketplacePageProps) {
           {isLoading ? (
             <div className="text-center py-8 text-muted-foreground">Carregando...</div>
           ) : filteredItems.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              {categorySection === "enterprise" 
-                ? "Nenhum item de gamificação nesta categoria" 
-                : "Nenhum item de recreação nesta categoria"}
+            <div className="text-center py-12 bg-card/50 rounded-xl border border-border">
+              <Package className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
+              <p className="text-muted-foreground font-medium">
+                {categorySection === "enterprise" 
+                  ? "Nenhum item de gamificação nesta categoria" 
+                  : "Nenhum item de recreação nesta categoria"}
+              </p>
+              <p className="text-sm text-muted-foreground/70 mt-1">
+                Volte mais tarde para novos itens!
+              </p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-              {filteredItems.map(item => (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {filteredItems
+                .sort((a, b) => {
+                  // Ordenar por raridade e preço
+                  const rarityOrder = { common: 1, rare: 2, epic: 3, legendary: 4 };
+                  const aRarity = rarityOrder[a.rarity as keyof typeof rarityOrder] || 1;
+                  const bRarity = rarityOrder[b.rarity as keyof typeof rarityOrder] || 1;
+                  if (aRarity !== bRarity) return aRarity - bRarity;
+                  return a.price - b.price;
+                })
+                .map(item => (
                 <ItemCard
                   key={item.id}
                   item={item}
@@ -273,26 +288,44 @@ interface ItemCardProps {
 }
 
 function ItemCard({ item, owned, canAfford, onPurchase, isRecreation }: ItemCardProps) {
+  const getCategoryIcon = (category: string) => {
+    const icons: Record<string, string> = {
+      avatar: "😎",
+      frame: "🖼️",
+      effect: "✨",
+      banner: "🎨",
+      boost: "🚀",
+      title: "📜",
+      pet: "🐾",
+    };
+    return icons[category] || "🛒";
+  };
+
   return (
-    <div className={cn(
-      "relative bg-card border-2 rounded-xl p-4 transition-all",
-      RARITY_COLORS[item.rarity as keyof typeof RARITY_COLORS] || RARITY_COLORS.common
-    )}>
-      {/* Recreation badge */}
-      {isRecreation && (
-        <div className="absolute top-2 left-2">
-          <span className="text-xs bg-cyan-500/20 text-cyan-500 px-2 py-0.5 rounded-full flex items-center gap-1">
-            <Gamepad2 className="w-3 h-3" />
-            Jogos
-          </span>
-        </div>
+    <motion.div 
+      className={cn(
+        "relative bg-card border-2 rounded-xl p-4 transition-all hover:shadow-lg",
+        RARITY_COLORS[item.rarity as keyof typeof RARITY_COLORS] || RARITY_COLORS.common,
+        owned && "opacity-75"
       )}
+      whileHover={{ y: -2 }}
+      whileTap={{ scale: 0.98 }}
+    >
+      {/* Category icon badge */}
+      <div className="absolute top-2 left-2">
+        <span className={cn(
+          "text-xs px-2 py-1 rounded-full flex items-center gap-1",
+          isRecreation ? "bg-cyan-500/20 text-cyan-500" : "bg-primary/20 text-primary"
+        )}>
+          {getCategoryIcon(item.category)}
+        </span>
+      </div>
       
       {/* Rarity badge */}
-      <div className={cn("absolute top-2", isRecreation ? "right-2" : "right-2")}>
+      <div className="absolute top-2 right-2">
         <span className={cn(
-          "text-xs px-2 py-0.5 rounded-full",
-          item.rarity === "legendary" && "bg-yellow-500/20 text-yellow-500",
+          "text-xs px-2 py-1 rounded-full font-medium",
+          item.rarity === "legendary" && "bg-gradient-to-r from-yellow-500/30 to-amber-500/30 text-yellow-500",
           item.rarity === "epic" && "bg-purple-500/20 text-purple-500",
           item.rarity === "rare" && "bg-blue-500/20 text-blue-500",
           item.rarity === "common" && "bg-muted text-muted-foreground"
@@ -302,28 +335,28 @@ function ItemCard({ item, owned, canAfford, onPurchase, isRecreation }: ItemCard
       </div>
 
       {/* Icon */}
-      <div className={cn("text-5xl text-center mb-3", isRecreation ? "mt-6" : "mt-2")}>
+      <div className="text-5xl text-center my-6">
         {item.icon}
       </div>
 
       {/* Info */}
-      <h3 className="font-medium text-foreground text-center text-sm mb-1">{item.name}</h3>
-      <p className="text-xs text-muted-foreground text-center mb-3 line-clamp-2">{item.description}</p>
+      <h3 className="font-semibold text-foreground text-center text-sm mb-1 line-clamp-1">{item.name}</h3>
+      <p className="text-xs text-muted-foreground text-center mb-4 line-clamp-2 min-h-[2rem]">{item.description}</p>
 
       {/* Price/Action */}
       {owned ? (
-        <div className="flex items-center justify-center gap-1 text-green-500 text-sm">
+        <div className="flex items-center justify-center gap-1.5 text-emerald-500 text-sm py-2 bg-emerald-500/10 rounded-lg">
           <Sparkles className="w-4 h-4" />
-          <span>Adquirido</span>
+          <span className="font-medium">Adquirido</span>
         </div>
       ) : (
         <button
           onClick={onPurchase}
           disabled={!canAfford}
           className={cn(
-            "w-full flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium transition-all",
+            "w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all",
             canAfford
-              ? "bg-yellow-500/20 text-yellow-500 hover:bg-yellow-500/30"
+              ? "bg-gradient-to-r from-yellow-500/20 to-amber-500/20 text-yellow-600 hover:from-yellow-500/30 hover:to-amber-500/30 border border-yellow-500/30"
               : "bg-muted text-muted-foreground cursor-not-allowed"
           )}
         >
@@ -331,7 +364,7 @@ function ItemCard({ item, owned, canAfford, onPurchase, isRecreation }: ItemCard
           {item.price.toLocaleString()}
         </button>
       )}
-    </div>
+    </motion.div>
   );
 }
 
