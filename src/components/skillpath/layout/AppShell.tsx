@@ -1,12 +1,12 @@
 /**
  * Shell principal da aplicação Gameia
- * Navegação unificada com os 3 pilares
+ * Navegação unificada com os 3 pilares + Perfil
  */
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  FileUser, 
+  TrendingUp, 
   Gamepad2, 
   Compass, 
   User, 
@@ -22,7 +22,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { cn } from "@/lib/utils";
 
-export type GameiaSection = "curriculum" | "gamification" | "guidance" | "profile";
+export type GameiaSection = "progress" | "gamification" | "guidance" | "profile";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -32,20 +32,20 @@ interface AppShellProps {
 
 const NAV_ITEMS = [
   {
-    id: "curriculum" as const,
-    label: "Currículo Vivo",
-    shortLabel: "Currículo",
-    icon: FileUser,
+    id: "progress" as const,
+    label: "Meu Progresso",
+    shortLabel: "Progresso",
+    icon: TrendingUp,
     color: "pillar-curriculum",
-    description: "Seu perfil profissional que evolui",
+    description: "Acompanhe sua evolução completa",
   },
   {
     id: "gamification" as const,
-    label: "Gamificação",
+    label: "Treinamento",
     shortLabel: "Treinar",
     icon: Gamepad2,
     color: "pillar-gamification",
-    description: "Desenvolva habilidades jogando",
+    description: "Games, Quiz e Cenários",
   },
   {
     id: "guidance" as const,

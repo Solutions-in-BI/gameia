@@ -5,7 +5,7 @@
 
 import { useState } from "react";
 import { AppShell, GameiaSection } from "@/components/skillpath/layout/AppShell";
-import { CurriculumSection } from "@/components/skillpath/curriculum/CurriculumSection";
+import { ProgressCenter } from "@/components/skillpath/progress/ProgressCenter";
 import { GamificationSection } from "@/components/skillpath/gamification/GamificationSection";
 import { GuidanceSection } from "@/components/skillpath/guidance/GuidanceSection";
 import { UnifiedProfileSection } from "@/components/skillpath/profile/UnifiedProfileSection";
@@ -19,8 +19,8 @@ const Index = () => {
 
   const renderSection = () => {
     switch (activeSection) {
-      case "curriculum":
-        return <CurriculumSection />;
+      case "progress":
+        return <ProgressCenter />;
       case "gamification":
         return <GamificationSection />;
       case "guidance":
