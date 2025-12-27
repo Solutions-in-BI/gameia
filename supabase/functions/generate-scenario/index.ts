@@ -1,3 +1,4 @@
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
@@ -11,12 +12,14 @@ serve(async (req) => {
   }
 
   try {
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+    if (!OPENAI_API_KEY) {
+      console.error("OPENAI_API_KEY is not configured");
+      throw new Error("OPENAI_API_KEY is not configured");
     }
 
     const { theme, difficulty } = await req.json();
+    console.log("Generating scenario with theme:", theme, "difficulty:", difficulty);
 
     const systemPrompt = `Você é um especialista em treinamento corporativo e criação de cenários de decisão empresarial.
 Crie um cenário de decisão realista e desafiador para treinar gestores.
@@ -53,49 +56,53 @@ Responda APENAS com um JSON válido no formato:
       : `Crie um cenário de decisão empresarial interessante e desafiador. Dificuldade: ${difficulty || 'medium'}. 
          Escolha um tema entre: liderança, gestão de crise, negociação, inovação, gestão de pessoas, estratégia de mercado, transformação digital, sustentabilidade corporativa.`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    console.log("Calling OpenAI API...");
+
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Authorization": `Bearer ${OPENAI_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "gpt-4o-mini",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
         ],
+        max_tokens: 2000,
         temperature: 0.8,
       }),
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error("OpenAI API error:", response.status, errorText);
+      
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: "Limite de requisições excedido. Tente novamente em alguns segundos." }),
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "Créditos insuficientes. Adicione fundos na sua conta." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
+      
       return new Response(
-        JSON.stringify({ error: "Erro ao gerar cenário com IA" }),
+        JSON.stringify({ error: "Erro ao gerar cenário com IA: " + errorText }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     const data = await response.json();
+    console.log("OpenAI response received");
+    
     const content = data.choices?.[0]?.message?.content;
 
     if (!content) {
+      console.error("Empty response from OpenAI");
       throw new Error("Resposta vazia da IA");
     }
+
+    console.log("Raw content:", content);
 
     // Extract JSON from response (handle markdown code blocks)
     let jsonStr = content;
@@ -105,9 +112,11 @@ Responda APENAS com um JSON válido no formato:
     }
 
     const scenario = JSON.parse(jsonStr.trim());
+    console.log("Parsed scenario:", scenario.title);
 
     // Validate structure
     if (!scenario.title || !scenario.context || !scenario.options || scenario.options.length !== 4) {
+      console.error("Invalid scenario structure:", scenario);
       throw new Error("Estrutura do cenário inválida");
     }
 
