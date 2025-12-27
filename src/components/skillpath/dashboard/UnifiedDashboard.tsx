@@ -1,6 +1,9 @@
 /**
  * Dashboard unificado - todos os elementos de jogo integrados
- * Redesign com perfil, badges, apostas, skills e jogos
+ * Redesign com perfil, trilhas, apostas, skills e jogos
+ * 
+ * NOTA: Conquistas de jogos recreativos foram removidas.
+ * Agora usamos sistema de Trilhas com Insígnias empresariais.
  */
 
 import { useState } from "react";
@@ -10,17 +13,18 @@ import { SocialHub } from "./SocialHub";
 import { OrganizationCard } from "./OrganizationCard";
 import { DailyRewards } from "./DailyRewards";
 import { PlayerProfileCard } from "@/components/game/common/PlayerProfileCard";
-import { AchievementsBadges, BadgesCarousel, Badge } from "@/components/game/common/AchievementsBadges";
+import { BadgesCarousel, Badge } from "@/components/game/common/AchievementsBadges";
 import { BettingSection, Bet } from "@/components/game/bets/BettingSection";
 import { SkillTree } from "@/components/game/enterprise/SkillTree";
+import { TrailsPage } from "@/components/game/trails/TrailsPage";
 import { useLevel } from "@/hooks/useLevel";
 import { useMarketplace } from "@/hooks/useMarketplace";
 import { useStreak } from "@/hooks/useStreak";
 import { useFriends } from "@/hooks/useFriends";
-import { useAchievements } from "@/hooks/useAchievements";
 import { useOrganization } from "@/hooks/useOrganization";
 import { useAuth } from "@/hooks/useAuth";
 import { useSkillTree } from "@/hooks/useSkillTree";
+import { useTrails } from "@/hooks/useTrails";
 import { SnakeGame } from "@/components/game/snake/SnakeGame";
 import { MemoryGame } from "@/components/game/memory/MemoryGame";
 import { TetrisGame } from "@/components/game/tetris/TetrisGame";
@@ -60,25 +64,27 @@ export function UnifiedDashboard({ activeTab = "dashboard", onTabChange }: Unifi
   const { coins, items, purchaseItem, refresh: refreshMarketplace } = useMarketplace();
   const { streak, canClaimToday, isAtRisk, claimDailyReward, getTodayReward } = useStreak();
   const { friends, pendingGifts, sendFriendRequest, acceptFriendRequest, rejectFriendRequest, acceptGift, rejectGift } = useFriends();
-  const { getProgress, stats, unlockedAchievements } = useAchievements();
   const { currentOrg, members, challenges, isAdmin, completeChallenge, refresh: refreshOrg } = useOrganization();
   const { skills, unlockSkill } = useSkillTree();
+  const { trails, isTrailCompleted, getOverallStats } = useTrails();
 
-  const achievementProgress = getProgress();
   const pendingRequests = friends.filter(f => f.status === "pending" && !f.isRequester);
+  const trailStats = getOverallStats();
   
   // Calculate XP to next level
   const xpToNextLevel = 1000 * level;
 
-  // Convert achievements to badges format
-  const badges: Badge[] = unlockedAchievements?.map(a => ({
-    id: a.achievementId,
-    name: a.achievementId,
-    icon: "🏆",
-    rarity: "common" as Badge["rarity"],
-    isUnlocked: true,
-    unlockedAt: a.unlockedAt,
-  })) || [];
+  // Convert completed trails to badges format for display
+  const trailBadges: Badge[] = trails
+    .filter(t => isTrailCompleted(t.id))
+    .map(t => ({
+      id: t.id,
+      name: t.name,
+      icon: t.icon,
+      rarity: (t.difficulty === "expert" ? "legendary" : t.difficulty === "advanced" ? "epic" : t.difficulty === "intermediate" ? "rare" : "common") as Badge["rarity"],
+      isUnlocked: true,
+      unlockedAt: new Date().toISOString(),
+    }));
 
   // Mock bets data - in production, this would come from the database
   const mockBets: Bet[] = currentOrg ? [
@@ -158,32 +164,30 @@ export function UnifiedDashboard({ activeTab = "dashboard", onTabChange }: Unifi
               xpProgress={progress}
               coins={coins}
               ranking={5}
-              badges={achievementProgress.unlocked}
+              badges={trailStats.completedTrails}
               title={profile?.selected_title || undefined}
             />
             
             <BadgesCarousel
-              badges={badges.slice(0, 6)}
-              title="Conquistas"
+              badges={trailBadges.slice(0, 6)}
+              title="Insígnias de Trilhas"
             />
           </div>
 
           {/* Game Hub */}
           <GameHub
-            stats={stats as any}
             onSelectGame={handleSelectGame}
           />
         </TabsContent>
 
-        {/* Badges Tab */}
+        {/* Badges Tab - Now shows Trails with Badges */}
         <TabsContent value="badges" className="mt-6">
-          <AchievementsBadges badges={badges} />
+          <TrailsPage />
         </TabsContent>
 
         {/* Games Tab */}
         <TabsContent value="games" className="mt-6">
           <GameHub
-            stats={stats as any}
             onSelectGame={handleSelectGame}
           />
         </TabsContent>
