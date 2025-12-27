@@ -129,23 +129,21 @@ export function useAuth() {
   }) => {
     if (!user) return { error: new Error("Usuário não autenticado") };
 
-    const payload: Record<string, unknown> = {
-      id: user.id,
-      ...updates,
-    };
-
-    if (!updates.nickname && !profile?.nickname) {
-      payload.nickname = getDefaultNickname(user);
-    }
+    const nickname = updates.nickname || profile?.nickname || getDefaultNickname(user);
 
     const { data, error } = await supabase
       .from("profiles")
-      .upsert(payload, { onConflict: "id" })
+      .upsert({
+        id: user.id,
+        nickname,
+        avatar_url: updates.avatar_url ?? profile?.avatar_url ?? null,
+        selected_title: updates.selected_title ?? profile?.selected_title ?? null,
+      }, { onConflict: "id" })
       .select("*")
       .maybeSingle();
 
-    if (!error) {
-      setProfile((data as Profile) ?? null);
+    if (!error && data) {
+      setProfile(data as Profile);
     }
 
     return { error };
