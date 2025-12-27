@@ -1,9 +1,9 @@
 /**
  * Shell principal da aplicação Gameia
- * Navegação unificada: Treinamento, Orientação, Perfil
+ * Header com navegação completa: Badges, Jogos, Apostas, Skills, Loja, Ranking
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Gamepad2, 
@@ -13,29 +13,49 @@ import {
   LogIn,
   Menu,
   X,
-  Moon,
-  Sun
+  Trophy,
+  Ticket,
+  Target,
+  Store,
+  Crown,
+  LayoutDashboard
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
+import { useStreak } from "@/hooks/useStreak";
 import { cn } from "@/lib/utils";
+import { UserSettingsDropdown } from "@/components/game/common/UserSettingsDropdown";
+import { StreakModal } from "@/components/game/common/StreakModal";
 
 export type GameiaSection = "gamification" | "guidance" | "profile";
+export type DashboardTab = "dashboard" | "badges" | "games" | "bets" | "skills" | "store" | "ranking";
 
 interface AppShellProps {
   children: React.ReactNode;
   activeSection: GameiaSection;
   onSectionChange: (section: GameiaSection) => void;
+  activeTab?: DashboardTab;
+  onTabChange?: (tab: DashboardTab) => void;
 }
 
-const NAV_ITEMS = [
+// Header nav items with icons
+const HEADER_NAV_ITEMS: { id: DashboardTab; label: string; icon: React.ElementType }[] = [
+  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { id: "badges", label: "Badges", icon: Trophy },
+  { id: "games", label: "Jogos", icon: Gamepad2 },
+  { id: "bets", label: "Apostas", icon: Ticket },
+  { id: "skills", label: "Skills", icon: Target },
+  { id: "store", label: "Loja", icon: Store },
+  { id: "ranking", label: "Ranking", icon: Crown },
+];
+
+const MAIN_NAV_ITEMS = [
   {
     id: "gamification" as const,
     label: "Treinamento",
     shortLabel: "Treinar",
     icon: Gamepad2,
-    color: "pillar-gamification",
     description: "Games, Quiz e Cenários",
   },
   {
@@ -43,22 +63,52 @@ const NAV_ITEMS = [
     label: "Orientação",
     shortLabel: "Caminho",
     icon: Compass,
-    color: "pillar-guidance",
     description: "Seu GPS profissional",
   },
 ];
 
-export function AppShell({ children, activeSection, onSectionChange }: AppShellProps) {
+// Storage key for streak modal
+const STREAK_MODAL_KEY = "gameia_streak_modal_last_shown";
+
+export function AppShell({ 
+  children, 
+  activeSection, 
+  onSectionChange, 
+  activeTab = "dashboard",
+  onTabChange 
+}: AppShellProps) {
   const navigate = useNavigate();
   const { user, profile, isAuthenticated, signOut } = useAuth();
-  const { isDark, toggleTheme } = useTheme();
+  const { isDark } = useTheme();
+  const { streak, canClaimToday, isAtRisk, claimDailyReward } = useStreak();
+  
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [streakModalOpen, setStreakModalOpen] = useState(false);
 
   const displayName = profile?.nickname || user?.email?.split("@")[0] || "Conta";
-  const avatarInitial = displayName.charAt(0).toUpperCase() || "G";
+
+  // Check if streak modal should be shown today
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    
+    const lastShown = localStorage.getItem(STREAK_MODAL_KEY);
+    const today = new Date().toDateString();
+    
+    if (lastShown !== today && (canClaimToday || streak.currentStreak > 0)) {
+      setStreakModalOpen(true);
+      localStorage.setItem(STREAK_MODAL_KEY, today);
+    }
+  }, [isAuthenticated, canClaimToday, streak.currentStreak]);
 
   const handleLogout = async () => {
     await signOut();
+  };
+
+  const handleTabClick = (tab: DashboardTab) => {
+    if (activeSection !== "gamification") {
+      onSectionChange("gamification");
+    }
+    onTabChange?.(tab);
   };
 
   return (
@@ -77,63 +127,36 @@ export function AppShell({ children, activeSection, onSectionChange }: AppShellP
               </span>
             </div>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-1">
-              {NAV_ITEMS.map((item) => (
+            {/* Main Section Toggle (Treinar / Caminho) */}
+            <div className="hidden md:flex items-center gap-1 bg-muted/50 p-1 rounded-xl">
+              {MAIN_NAV_ITEMS.map((item) => (
                 <button
                   key={item.id}
                   onClick={() => onSectionChange(item.id)}
                   className={cn(
-                    "flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-200",
+                    "flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 font-medium text-sm",
                     activeSection === item.id
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
                   )}
                 >
                   <item.icon className="w-4 h-4" />
-                  <span className="font-medium text-sm">{item.shortLabel}</span>
+                  <span>{item.shortLabel}</span>
                 </button>
               ))}
-            </nav>
+            </div>
 
             {/* Right Actions */}
             <div className="flex items-center gap-2">
-              {/* Theme Toggle */}
-              <button
-                onClick={toggleTheme}
-                className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
-              >
-                {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-              </button>
-
               {isAuthenticated ? (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => onSectionChange("profile")}
-                    className={cn(
-                      "flex items-center gap-2 px-3 py-2 rounded-xl transition-all",
-                      activeSection === "profile" ? "bg-primary/10" : "hover:bg-muted/50"
-                    )}
-                  >
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                      <span className="text-primary-foreground text-sm font-semibold">
-                        {avatarInitial}
-                      </span>
-                    </div>
-                    <span className="text-sm font-medium text-foreground hidden lg:block">
-                      {displayName}
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all hidden sm:flex"
-                    title="Sair"
-                  >
-                    <LogOut className="w-5 h-5" />
-                  </button>
-                </>
+                <UserSettingsDropdown
+                  displayName={displayName}
+                  avatarUrl={profile?.avatar_url}
+                  streak={streak.currentStreak}
+                  onViewProfile={() => onSectionChange("profile")}
+                  onViewStreak={() => setStreakModalOpen(true)}
+                  onLogout={handleLogout}
+                />
               ) : (
                 <button
                   type="button"
@@ -154,6 +177,27 @@ export function AppShell({ children, activeSection, onSectionChange }: AppShellP
               </button>
             </div>
           </div>
+
+          {/* Sub Navigation (Dashboard Tabs) - Desktop only */}
+          {activeSection === "gamification" && (
+            <nav className="hidden md:flex items-center gap-1 pb-3 overflow-x-auto">
+              {HEADER_NAV_ITEMS.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => handleTabClick(item.id)}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all duration-200 text-sm whitespace-nowrap",
+                    activeTab === item.id
+                      ? "bg-primary/10 text-primary font-medium"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  )}
+                >
+                  <item.icon className="w-4 h-4" />
+                  <span>{item.label}</span>
+                </button>
+              ))}
+            </nav>
+          )}
         </div>
 
         {/* Mobile Navigation */}
@@ -166,7 +210,7 @@ export function AppShell({ children, activeSection, onSectionChange }: AppShellP
               className="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-lg"
             >
               <div className="px-4 py-3 space-y-1">
-                {NAV_ITEMS.map((item) => (
+                {MAIN_NAV_ITEMS.map((item) => (
                   <button
                     key={item.id}
                     onClick={() => {
@@ -187,6 +231,34 @@ export function AppShell({ children, activeSection, onSectionChange }: AppShellP
                     </div>
                   </button>
                 ))}
+                
+                {/* Dashboard tabs in mobile */}
+                {activeSection === "gamification" && (
+                  <>
+                    <div className="h-px bg-border/50 my-2" />
+                    <div className="grid grid-cols-4 gap-1">
+                      {HEADER_NAV_ITEMS.map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => {
+                            handleTabClick(item.id);
+                            setMobileMenuOpen(false);
+                          }}
+                          className={cn(
+                            "flex flex-col items-center gap-1 p-2 rounded-lg transition-all text-xs",
+                            activeTab === item.id
+                              ? "bg-primary/10 text-primary"
+                              : "text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          <item.icon className="w-4 h-4" />
+                          <span>{item.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+                
                 {isAuthenticated && (
                   <button
                     onClick={handleLogout}
@@ -203,10 +275,10 @@ export function AppShell({ children, activeSection, onSectionChange }: AppShellP
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 pb-24 md:pb-6">
         <AnimatePresence mode="wait">
           <motion.div
-            key={activeSection}
+            key={`${activeSection}-${activeTab}`}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
@@ -220,7 +292,7 @@ export function AppShell({ children, activeSection, onSectionChange }: AppShellP
       {/* Bottom Navigation (Mobile) */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden border-t border-border/50 bg-background/95 backdrop-blur-lg safe-area-pb">
         <div className="flex items-center justify-around py-2">
-          {NAV_ITEMS.map((item) => (
+          {MAIN_NAV_ITEMS.map((item) => (
             <button
               key={item.id}
               onClick={() => onSectionChange(item.id)}
@@ -249,6 +321,17 @@ export function AppShell({ children, activeSection, onSectionChange }: AppShellP
           </button>
         </div>
       </nav>
+
+      {/* Streak Modal */}
+      <StreakModal
+        isOpen={streakModalOpen}
+        onClose={() => setStreakModalOpen(false)}
+        currentStreak={streak.currentStreak}
+        longestStreak={streak.longestStreak}
+        canClaim={canClaimToday}
+        isAtRisk={isAtRisk}
+        onClaim={claimDailyReward}
+      />
     </div>
   );
 }
