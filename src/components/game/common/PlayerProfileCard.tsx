@@ -4,7 +4,6 @@
 
 import { motion } from "framer-motion";
 import { 
-  Flame, 
   Coins, 
   Trophy, 
   Award,
@@ -21,7 +20,6 @@ interface PlayerProfileCardProps {
   xpToNextLevel: number;
   xpProgress: number;
   coins: number;
-  streak: number;
   ranking?: number;
   badges: number;
   title?: string;
@@ -35,7 +33,6 @@ export function PlayerProfileCard({
   xpToNextLevel,
   xpProgress,
   coins,
-  streak,
   ranking,
   badges,
   title,
@@ -96,13 +93,7 @@ export function PlayerProfileCard({
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-3 gap-3 mt-5">
-        <div className="p-3 rounded-xl bg-muted/30 border border-border/50 text-center">
-          <Flame className="w-5 h-5 text-orange-400 mx-auto mb-1" />
-          <div className="text-xl font-bold text-foreground">{streak}</div>
-          <div className="text-[10px] text-muted-foreground">Dias Seguidos</div>
-        </div>
-        
+      <div className="grid grid-cols-2 gap-3 mt-5">
         {ranking && (
           <div className="p-3 rounded-xl bg-muted/30 border border-border/50 text-center">
             <Trophy className="w-5 h-5 text-amber-400 mx-auto mb-1" />
