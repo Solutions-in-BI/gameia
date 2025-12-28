@@ -6,7 +6,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { GameButton } from "@/components/game/common/GameButton";
 import { ThemeToggle } from "@/components/game/common/ThemeToggle";
 import { useToast } from "@/hooks/use-toast";
-import { Gamepad2, Mail, Lock, User, ArrowLeft, KeyRound } from "lucide-react";
+import { Mail, Lock, User, ArrowLeft, KeyRound } from "lucide-react";
+import { Logo } from "@/components/common/Logo";
 
 /**
  * ===========================================
@@ -226,13 +227,15 @@ export default function Auth() {
         >
           {/* Logo */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-4">
-              {mode === "forgot" || mode === "reset" ? (
+            {mode === "forgot" || mode === "reset" ? (
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-4">
                 <KeyRound size={32} className="text-primary" />
-              ) : (
-                <Gamepad2 size={32} className="text-primary" />
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className="flex justify-center mb-4">
+                <Logo variant="icon" size="xl" />
+              </div>
+            )}
             <h1 className="text-2xl font-bold text-foreground">{getTitle()}</h1>
             <p className="text-muted-foreground mt-1">{getSubtitle()}</p>
           </div>
