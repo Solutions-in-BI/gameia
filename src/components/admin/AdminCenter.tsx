@@ -27,6 +27,7 @@ import {
   ArrowLeft,
   RefreshCcw,
   UsersRound,
+  FileText,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -49,8 +50,12 @@ import { CompetencyMetrics } from "./metrics/CompetencyMetrics";
 import { DecisionMetrics } from "./metrics/DecisionMetrics";
 import { MembersMetricsTable } from "./metrics/MembersMetricsTable";
 import { TeamManagement } from "./teams";
+import { ExecutiveDashboard, ActivityFeed } from "./dashboard";
+import { MembersManagement } from "./members";
+import { ReportsPage } from "./reports";
+import { useOrgTeams } from "@/hooks/useOrgTeams";
 
-type AdminTab = "overview" | "teams" | "members" | "invites" | "challenges" | "settings";
+type AdminTab = "overview" | "teams" | "members" | "invites" | "challenges" | "reports" | "settings";
 
 export function AdminCenter() {
   const { user, isAuthenticated } = useAuth();
@@ -61,7 +66,7 @@ export function AdminCenter() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [isCreatingInvite, setIsCreatingInvite] = useState(false);
-  
+  const { teams, assignMemberToTeam } = useOrgTeams(organization?.id);
   const {
     engagement,
     learning,
@@ -183,6 +188,7 @@ export function AdminCenter() {
     { id: "members" as const, label: "Membros", icon: Users },
     { id: "invites" as const, label: "Convites", icon: UserPlus },
     { id: "challenges" as const, label: "Desafios", icon: Trophy },
+    { id: "reports" as const, label: "Relatórios", icon: FileText },
     { id: "settings" as const, label: "Configurações", icon: Settings },
   ];
 
