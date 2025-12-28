@@ -18,7 +18,8 @@ import {
   Target,
   Store,
   Crown,
-  LayoutDashboard
+  LayoutDashboard,
+  Sparkles
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -30,7 +31,7 @@ import { StreakModal } from "@/components/game/common/StreakModal";
 import { NotificationsDropdown } from "@/components/notifications/NotificationsDropdown";
 import { Logo } from "@/components/common/Logo";
 
-export type GameiaSection = "gamification" | "guidance" | "profile";
+export type GameiaSection = "gamification" | "development" | "guidance" | "profile";
 export type DashboardTab = "dashboard" | "badges" | "trainings" | "games" | "bets" | "skills" | "store" | "ranking";
 
 interface AppShellProps {
@@ -59,6 +60,13 @@ const MAIN_NAV_ITEMS = [
     shortLabel: "Treinar",
     icon: Gamepad2,
     description: "Games, Quiz e Cenários",
+  },
+  {
+    id: "development" as const,
+    label: "Desenvolvimento",
+    shortLabel: "Dev",
+    icon: Sparkles,
+    description: "Testes e avaliações",
   },
   {
     id: "guidance" as const,
