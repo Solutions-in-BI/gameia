@@ -360,6 +360,9 @@ export function AdminCenter() {
           </div>
         );
 
+      case "marketplace":
+        return <MarketplaceManagement />;
+
       case "skills":
         return (
           <div className="space-y-6">
