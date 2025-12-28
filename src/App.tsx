@@ -16,7 +16,6 @@ import About from "./pages/About";
 import Services from "./pages/Services";
 import Pricing from "./pages/Pricing";
 import Demo from "./pages/Demo";
-import Subscription from "./pages/Subscription";
 import { AdminGuard } from "./components/auth/AdminGuard";
 
 const queryClient = new QueryClient();
@@ -34,7 +33,6 @@ const App = () => (
           <Route path="/servicos" element={<Services />} />
           <Route path="/planos" element={<Pricing />} />
           <Route path="/demo" element={<Demo />} />
-          <Route path="/subscription" element={<Subscription />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route
