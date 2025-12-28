@@ -37,8 +37,7 @@ interface UseStreak {
 }
 
 export function useStreak(): UseStreak {
-  const { user, isAuthenticated } = useAuth();
-  
+  // All useState hooks MUST come first, before any other hooks
   const [streak, setStreak] = useState<StreakData>({
     currentStreak: 0,
     longestStreak: 0,
@@ -46,6 +45,9 @@ export function useStreak(): UseStreak {
     lastClaimedAt: null,
   });
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Now call other hooks
+  const { user, isAuthenticated } = useAuth();
 
   // Verifica se é o mesmo dia
   const isSameDay = (date1: Date, date2: Date): boolean => {
