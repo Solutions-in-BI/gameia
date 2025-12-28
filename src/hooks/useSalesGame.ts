@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 import { useOrganization } from "./useOrganization";
+import { useGameRewards } from "./useGameRewards";
 import { toast } from "sonner";
 import type { Json } from "@/integrations/supabase/types";
 
@@ -78,6 +79,7 @@ const STAGE_ORDER = ['opening', 'discovery', 'presentation', 'objection', 'closi
 export function useSalesGame() {
   const { user } = useAuth();
   const { currentOrg } = useOrganization();
+  const { logActivity, updateStreak } = useGameRewards();
   
   // Game data
   const [stages, setStages] = useState<SalesStage[]>([]);
@@ -422,6 +424,19 @@ export function useSalesGame() {
   const endGame = useCallback(async (saleClosed: boolean) => {
     setGameState('results');
 
+    // Calcula XP e coins baseado no score
+    const xpEarned = Math.round(score * 0.5);
+    const coinsEarned = Math.round(score * 0.2);
+
+    // Registra atividade e atualiza streak
+    await logActivity("sales_session", "sales", xpEarned, coinsEarned, {
+      rapport,
+      saleClosed,
+      timeSpent: 300 - timeLeft,
+      trackKey
+    });
+    await updateStreak();
+
     // Update session in database
     if (sessionId && user) {
       try {
@@ -443,7 +458,7 @@ export function useSalesGame() {
         console.error('Error updating session:', error);
       }
     }
-  }, [sessionId, user, timeLeft, rapport, score, skills, stagePerformance, messages]);
+  }, [sessionId, user, timeLeft, rapport, score, skills, stagePerformance, messages, logActivity, updateStreak, trackKey]);
 
   // Reset game
   const resetGame = useCallback(() => {

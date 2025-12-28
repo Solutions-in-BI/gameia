@@ -9,15 +9,15 @@ import { useLeaderboard } from "@/hooks/useLeaderboard";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useStreak } from "@/hooks/useStreak";
-import { useActivityLog } from "@/hooks/useActivityLog";
+import { useGameRewards } from "@/hooks/useGameRewards";
 
 /**
  * ===========================================
  * COMPONENTE: DinoGame
  * ===========================================
  * 
- * Jogo Dino Runner para RECREAÇÃO apenas.
- * NÃO gera XP nem Moedas - apenas diversão!
+ * Jogo Dino Runner para RECREAÇÃO.
+ * Registra atividades para métricas mas não dá XP/Coins.
  */
 
 interface DinoGameProps {
@@ -30,7 +30,7 @@ export function DinoGame({ onBack }: DinoGameProps) {
   const { profile, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const { recordPlay } = useStreak();
-  const { logGamePlayed } = useActivityLog();
+  const { logActivity, updateStreak } = useGameRewards();
 
   const [hasSavedScore, setHasSavedScore] = useState(false);
 
@@ -40,9 +40,10 @@ export function DinoGame({ onBack }: DinoGameProps) {
       
       // Registra play para streak
       recordPlay();
+      updateStreak();
       
-      // Registra atividade no log
-      logGamePlayed("dino", score);
+      // Registra atividade no log (para métricas)
+      logActivity("game_played", "dino", 0, 0, { score, recreational: true });
 
       if (isAuthenticated && profile && score >= 50) {
         addScore({
@@ -57,7 +58,7 @@ export function DinoGame({ onBack }: DinoGameProps) {
         });
       }
     }
-  }, [isGameOver, score, hasSavedScore, isAuthenticated, profile, addScore, toast, recordPlay, logGamePlayed]);
+  }, [isGameOver, score, hasSavedScore, isAuthenticated, profile, addScore, toast, recordPlay, logActivity, updateStreak]);
 
   const handleReset = () => {
     setHasSavedScore(false);

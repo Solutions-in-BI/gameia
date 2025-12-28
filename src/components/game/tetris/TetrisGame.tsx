@@ -8,6 +8,7 @@ import { useLeaderboard } from "@/hooks/useLeaderboard";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useStreak } from "@/hooks/useStreak";
+import { useGameRewards } from "@/hooks/useGameRewards";
 import { BOARD_WIDTH, BOARD_HEIGHT, CELL_SIZE, TETROMINOES, TETROMINO_COLORS, TetrominoType } from "@/constants/tetris";
 
 /**
@@ -15,8 +16,8 @@ import { BOARD_WIDTH, BOARD_HEIGHT, CELL_SIZE, TETROMINOES, TETROMINO_COLORS, Te
  * COMPONENTE: TetrisGame
  * ===========================================
  * 
- * Jogo Tetris para RECREAÇÃO apenas.
- * NÃO gera XP nem Moedas - apenas diversão!
+ * Jogo Tetris para RECREAÇÃO.
+ * Registra atividades para métricas mas não dá XP/Coins.
  */
 
 interface TetrisGameProps {
@@ -35,6 +36,7 @@ export function TetrisGame({ onBack }: TetrisGameProps) {
   const { profile, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const { recordPlay } = useStreak();
+  const { logActivity, updateStreak } = useGameRewards();
 
   const [hasSavedScore, setHasSavedScore] = useState(false);
 
@@ -44,6 +46,10 @@ export function TetrisGame({ onBack }: TetrisGameProps) {
       
       // Registra play para streak
       recordPlay();
+      updateStreak();
+      
+      // Registra atividade no log (para métricas)
+      logActivity("game_played", "tetris", 0, 0, { score, level, linesCleared, recreational: true });
 
       if (isAuthenticated && profile && score >= 500) {
         addScore({
@@ -58,7 +64,7 @@ export function TetrisGame({ onBack }: TetrisGameProps) {
         });
       }
     }
-  }, [isGameOver, score, hasSavedScore, isAuthenticated, profile, addScore, toast, recordPlay]);
+  }, [isGameOver, score, hasSavedScore, isAuthenticated, profile, addScore, toast, recordPlay, logActivity, updateStreak, level, linesCleared]);
 
   const handleReset = () => {
     resetGame();
