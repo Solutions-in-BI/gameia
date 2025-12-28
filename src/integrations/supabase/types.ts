@@ -2612,47 +2612,140 @@ export type Database = {
           },
         ]
       }
+      training_certificates: {
+        Row: {
+          certificate_number: string
+          id: string
+          issued_at: string | null
+          pdf_url: string | null
+          training_id: string
+          user_id: string
+        }
+        Insert: {
+          certificate_number: string
+          id?: string
+          issued_at?: string | null
+          pdf_url?: string | null
+          training_id: string
+          user_id: string
+        }
+        Update: {
+          certificate_number?: string
+          id?: string
+          issued_at?: string | null
+          pdf_url?: string | null
+          training_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_certificates_training_id_fkey"
+            columns: ["training_id"]
+            isOneToOne: false
+            referencedRelation: "trainings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_certificates_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_module_prerequisites: {
+        Row: {
+          created_at: string | null
+          id: string
+          module_id: string
+          prerequisite_module_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          module_id: string
+          prerequisite_module_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          module_id?: string
+          prerequisite_module_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_module_prerequisites_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "training_modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_module_prerequisites_prerequisite_module_id_fkey"
+            columns: ["prerequisite_module_id"]
+            isOneToOne: false
+            referencedRelation: "training_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       training_modules: {
         Row: {
+          coins_reward: number | null
           content_data: Json | null
           content_type: string | null
           created_at: string | null
           description: string | null
           id: string
+          is_preview: boolean | null
           is_required: boolean | null
           module_key: string
           name: string
           order_index: number | null
+          requires_completion: boolean | null
+          thumbnail_url: string | null
           time_minutes: number | null
           training_id: string
+          video_url: string | null
           xp_reward: number | null
         }
         Insert: {
+          coins_reward?: number | null
           content_data?: Json | null
           content_type?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
+          is_preview?: boolean | null
           is_required?: boolean | null
           module_key: string
           name: string
           order_index?: number | null
+          requires_completion?: boolean | null
+          thumbnail_url?: string | null
           time_minutes?: number | null
           training_id: string
+          video_url?: string | null
           xp_reward?: number | null
         }
         Update: {
+          coins_reward?: number | null
           content_data?: Json | null
           content_type?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
+          is_preview?: boolean | null
           is_required?: boolean | null
           module_key?: string
           name?: string
           order_index?: number | null
+          requires_completion?: boolean | null
+          thumbnail_url?: string | null
           time_minutes?: number | null
           training_id?: string
+          video_url?: string | null
           xp_reward?: number | null
         }
         Relationships: [
@@ -2668,6 +2761,7 @@ export type Database = {
       trainings: {
         Row: {
           category: string | null
+          certificate_enabled: boolean | null
           coins_reward: number | null
           color: string | null
           created_at: string | null
@@ -2677,14 +2771,18 @@ export type Database = {
           estimated_hours: number | null
           icon: string | null
           id: string
+          insignia_reward_id: string | null
           is_active: boolean | null
+          is_onboarding: boolean | null
           name: string
           organization_id: string | null
+          thumbnail_url: string | null
           training_key: string
           xp_reward: number | null
         }
         Insert: {
           category?: string | null
+          certificate_enabled?: boolean | null
           coins_reward?: number | null
           color?: string | null
           created_at?: string | null
@@ -2694,14 +2792,18 @@ export type Database = {
           estimated_hours?: number | null
           icon?: string | null
           id?: string
+          insignia_reward_id?: string | null
           is_active?: boolean | null
+          is_onboarding?: boolean | null
           name: string
           organization_id?: string | null
+          thumbnail_url?: string | null
           training_key: string
           xp_reward?: number | null
         }
         Update: {
           category?: string | null
+          certificate_enabled?: boolean | null
           coins_reward?: number | null
           color?: string | null
           created_at?: string | null
@@ -2711,13 +2813,23 @@ export type Database = {
           estimated_hours?: number | null
           icon?: string | null
           id?: string
+          insignia_reward_id?: string | null
           is_active?: boolean | null
+          is_onboarding?: boolean | null
           name?: string
           organization_id?: string | null
+          thumbnail_url?: string | null
           training_key?: string
           xp_reward?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "trainings_insignia_reward_id_fkey"
+            columns: ["insignia_reward_id"]
+            isOneToOne: false
+            referencedRelation: "insignias"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "trainings_organization_id_fkey"
             columns: ["organization_id"]
