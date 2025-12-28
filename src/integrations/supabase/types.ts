@@ -897,6 +897,7 @@ export type Database = {
           org_role: Database["public"]["Enums"]["org_role"] | null
           organization_id: string
           role: string
+          team_id: string | null
           user_id: string
         }
         Insert: {
@@ -908,6 +909,7 @@ export type Database = {
           org_role?: Database["public"]["Enums"]["org_role"] | null
           organization_id: string
           role?: string
+          team_id?: string | null
           user_id: string
         }
         Update: {
@@ -919,6 +921,7 @@ export type Database = {
           org_role?: Database["public"]["Enums"]["org_role"] | null
           organization_id?: string
           role?: string
+          team_id?: string | null
           user_id?: string
         }
         Relationships: [
@@ -927,6 +930,74 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_members_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "organization_teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_teams: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          manager_id: string | null
+          name: string
+          organization_id: string
+          parent_team_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          manager_id?: string | null
+          name: string
+          organization_id: string
+          parent_team_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          manager_id?: string | null
+          name?: string
+          organization_id?: string
+          parent_team_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_teams_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_teams_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_teams_parent_team_id_fkey"
+            columns: ["parent_team_id"]
+            isOneToOne: false
+            referencedRelation: "organization_teams"
             referencedColumns: ["id"]
           },
         ]
@@ -2594,6 +2665,10 @@ export type Database = {
         Args: { p_client_ip?: string; p_invite_code: string }
         Returns: Json
       }
+      can_view_user_data: {
+        Args: { _org_id: string; _target_user_id: string }
+        Returns: boolean
+      }
       create_org_invite: {
         Args: {
           p_email?: string
@@ -2603,10 +2678,15 @@ export type Database = {
         }
         Returns: Json
       }
+      get_org_role: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: string
+      }
       is_org_admin: {
         Args: { _org_id: string; _user_id: string }
         Returns: boolean
       }
+      is_org_member_or_owner: { Args: { _org_id: string }; Returns: boolean }
       list_org_invites: {
         Args: { p_organization_id: string }
         Returns: {
