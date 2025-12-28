@@ -68,7 +68,7 @@ export default function Auth() {
       if (!onboardingComplete && (!profile.nickname || profile.nickname.startsWith("Usuário"))) {
         navigate("/onboarding");
       } else {
-        navigate("/");
+        navigate("/app");
       }
     }
   }, [isAuthenticated, profile, authLoading, navigate, mode]);
@@ -101,7 +101,7 @@ export default function Auth() {
             variant: "destructive"
           });
         } else {
-          navigate("/");
+          navigate("/app");
         }
       } else if (mode === "signup") {
         const result = signUpSchema.safeParse({ email, password, nickname });
@@ -177,7 +177,7 @@ export default function Auth() {
             title: "Senha atualizada!",
             description: "Sua nova senha foi salva"
           });
-          navigate("/");
+          navigate("/app");
         }
       }
     } finally {
