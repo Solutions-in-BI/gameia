@@ -7,6 +7,9 @@ import { useState } from "react";
 import { DevelopmentDashboard, DevelopmentTab } from "./DevelopmentDashboard";
 import { CognitiveTestsHub } from "./CognitiveTestsHub";
 import { MyCognitiveProfile } from "./MyCognitiveProfile";
+import { PDISection } from "./PDISection";
+import { Assessment360Section } from "./Assessment360Section";
+import { OneOnOneSection } from "./OneOnOneSection";
 
 export function DevelopmentSection() {
   const [activeTab, setActiveTab] = useState<DevelopmentTab>("overview");
@@ -18,23 +21,11 @@ export function DevelopmentSection() {
       case "cognitive":
         return <CognitiveTestsHub />;
       case "assessments":
-        return (
-          <div className="text-center py-12 text-muted-foreground">
-            <p>Módulo de Avaliação 360° em breve</p>
-          </div>
-        );
+        return <Assessment360Section />;
       case "pdi":
-        return (
-          <div className="text-center py-12 text-muted-foreground">
-            <p>Módulo de PDI em breve</p>
-          </div>
-        );
+        return <PDISection />;
       case "one-on-one":
-        return (
-          <div className="text-center py-12 text-muted-foreground">
-            <p>Módulo de 1:1 em breve</p>
-          </div>
-        );
+        return <OneOnOneSection />;
       default:
         return <DevelopmentDashboard onTabChange={setActiveTab} />;
     }
