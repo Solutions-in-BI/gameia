@@ -8,6 +8,7 @@ import { AppShell, GameiaSection, DashboardTab } from "@/components/skillpath/la
 import { GamificationSection } from "@/components/skillpath/gamification/GamificationSection";
 import { GuidanceSection } from "@/components/skillpath/guidance/GuidanceSection";
 import { UnifiedProfileSection } from "@/components/skillpath/profile/UnifiedProfileSection";
+import { DevelopmentSection } from "@/components/game/development";
 import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 
 const Index = () => {
@@ -21,6 +22,8 @@ const Index = () => {
     switch (activeSection) {
       case "gamification":
         return <GamificationSection activeTab={activeTab} onTabChange={setActiveTab} />;
+      case "development":
+        return <DevelopmentSection />;
       case "guidance":
         return <GuidanceSection />;
       case "profile":
