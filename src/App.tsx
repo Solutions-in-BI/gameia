@@ -14,6 +14,7 @@ import NotFound from "./pages/NotFound";
 import Landing from "./pages/Landing";
 import Pricing from "./pages/Pricing";
 import Demo from "./pages/Demo";
+import Subscription from "./pages/Subscription";
 import { AdminGuard } from "./components/auth/AdminGuard";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/landing" element={<Landing />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/demo" element={<Demo />} />
+          <Route path="/subscription" element={<Subscription />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route
