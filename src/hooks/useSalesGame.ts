@@ -84,6 +84,9 @@ export function useSalesGame() {
   const [personas, setPersonas] = useState<SalesPersona[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
+  // Track state
+  const [trackKey, setTrackKey] = useState<string>('closer');
+  
   // Game state
   const [gameState, setGameState] = useState<'intro' | 'playing' | 'results'>('intro');
   const [selectedPersona, setSelectedPersona] = useState<SalesPersona | null>(null);
@@ -195,6 +198,7 @@ export function useSalesGame() {
             description: stage.description,
             tips: stage.tips,
           },
+          track_key: trackKey,
           conversation_history: conversationHistory.map(m => ({
             sender: m.sender,
             text: m.text
@@ -208,21 +212,29 @@ export function useSalesGame() {
       return data;
     } catch (error) {
       console.error('Error generating AI response:', error);
-      // Fallback to basic response
+      // Fallback based on track
+      const fallbackOptions = trackKey === 'sdr' 
+        ? [
+            { text: "Entendo que está ocupado. Posso ser breve?", quality: "good", rapport_impact: 5, score_value: 50, feedback: "Respeita o tempo do prospect" },
+            { text: "Qual seria o melhor horário para conversarmos?", quality: "optimal", rapport_impact: 10, score_value: 80, feedback: "Flexível e direto" },
+            { text: "Preciso falar com você sobre uma oportunidade!", quality: "poor", rapport_impact: -5, score_value: 20, feedback: "Muito agressivo" },
+          ]
+        : [
+            { text: "Posso apresentar nossa solução?", quality: "good", rapport_impact: 5, score_value: 50, feedback: "Boa abordagem consultiva" },
+            { text: "Quais são seus maiores desafios hoje?", quality: "optimal", rapport_impact: 10, score_value: 80, feedback: "Excelente! Descoberta de necessidades" },
+            { text: "Temos os melhores preços do mercado!", quality: "poor", rapport_impact: -5, score_value: 20, feedback: "Evite focar em preço logo de início" },
+          ];
+      
       return {
         client_response: playerResponse 
           ? "Interessante... Continue me contando mais sobre isso."
-          : "Olá! Estou ouvindo. O que você tem para me apresentar?",
-        response_options: [
-          { text: "Posso apresentar nossa solução?", quality: "good", rapport_impact: 5, score_value: 50, feedback: "Boa abordagem consultiva" },
-          { text: "Quais são seus maiores desafios hoje?", quality: "optimal", rapport_impact: 10, score_value: 80, feedback: "Excelente! Descoberta de necessidades" },
-          { text: "Temos os melhores preços do mercado!", quality: "poor", rapport_impact: -5, score_value: 20, feedback: "Evite focar em preço logo de início" },
-        ]
+          : trackKey === 'sdr' ? "Olá? Quem está falando?" : "Olá! Estou ouvindo. O que você tem para me apresentar?",
+        response_options: fallbackOptions,
       };
     } finally {
       setIsGenerating(false);
     }
-  }, [rapport]);
+  }, [rapport, trackKey]);
 
   // Start game with selected persona
   const startGame = useCallback(async (persona: SalesPersona) => {
@@ -464,6 +476,10 @@ export function useSalesGame() {
     personas,
     isLoading,
     isGenerating,
+    
+    // Track
+    trackKey,
+    setTrackKey,
     
     // Game state
     gameState,
