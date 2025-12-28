@@ -387,6 +387,19 @@ export default function Auth() {
               </button>
             )}
           </div>
+
+          {/* Legal Links */}
+          <div className="text-center mt-8 pt-6 border-t border-border">
+            <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+              <a href="/terms" className="hover:text-foreground transition-colors">
+                Termos de Uso
+              </a>
+              <span>•</span>
+              <a href="/privacy" className="hover:text-foreground transition-colors">
+                Política de Privacidade
+              </a>
+            </div>
+          </div>
         </motion.div>
       </div>
     </div>
