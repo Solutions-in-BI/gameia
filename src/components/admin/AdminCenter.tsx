@@ -259,80 +259,15 @@ export function AdminCenter() {
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6"
           >
-            {/* Period Selector & Refresh */}
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-display font-bold text-foreground">
-                Métricas da Organização
-              </h2>
-              <div className="flex items-center gap-3">
-                <Select
-                  value={period}
-                  onValueChange={(value: MetricPeriod) => fetchAllMetrics(value)}
-                >
-                  <SelectTrigger className="w-[140px]">
-                    <SelectValue placeholder="Período" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="7d">Últimos 7 dias</SelectItem>
-                    <SelectItem value="30d">Últimos 30 dias</SelectItem>
-                    <SelectItem value="90d">Últimos 90 dias</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => fetchAllMetrics(period)}
-                  disabled={isLoadingMetrics}
-                >
-                  <RefreshCcw className={cn("w-4 h-4", isLoadingMetrics && "animate-spin")} />
-                </Button>
-              </div>
-            </div>
-
-            {/* Metrics Grid */}
-            <div className="grid lg:grid-cols-2 gap-6">
-              <EngagementMetrics metrics={engagement} isLoading={isLoadingMetrics} />
-              <LearningMetrics metrics={learning} isLoading={isLoadingMetrics} />
-              <CompetencyMetrics metrics={competency} isLoading={isLoadingMetrics} />
-              <DecisionMetrics metrics={decision} isLoading={isLoadingMetrics} />
-            </div>
-
-            {/* Members Table */}
-            <MembersMetricsTable members={membersWithMetrics} isLoading={isLoadingMetrics} />
-
-            {/* Quick Actions */}
-            <div className="gameia-card p-6">
-              <h3 className="font-display font-bold text-foreground mb-4">
-                Ações Rápidas
-              </h3>
-              <div className="grid sm:grid-cols-3 gap-4">
-                <button
-                  onClick={() => createInvite()}
-                  disabled={isCreatingInvite}
-                  className="p-4 rounded-xl border border-border hover:border-primary/50 hover:bg-primary/5 transition-all text-left"
-                >
-                  <Link className="w-8 h-8 text-primary mb-2" />
-                  <div className="font-medium text-foreground">Criar Link de Convite</div>
-                  <div className="text-xs text-muted-foreground">Gerar link para novos membros</div>
-                </button>
-                <button
-                  onClick={() => setActiveTab("challenges")}
-                  className="p-4 rounded-xl border border-border hover:border-primary/50 hover:bg-primary/5 transition-all text-left"
-                >
-                  <Plus className="w-8 h-8 text-secondary mb-2" />
-                  <div className="font-medium text-foreground">Novo Desafio</div>
-                  <div className="text-xs text-muted-foreground">Criar desafio para equipe</div>
-                </button>
-                <button
-                  onClick={() => setActiveTab("members")}
-                  className="p-4 rounded-xl border border-border hover:border-primary/50 hover:bg-primary/5 transition-all text-left"
-                >
-                  <Users className="w-8 h-8 text-accent mb-2" />
-                  <div className="font-medium text-foreground">Gerenciar Membros</div>
-                  <div className="text-xs text-muted-foreground">Ver e editar membros</div>
-                </button>
-              </div>
-            </div>
+            <ExecutiveDashboard
+              engagement={engagement}
+              learning={learning}
+              competency={competency}
+              decision={decision}
+              members={membersWithMetrics}
+              isLoading={isLoadingMetrics}
+            />
+            <ActivityFeed orgId={organization.id} />
           </motion.div>
         )}
 
@@ -349,44 +284,13 @@ export function AdminCenter() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="gameia-card p-6"
           >
-            <h3 className="font-display font-bold text-foreground mb-4">
-              Membros da Organização ({members.length})
-            </h3>
-            <div className="space-y-3">
-              {members.map((member) => (
-                <div
-                  key={member.id}
-                  className="flex items-center justify-between p-4 bg-muted/30 rounded-xl"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                      <span className="text-primary-foreground font-semibold">
-                        {member.profile?.nickname?.charAt(0).toUpperCase() || "?"}
-                      </span>
-                    </div>
-                    <div>
-                      <div className="font-medium text-foreground">
-                        {member.profile?.nickname || "Sem nome"}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {member.job_title || member.role}
-                      </div>
-                    </div>
-                  </div>
-                  <span className={cn(
-                    "px-3 py-1 rounded-full text-xs font-medium",
-                    member.role === 'owner' ? "bg-gameia-warning/20 text-gameia-warning" :
-                    member.role === 'admin' ? "bg-primary/20 text-primary" :
-                    "bg-muted text-muted-foreground"
-                  )}>
-                    {member.role === 'owner' ? 'Dono' :
-                     member.role === 'admin' ? 'Admin' : 'Membro'}
-                  </span>
-                </div>
-              ))}
-            </div>
+            <MembersManagement
+              members={membersWithMetrics}
+              teams={teams}
+              isLoading={isLoadingMetrics}
+              onMoveToTeam={(userId, teamId) => assignMemberToTeam(userId, teamId)}
+            />
           </motion.div>
         )}
 
