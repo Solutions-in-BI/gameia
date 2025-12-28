@@ -21,6 +21,8 @@ import {
   HelpCircle,
   Brain,
   BookOpen,
+  Shield,
+  Key,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -45,7 +47,9 @@ export type AdminSection =
   | "skills"
   | "skill-mapping"
   | "quiz-content"
-  | "scenario-content";
+  | "scenario-content"
+  | "sso"
+  | "integrations";
 
 interface NavItem {
   id: AdminSection;
@@ -110,6 +114,8 @@ const ADMIN_NAV: NavEntry[] = [
       { id: "badges", label: "Badges", icon: Award },
       { id: "levels", label: "Níveis", icon: TrendingUp },
       { id: "skills", label: "Skills", icon: Target },
+      { id: "sso", label: "SSO Corporativo", icon: Shield },
+      { id: "integrations", label: "Integrações", icon: Key },
     ],
   },
 ];
@@ -244,6 +250,8 @@ export function getSectionLabel(section: AdminSection): string {
     "skill-mapping": "Mapeamento de Skills",
     "quiz-content": "Perguntas Quiz",
     "scenario-content": "Cenários",
+    sso: "SSO Corporativo",
+    integrations: "Integrações",
   };
   return labels[section];
 }
@@ -266,6 +274,8 @@ export function getSectionParent(section: AdminSection): { id: string; label: st
     "skill-mapping": { id: "settings", label: "Configurações" },
     "quiz-content": { id: "content", label: "Conteúdo" },
     "scenario-content": { id: "content", label: "Conteúdo" },
+    sso: { id: "settings", label: "Configurações" },
+    integrations: { id: "settings", label: "Configurações" },
   };
   return parentMap[section];
 }
