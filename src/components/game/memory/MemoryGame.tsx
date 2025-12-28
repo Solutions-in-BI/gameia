@@ -10,16 +10,15 @@ import { useMemoryGame } from "@/hooks/useMemoryGame";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { useStreak } from "@/hooks/useStreak";
-import { useActivityLog } from "@/hooks/useActivityLog";
+import { useGameRewards } from "@/hooks/useGameRewards";
 
 /**
  * ===========================================
  * COMPONENTE: MemoryGame
  * ===========================================
  * 
- * Jogo da Memória para RECREAÇÃO apenas.
- * NÃO gera XP nem Moedas - apenas diversão!
+ * Jogo da Memória - Ganha XP e Moedas!
+ * Menos movimentos = mais recompensas
  */
 
 interface MemoryGameProps {
@@ -45,8 +44,7 @@ export function MemoryGame({ onBack }: MemoryGameProps) {
   const { addScore } = useLeaderboard("memory", difficulty);
   const { profile, isAuthenticated } = useAuth();
   const { toast } = useToast();
-  const { recordPlay } = useStreak();
-  const { logGamePlayed } = useActivityLog();
+  const { completeGame } = useGameRewards();
 
   const [hasSavedScore, setHasSavedScore] = useState(false);
 
@@ -54,12 +52,23 @@ export function MemoryGame({ onBack }: MemoryGameProps) {
     if (hasWon && !hasSavedScore) {
       setHasSavedScore(true);
       
-      // Registra play para streak
-      recordPlay();
+      // Calcula score baseado em moves (menos = melhor)
+      // Inversão: moves baixos geram score alto
+      const pairsCount = cards.length / 2;
+      const perfectMoves = pairsCount; // Mínimo teórico
+      const efficiency = Math.max(0, 100 - ((moves - perfectMoves) / pairsCount) * 50);
+      const score = Math.round(efficiency * (difficulty === "hard" ? 3 : difficulty === "medium" ? 2 : 1));
       
-      // Registra atividade no log
-      logGamePlayed("memory", moves);
+      // Aplica recompensas via useGameRewards
+      completeGame({
+        gameType: "memory",
+        score,
+        difficulty,
+        timeSpentSeconds: time,
+        metadata: { moves, pairs: pairsCount, efficiency }
+      });
 
+      // Salva no leaderboard
       if (isAuthenticated && profile) {
         addScore({
           player_name: profile.nickname,
@@ -74,7 +83,7 @@ export function MemoryGame({ onBack }: MemoryGameProps) {
         });
       }
     }
-  }, [hasWon, moves, difficulty, hasSavedScore, isAuthenticated, profile, addScore, toast, recordPlay, logGamePlayed]);
+  }, [hasWon, moves, difficulty, hasSavedScore, isAuthenticated, profile, addScore, toast, completeGame, cards.length, time]);
 
   const handleReset = () => {
     setHasSavedScore(false);
@@ -82,7 +91,7 @@ export function MemoryGame({ onBack }: MemoryGameProps) {
   };
 
   return (
-    <GameLayout title="Jogo da Memória" subtitle="Jogo recreativo - apenas diversão!" onBack={onBack}>
+    <GameLayout title="Jogo da Memória" subtitle="Complete os pares para ganhar XP!" onBack={onBack}>
       {/* Controles no Topo */}
       <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6">
         <DifficultySelector 
