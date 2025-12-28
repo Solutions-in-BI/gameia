@@ -1,7 +1,4 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -24,6 +21,21 @@ interface RequestBody {
     description: string;
     tips: string;
   };
+  track_key: 'sdr' | 'closer';
+  product?: {
+    name: string;
+    description: string;
+    key_benefits: string[];
+    pricing_info: string;
+    pitch_script: string;
+    discovery_questions: string[];
+    competitive_advantages: string[];
+  };
+  objections?: Array<{
+    objection_text: string;
+    recommended_response: string;
+    technique: string;
+  }>;
   conversation_history: Array<{
     sender: 'client' | 'player';
     text: string;
@@ -38,11 +50,55 @@ serve(async (req) => {
   }
 
   try {
-    const { persona, stage, conversation_history, player_response, rapport }: RequestBody = await req.json();
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY is not configured');
+    }
+
+    const { 
+      persona, 
+      stage, 
+      track_key,
+      product,
+      objections,
+      conversation_history, 
+      player_response, 
+      rapport 
+    }: RequestBody = await req.json();
+
+    console.log(`[generate-sales-response] Track: ${track_key}, Stage: ${stage.stage_key}, Rapport: ${rapport}`);
+
+    // Build context based on track
+    const trackContext = track_key === 'sdr' 
+      ? `Esta é uma ligação de PROSPECÇÃO (SDR). O objetivo é qualificar o lead e agendar uma reunião.
+         Você NÃO está pronto para comprar - está sendo abordado pela primeira vez.
+         Seja mais resistente e questione a relevância da ligação.`
+      : `Esta é uma reunião de NEGOCIAÇÃO (Closer). O lead já foi qualificado.
+         Você está interessado mas tem objeções e precisa ser convencido do valor.`;
+
+    // Build product context if available
+    const productContext = product ? `
+PRODUTO/SERVIÇO EM NEGOCIAÇÃO:
+- Nome: ${product.name}
+- Descrição: ${product.description}
+- Benefícios: ${product.key_benefits?.join(', ') || 'Não especificados'}
+- Preço: ${product.pricing_info || 'A negociar'}
+- Pitch sugerido: ${product.pitch_script || 'Não disponível'}
+- Perguntas de discovery: ${product.discovery_questions?.join('; ') || 'Não especificadas'}
+- Diferenciais: ${product.competitive_advantages?.join(', ') || 'Não especificados'}
+` : '';
+
+    // Build objection context
+    const objectionContext = objections?.length ? `
+OBJEÇÕES COMUNS DESTE CLIENTE:
+${objections.map(o => `- "${o.objection_text}" (Técnica: ${o.technique})`).join('\n')}
+Use essas objeções de forma natural quando apropriado.
+` : '';
 
     const systemPrompt = `Você é ${persona.name}, ${persona.role} da ${persona.company_name} (${persona.company_type}).
 
 PERSONALIDADE: ${persona.personality}
+${trackContext}
 
 PONTOS DE DOR:
 ${persona.pain_points?.map(p => `- ${p}`).join('\n') || '- Busca soluções eficientes'}
@@ -50,99 +106,144 @@ ${persona.pain_points?.map(p => `- ${p}`).join('\n') || '- Busca soluções efic
 FATORES DE DECISÃO:
 ${persona.decision_factors?.map(f => `- ${f}`).join('\n') || '- Custo-benefício'}
 
+${productContext}
+${objectionContext}
+
 ESTÁGIO ATUAL DA CONVERSA: ${stage.stage_label}
-${stage.description}
+${stage.description || ''}
 
 NÍVEL DE RAPPORT ATUAL: ${rapport}% (0-100)
-- Se rapport < 30%: Você está desconfiado e resistente
-- Se rapport 30-60%: Você está neutro, mas aberto
-- Se rapport 60-80%: Você está interessado e engajado
-- Se rapport > 80%: Você está muito receptivo e próximo de fechar negócio
+${rapport < 30 ? '- Você está desconfiado e resistente' : ''}
+${rapport >= 30 && rapport < 60 ? '- Você está neutro, mas ouvindo' : ''}
+${rapport >= 60 && rapport < 80 ? '- Você está interessado e engajado' : ''}
+${rapport >= 80 ? '- Você está muito receptivo' : ''}
 
-REGRAS:
-1. Responda de forma natural e realista como um cliente de vendas
-2. Mantenha sua personalidade consistente
-3. Faça objeções realistas baseadas nos seus pontos de dor
-4. Se o vendedor usar técnicas boas, demonstre mais interesse
-5. Se o vendedor for muito agressivo ou técnico demais, demonstre resistência
-6. Suas respostas devem ter 1-3 frases, seja conciso
-7. Nunca quebre o personagem ou mencione que é uma simulação
+REGRAS IMPORTANTES:
+1. Responda de forma natural e realista como cliente brasileiro
+2. Mantenha sua personalidade consistente (${persona.personality})
+3. Use linguagem apropriada ao seu cargo e empresa
+4. Faça objeções realistas baseadas nos seus pontos de dor
+5. Se o vendedor usar técnicas boas, demonstre mais interesse
+6. Se for muito agressivo ou técnico demais, demonstre resistência
+7. Suas respostas devem ter 1-3 frases, seja conciso
+8. Nunca quebre o personagem ou mencione que é simulação
+9. Para SDR: seja mais difícil de engajar inicialmente
+10. Para Closer: tenha objeções mais elaboradas sobre preço, timing, decisão
 
 HISTÓRICO DA CONVERSA:
 ${conversation_history.map(m => `${m.sender === 'client' ? persona.name : 'Vendedor'}: ${m.text}`).join('\n')}`;
+
+    // Different skills based on track
+    const skillsTemplate = track_key === 'sdr' 
+      ? `"skills_impact": {
+      "cold_calling": número 0-20,
+      "qualification": número 0-20,
+      "rapport_building": número 0-20,
+      "meeting_setting": número 0-20
+    }`
+      : `"skills_impact": {
+      "discovery": número 0-20,
+      "presentation": número 0-20,
+      "objection_handling": número 0-20,
+      "closing": número 0-20
+    }`;
 
     const userPrompt = player_response 
       ? `O vendedor respondeu: "${player_response}"
 
 Baseado na sua personalidade, no estágio atual (${stage.stage_label}) e no rapport (${rapport}%), responda de forma natural.
 
-Retorne um JSON com:
+Retorne um JSON válido com:
 {
-  "client_response": "Sua resposta como cliente",
-  "rapport_change": número entre -15 e +15 (negativo se resposta foi ruim, positivo se foi boa),
-  "score_change": número entre 0 e 100 (baseado na qualidade da resposta do vendedor),
-  "feedback": "Dica curta para o jogador sobre o que foi bom ou ruim na abordagem",
-  "should_advance_stage": boolean (true se a conversa deve avançar para o próximo estágio),
-  "skills_impact": {
-    "rapport": número 0-20,
-    "discovery": número 0-20,
-    "presentation": número 0-20,
-    "objection": número 0-20,
-    "closing": número 0-20
-  }
-}`
-      : `Inicie a conversa como cliente no estágio "${stage.stage_label}". 
-      
-Diga algo que um cliente real diria neste momento da conversa de vendas.
-
-IMPORTANTE: As opções de resposta (response_options) devem ser RESPOSTAS DO VENDEDOR para o cliente, NÃO perguntas do cliente!
-O jogador é o vendedor e precisa escolher como responder ao cliente.
-
-Exemplos de boas opções de resposta DO VENDEDOR:
-- "Entendo sua preocupação. Posso mostrar como outros clientes reduziram custos em 30%?"
-- "Vamos analisar juntos quais são os principais gargalos do seu processo atual."
-- "Fico feliz em saber disso! Temos cases de sucesso em empresas similares à sua."
-
-Retorne um JSON com:
-{
-  "client_response": "Sua fala inicial como cliente",
+  "client_response": "Sua resposta como cliente em português brasileiro",
+  "rapport_change": número entre -15 e +15,
+  "score_change": número entre 0 e 100,
+  "feedback": "Dica curta para o jogador em português",
+  "should_advance_stage": boolean,
+  ${skillsTemplate},
   "response_options": [
     {
-      "text": "Resposta do vendedor (NÃO do cliente) - uma frase que o vendedor diria",
+      "text": "Resposta que o VENDEDOR pode dar (em português)",
       "quality": "optimal" | "good" | "neutral" | "poor",
       "rapport_impact": número -10 a +10,
       "score_value": número 0-100,
       "feedback": "Feedback sobre esta escolha"
-    },
-    // mais 2-3 opções de respostas DO VENDEDOR
+    }
   ]
-}`;
+}`
+      : `Inicie a conversa como cliente no estágio "${stage.stage_label}".
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+${track_key === 'sdr' 
+  ? 'Você está recebendo uma ligação fria. Seja um pouco resistente inicialmente.' 
+  : 'Você agendou esta reunião mas ainda tem dúvidas.'}
+
+IMPORTANTE: As opções de resposta (response_options) são RESPOSTAS DO VENDEDOR, não suas!
+O jogador é o vendedor e precisa escolher como responder.
+
+Retorne um JSON válido com:
+{
+  "client_response": "Sua fala inicial como cliente em português brasileiro",
+  "response_options": [
+    {
+      "text": "Resposta do VENDEDOR (não do cliente) em português",
+      "quality": "optimal" | "good" | "neutral" | "poor",
+      "rapport_impact": número -10 a +10,
+      "score_value": número 0-100,
+      "feedback": "Feedback sobre esta escolha"
+    }
+  ]
+}
+
+Forneça 3-4 opções de resposta do vendedor com diferentes qualidades.`;
+
+    console.log('[generate-sales-response] Calling Lovable AI...');
+
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'google/gemini-2.5-flash',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
         temperature: 0.8,
-        max_tokens: 1000,
+        max_tokens: 1500,
       }),
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error('OpenAI API error:', errorData);
-      throw new Error(`OpenAI API error: ${errorData.error?.message || 'Unknown error'}`);
+      const errorText = await response.text();
+      console.error('[generate-sales-response] AI gateway error:', response.status, errorText);
+      
+      if (response.status === 429) {
+        return new Response(JSON.stringify({ 
+          error: 'Rate limit exceeded. Please try again later.' 
+        }), {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
+      if (response.status === 402) {
+        return new Response(JSON.stringify({ 
+          error: 'AI credits exhausted. Please add more credits.' 
+        }), {
+          status: 402,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
+      throw new Error(`AI gateway error: ${response.status}`);
     }
 
     const data = await response.json();
     const content = data.choices[0].message.content;
+
+    console.log('[generate-sales-response] Raw AI response:', content.substring(0, 200));
 
     // Parse JSON response
     let parsedResponse;
@@ -151,15 +252,38 @@ Retorne um JSON com:
       const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, content];
       parsedResponse = JSON.parse(jsonMatch[1].trim());
     } catch (e) {
-      console.error('Failed to parse AI response:', content);
-      throw new Error('Failed to parse AI response');
+      console.error('[generate-sales-response] Failed to parse AI response:', content);
+      
+      // Fallback response based on track
+      const fallbackOptions = track_key === 'sdr' 
+        ? [
+            { text: "Entendo que está ocupado. Posso ser breve - temos uma solução que pode interessar.", quality: "good", rapport_impact: 5, score_value: 50, feedback: "Respeita o tempo do prospect" },
+            { text: "Qual seria o melhor horário para uma conversa rápida de 5 minutos?", quality: "optimal", rapport_impact: 10, score_value: 80, feedback: "Flexível e direto ao ponto" },
+            { text: "Preciso falar com você sobre uma oportunidade imperdível!", quality: "poor", rapport_impact: -5, score_value: 20, feedback: "Muito agressivo para cold call" },
+          ]
+        : [
+            { text: "Posso apresentar como nossa solução resolve exatamente esse problema?", quality: "good", rapport_impact: 5, score_value: 50, feedback: "Boa transição para apresentação" },
+            { text: "Me conta mais sobre esse desafio. Como ele impacta seu dia a dia?", quality: "optimal", rapport_impact: 10, score_value: 80, feedback: "Excelente técnica de discovery" },
+            { text: "Temos o melhor preço do mercado!", quality: "poor", rapport_impact: -5, score_value: 20, feedback: "Foco em preço muito cedo" },
+          ];
+
+      parsedResponse = {
+        client_response: player_response 
+          ? "Interessante... continue me explicando melhor."
+          : track_key === 'sdr' 
+            ? "Olá? Quem está falando?" 
+            : "Olá, obrigado por entrar em contato. Como posso ajudar?",
+        response_options: fallbackOptions,
+      };
     }
+
+    console.log('[generate-sales-response] Parsed response successfully');
 
     return new Response(JSON.stringify(parsedResponse), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error: unknown) {
-    console.error('Error in generate-sales-response:', error);
+    console.error('[generate-sales-response] Error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,

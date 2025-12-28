@@ -1477,6 +1477,7 @@ export type Database = {
           pain_points: string[] | null
           personality: string
           role: string | null
+          track_key: string | null
         }
         Insert: {
           avatar?: string | null
@@ -1492,6 +1493,7 @@ export type Database = {
           pain_points?: string[] | null
           personality: string
           role?: string | null
+          track_key?: string | null
         }
         Update: {
           avatar?: string | null
@@ -1507,6 +1509,7 @@ export type Database = {
           pain_points?: string[] | null
           personality?: string
           role?: string | null
+          track_key?: string | null
         }
         Relationships: [
           {
@@ -1529,6 +1532,7 @@ export type Database = {
           stage_label: string
           stage_order: number
           tips: string | null
+          track_key: string | null
         }
         Insert: {
           created_at?: string | null
@@ -1540,6 +1544,7 @@ export type Database = {
           stage_label: string
           stage_order: number
           tips?: string | null
+          track_key?: string | null
         }
         Update: {
           created_at?: string | null
@@ -1551,6 +1556,7 @@ export type Database = {
           stage_label?: string
           stage_order?: number
           tips?: string | null
+          track_key?: string | null
         }
         Relationships: [
           {
@@ -1578,6 +1584,7 @@ export type Database = {
           started_at: string | null
           time_spent_seconds: number | null
           total_score: number | null
+          track_key: string | null
           user_id: string
         }
         Insert: {
@@ -1595,6 +1602,7 @@ export type Database = {
           started_at?: string | null
           time_spent_seconds?: number | null
           total_score?: number | null
+          track_key?: string | null
           user_id: string
         }
         Update: {
@@ -1612,6 +1620,7 @@ export type Database = {
           started_at?: string | null
           time_spent_seconds?: number | null
           total_score?: number | null
+          track_key?: string | null
           user_id?: string
         }
         Relationships: [
@@ -1685,46 +1694,183 @@ export type Database = {
           },
         ]
       }
+      sales_objection_library: {
+        Row: {
+          created_at: string | null
+          id: string
+          objection_category: string
+          objection_text: string
+          organization_id: string | null
+          product_id: string | null
+          recommended_response: string | null
+          severity: string | null
+          technique: string | null
+          track_key: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          objection_category: string
+          objection_text: string
+          organization_id?: string | null
+          product_id?: string | null
+          recommended_response?: string | null
+          severity?: string | null
+          technique?: string | null
+          track_key?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          objection_category?: string
+          objection_text?: string
+          organization_id?: string | null
+          product_id?: string | null
+          recommended_response?: string | null
+          severity?: string | null
+          technique?: string | null
+          track_key?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_objection_library_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_objection_library_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "sales_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sales_products: {
         Row: {
+          average_ticket: string | null
+          case_studies: Json | null
+          commission_structure: Json | null
           common_objections: Json | null
+          competitive_advantages: Json | null
           created_at: string | null
+          demo_points: Json | null
           description: string | null
+          discovery_questions: Json | null
+          faq: Json | null
           id: string
           is_active: boolean | null
           key_benefits: string[] | null
           name: string
           organization_id: string | null
+          pitch_script: string | null
           pricing_info: string | null
+          product_type: string | null
+          sales_cycle_days: number | null
           target_audience: string | null
         }
         Insert: {
+          average_ticket?: string | null
+          case_studies?: Json | null
+          commission_structure?: Json | null
           common_objections?: Json | null
+          competitive_advantages?: Json | null
           created_at?: string | null
+          demo_points?: Json | null
           description?: string | null
+          discovery_questions?: Json | null
+          faq?: Json | null
           id?: string
           is_active?: boolean | null
           key_benefits?: string[] | null
           name: string
           organization_id?: string | null
+          pitch_script?: string | null
           pricing_info?: string | null
+          product_type?: string | null
+          sales_cycle_days?: number | null
           target_audience?: string | null
         }
         Update: {
+          average_ticket?: string | null
+          case_studies?: Json | null
+          commission_structure?: Json | null
           common_objections?: Json | null
+          competitive_advantages?: Json | null
           created_at?: string | null
+          demo_points?: Json | null
           description?: string | null
+          discovery_questions?: Json | null
+          faq?: Json | null
           id?: string
           is_active?: boolean | null
           key_benefits?: string[] | null
           name?: string
           organization_id?: string | null
+          pitch_script?: string | null
           pricing_info?: string | null
+          product_type?: string | null
+          sales_cycle_days?: number | null
           target_audience?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "sales_products_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_tracks: {
+        Row: {
+          coins_reward: number | null
+          color: string | null
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          organization_id: string | null
+          time_limit_seconds: number | null
+          track_key: string
+          xp_reward: number | null
+        }
+        Insert: {
+          coins_reward?: number | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          organization_id?: string | null
+          time_limit_seconds?: number | null
+          track_key: string
+          xp_reward?: number | null
+        }
+        Update: {
+          coins_reward?: number | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          organization_id?: string | null
+          time_limit_seconds?: number | null
+          track_key?: string
+          xp_reward?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_tracks_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
