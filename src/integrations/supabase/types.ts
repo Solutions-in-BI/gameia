@@ -615,6 +615,33 @@ export type Database = {
           },
         ]
       }
+      invite_attempts: {
+        Row: {
+          attempted_at: string | null
+          id: string
+          invite_code: string
+          ip_address: string | null
+          success: boolean | null
+          user_id: string | null
+        }
+        Insert: {
+          attempted_at?: string | null
+          id?: string
+          invite_code: string
+          ip_address?: string | null
+          success?: boolean | null
+          user_id?: string | null
+        }
+        Update: {
+          attempted_at?: string | null
+          id?: string
+          invite_code?: string
+          ip_address?: string | null
+          success?: boolean | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       leaderboard: {
         Row: {
           created_at: string
@@ -727,6 +754,42 @@ export type Database = {
           name?: string
           price?: number
           rarity?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string | null
+          data: Json | null
+          id: string
+          is_read: boolean | null
+          message: string | null
+          read_at: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          data?: Json | null
+          id?: string
+          is_read?: boolean | null
+          message?: string | null
+          read_at?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          data?: Json | null
+          id?: string
+          is_read?: boolean | null
+          message?: string | null
+          read_at?: string | null
+          title?: string
+          type?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -2527,10 +2590,39 @@ export type Database = {
     }
     Functions: {
       accept_invite: { Args: { p_invite_code: string }; Returns: Json }
+      accept_invite_with_rate_limit: {
+        Args: { p_client_ip?: string; p_invite_code: string }
+        Returns: Json
+      }
+      create_org_invite: {
+        Args: {
+          p_email?: string
+          p_expires_in_days?: number
+          p_organization_id: string
+          p_role?: string
+        }
+        Returns: Json
+      }
       is_org_admin: {
         Args: { _org_id: string; _user_id: string }
         Returns: boolean
       }
+      list_org_invites: {
+        Args: { p_organization_id: string }
+        Returns: {
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invite_code: string
+          is_expired: boolean
+          is_used: boolean
+          role: string
+          used_at: string
+          used_by: string
+        }[]
+      }
+      revoke_org_invite: { Args: { p_invite_id: string }; Returns: Json }
     }
     Enums: {
       friendship_status: "pending" | "accepted" | "blocked"
