@@ -483,6 +483,51 @@ export type Database = {
           },
         ]
       }
+      demo_leads: {
+        Row: {
+          company: string | null
+          company_size: string | null
+          contacted_at: string | null
+          created_at: string
+          email: string
+          id: string
+          message: string | null
+          name: string
+          notes: string | null
+          phone: string | null
+          source: string | null
+          status: string | null
+        }
+        Insert: {
+          company?: string | null
+          company_size?: string | null
+          contacted_at?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          message?: string | null
+          name: string
+          notes?: string | null
+          phone?: string | null
+          source?: string | null
+          status?: string | null
+        }
+        Update: {
+          company?: string | null
+          company_size?: string | null
+          contacted_at?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          source?: string | null
+          status?: string | null
+        }
+        Relationships: []
+      }
       friend_group_members: {
         Row: {
           group_id: string
