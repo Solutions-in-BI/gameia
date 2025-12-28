@@ -227,14 +227,14 @@ export function OneOnOneManagement() {
                 <div className="space-y-2">
                   <Label>Recorrência</Label>
                   <Select
-                    value={newMeeting.recurrence}
-                    onValueChange={(value) => setNewMeeting({ ...newMeeting, recurrence: value })}
+                    value={newMeeting.recurrence || "none"}
+                    onValueChange={(value) => setNewMeeting({ ...newMeeting, recurrence: value === "none" ? "" : value })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Sem recorrência" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Sem recorrência</SelectItem>
+                      <SelectItem value="none">Sem recorrência</SelectItem>
                       <SelectItem value="weekly">Semanal</SelectItem>
                       <SelectItem value="biweekly">Quinzenal</SelectItem>
                       <SelectItem value="monthly">Mensal</SelectItem>
