@@ -39,7 +39,8 @@ export type AdminSection =
   | "organization" 
   | "badges" 
   | "levels" 
-  | "skills";
+  | "skills"
+  | "skill-mapping";
 
 interface NavItem {
   id: AdminSection;
@@ -226,6 +227,7 @@ export function getSectionLabel(section: AdminSection): string {
     badges: "Badges",
     levels: "Níveis",
     skills: "Skills",
+    "skill-mapping": "Mapeamento de Skills",
   };
   return labels[section];
 }
@@ -245,6 +247,7 @@ export function getSectionParent(section: AdminSection): { id: string; label: st
     badges: { id: "settings", label: "Configurações" },
     levels: { id: "settings", label: "Configurações" },
     skills: { id: "settings", label: "Configurações" },
+    "skill-mapping": { id: "settings", label: "Configurações" },
   };
   return parentMap[section];
 }
