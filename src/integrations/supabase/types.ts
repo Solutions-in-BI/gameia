@@ -1011,41 +1011,155 @@ export type Database = {
           },
         ]
       }
+      marketplace_categories: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          icon: string
+          id: string
+          is_active: boolean | null
+          name: string
+          organization_id: string | null
+          section: string
+          slug: string
+          sort_order: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          organization_id?: string | null
+          section?: string
+          slug: string
+          sort_order?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          organization_id?: string | null
+          section?: string
+          slug?: string
+          sort_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_categories_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       marketplace_items: {
         Row: {
           category: string
           created_at: string
+          created_by: string | null
           description: string | null
           icon: string
           id: string
+          image_url: string | null
           is_active: boolean
+          is_featured: boolean | null
+          is_limited_edition: boolean | null
           name: string
+          organization_id: string | null
           price: number
           rarity: string
+          sort_order: number | null
+          stock: number | null
         }
         Insert: {
           category?: string
           created_at?: string
+          created_by?: string | null
           description?: string | null
           icon: string
           id?: string
+          image_url?: string | null
           is_active?: boolean
+          is_featured?: boolean | null
+          is_limited_edition?: boolean | null
           name: string
+          organization_id?: string | null
           price: number
           rarity?: string
+          sort_order?: number | null
+          stock?: number | null
         }
         Update: {
           category?: string
           created_at?: string
+          created_by?: string | null
           description?: string | null
           icon?: string
           id?: string
+          image_url?: string | null
           is_active?: boolean
+          is_featured?: boolean | null
+          is_limited_edition?: boolean | null
           name?: string
+          organization_id?: string | null
           price?: number
           rarity?: string
+          sort_order?: number | null
+          stock?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_transactions: {
+        Row: {
+          coins_amount: number
+          created_at: string | null
+          id: string
+          item_id: string
+          metadata: Json | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          coins_amount: number
+          created_at?: string | null
+          id?: string
+          item_id: string
+          metadata?: Json | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          coins_amount?: number
+          created_at?: string | null
+          id?: string
+          item_id?: string
+          metadata?: Json | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_transactions_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {
@@ -4184,6 +4298,7 @@ export type Database = {
         }
         Returns: string
       }
+      purchase_marketplace_item: { Args: { p_item_id: string }; Returns: Json }
       revoke_org_invite: { Args: { p_invite_id: string }; Returns: Json }
       validate_email_domain: {
         Args: { p_email: string; p_organization_id: string }
