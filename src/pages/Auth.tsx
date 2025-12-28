@@ -63,7 +63,13 @@ export default function Auth() {
   // Redireciona se já logado (exceto no reset)
   useEffect(() => {
     if (!authLoading && isAuthenticated && profile && mode !== "reset") {
-      navigate("/");
+      // Check if user needs onboarding
+      const onboardingComplete = localStorage.getItem("gameia_onboarding_complete");
+      if (!onboardingComplete && (!profile.nickname || profile.nickname.startsWith("Usuário"))) {
+        navigate("/onboarding");
+      } else {
+        navigate("/");
+      }
     }
   }, [isAuthenticated, profile, authLoading, navigate, mode]);
 
@@ -123,7 +129,8 @@ export default function Auth() {
              title: "Conta criada!",
              description: "Bem-vindo à Gameia!"
            });
-          navigate("/");
+          // New users go to onboarding
+          navigate("/onboarding");
         }
       } else if (mode === "forgot") {
         if (!email.trim() || !z.string().email().safeParse(email).success) {
