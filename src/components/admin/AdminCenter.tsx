@@ -39,6 +39,7 @@ import { MembersManagement } from "./members";
 import { ReportsPage } from "./reports";
 import { QuizManagement, ScenarioManagement } from "./content";
 import { TrainingManagement } from "./training";
+import { MarketplaceManagement } from "./marketplace";
 import { useOrgTeams } from "@/hooks/useOrgTeams";
 import { AdminSidebar, AdminSection } from "./layout";
 import { AdminHeader } from "./layout/AdminHeader";

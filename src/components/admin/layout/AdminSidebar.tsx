@@ -45,6 +45,7 @@ export type AdminSection =
   | "organization" 
   | "badges" 
   | "levels" 
+  | "marketplace"
   | "skills"
   | "skill-mapping"
   | "quiz-content"
@@ -97,6 +98,7 @@ const ADMIN_NAV: NavEntry[] = [
     children: [
       { id: "challenges", label: "Desafios", icon: Trophy },
       { id: "games-config", label: "Jogos", icon: Gamepad2 },
+      { id: "marketplace", label: "Loja Virtual", icon: Award },
     ],
   },
   {
@@ -249,6 +251,7 @@ export function getSectionLabel(section: AdminSection): string {
     organization: "Empresa",
     badges: "Badges",
     levels: "Níveis",
+    marketplace: "Loja Virtual",
     skills: "Skills",
     "skill-mapping": "Mapeamento de Skills",
     "quiz-content": "Perguntas Quiz",
@@ -274,6 +277,7 @@ export function getSectionParent(section: AdminSection): { id: string; label: st
     organization: { id: "settings", label: "Configurações" },
     badges: { id: "settings", label: "Configurações" },
     levels: { id: "settings", label: "Configurações" },
+    marketplace: { id: "gamification", label: "Gamificação" },
     skills: { id: "settings", label: "Configurações" },
     "skill-mapping": { id: "settings", label: "Configurações" },
     "quiz-content": { id: "content", label: "Conteúdo" },
