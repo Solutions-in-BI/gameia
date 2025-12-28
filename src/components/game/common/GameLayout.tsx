@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import { ArrowLeft } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 /**
  * ===========================================
@@ -35,31 +36,68 @@ export function GameLayout({
   onBack
 }: GameLayoutProps) {
   return (
-    <div className="min-h-screen bg-background py-6 px-4">
+    <motion.div 
+      className="min-h-screen bg-background py-6 px-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+    >
       <div className={`${maxWidthClasses[maxWidth]} mx-auto`}>
         {/* Header do Jogo */}
-        <header className="relative text-center mb-6 animate-fade-in">
+        <motion.header 
+          className="relative text-center mb-6"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+        >
           {onBack && (
-            <button
+            <motion.button
               onClick={onBack}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              whileHover={{ scale: 1.05, x: -2 }}
+              whileTap={{ scale: 0.95 }}
               className="absolute left-0 top-1/2 -translate-y-1/2 p-2 rounded-lg bg-card border border-border 
-                         hover:bg-muted transition-colors group"
+                         hover:bg-muted hover:border-primary/30 transition-all duration-200 group"
               title="Voltar ao Menu"
             >
               <ArrowLeft className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
-            </button>
+            </motion.button>
           )}
-          <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-1 neon-text">
+          <motion.h1 
+            className="text-3xl md:text-4xl font-display font-bold text-foreground mb-1 neon-text"
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", stiffness: 200 }}
+          >
             {title}
-          </h1>
+          </motion.h1>
           {subtitle && (
-            <p className="text-muted-foreground text-sm">{subtitle}</p>
+            <motion.p 
+              className="text-muted-foreground text-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              {subtitle}
+            </motion.p>
           )}
-        </header>
+        </motion.header>
 
         {/* Conteúdo do Jogo */}
-        {children}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={title}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3, delay: 0.15 }}
+          >
+            {children}
+          </motion.div>
+        </AnimatePresence>
       </div>
-    </div>
+    </motion.div>
   );
 }
