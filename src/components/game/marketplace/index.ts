@@ -4,3 +4,8 @@ export { PurchaseConfirmModal } from "./PurchaseConfirmModal";
 export { CoinDisplay } from "./CoinDisplay";
 export { RarityBadge, getRarityOrder } from "./RarityBadge";
 export type { Rarity } from "./RarityBadge";
+export { MarketplaceHeader } from "./MarketplaceHeader";
+export { FeaturedCarousel } from "./FeaturedCarousel";
+export { CategoryFilters } from "./CategoryFilters";
+export { EnhancedItemCard } from "./EnhancedItemCard";
+export { InventoryGrid } from "./InventoryGrid";
