@@ -68,16 +68,22 @@ export function AdminCenter() {
     membersWithMetrics,
     isLoading: isLoadingMetrics,
     period,
+    hasFetched,
     fetchAllMetrics,
   } = useOrgMetrics(organization?.id);
 
   useEffect(() => {
     if (organization) {
       fetchInvites();
-      fetchAllMetrics();
       setIsLoading(false);
     }
   }, [organization]);
+
+  useEffect(() => {
+    if (organization?.id && !hasFetched) {
+      fetchAllMetrics();
+    }
+  }, [organization?.id, hasFetched, fetchAllMetrics]);
 
   const fetchInvites = async () => {
     if (!organization) return;
