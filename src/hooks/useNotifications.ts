@@ -17,6 +17,18 @@ export interface Notification {
   is_read: boolean;
   created_at: string;
   read_at: string | null;
+  category?: string;
+  priority?: 'low' | 'normal' | 'high' | 'urgent';
+  action_url?: string | null;
+  expires_at?: string | null;
+}
+
+export interface NotificationPreferences {
+  email_streak_reminder: boolean;
+  email_weekly_summary: boolean;
+  push_achievements: boolean;
+  push_challenges: boolean;
+  push_friends: boolean;
 }
 
 interface UseNotifications {
