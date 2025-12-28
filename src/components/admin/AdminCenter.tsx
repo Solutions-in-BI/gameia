@@ -183,7 +183,13 @@ export function AdminCenter() {
               members={membersWithMetrics}
               isLoading={isLoadingMetrics}
             />
-            <ActivityFeed orgId={organization.id} />
+            <div className="rounded-xl border border-border bg-card p-6">
+              <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+                <Trophy className="h-5 w-5 text-primary" />
+                Atividades Recentes
+              </h3>
+              <ActivityFeed orgId={organization.id} limit={15} />
+            </div>
           </div>
         );
 
