@@ -56,19 +56,20 @@ export function OrganizationCard({
   const pendingChallenges = challenges.filter(c => !c.progress || c.progress.status !== "completed");
   const completedChallenges = challenges.filter(c => c.progress?.status === "completed");
 
-  // Aceitar convite por código
+  // Aceitar convite por código (com rate limiting)
   const handleAcceptInvite = async () => {
     if (!inviteCode.trim()) return;
     setIsLoading(true);
     
     try {
-      const { data, error } = await supabase.rpc('accept_invite', {
-        p_invite_code: inviteCode.trim()
+      const { data, error } = await supabase.rpc('accept_invite_with_rate_limit', {
+        p_invite_code: inviteCode.trim(),
+        p_client_ip: null
       });
       
       if (error) throw error;
       
-      const result = data as { success: boolean; error?: string; organization_id?: string };
+      const result = data as { success: boolean; error?: string; organization_id?: string; rate_limited?: boolean };
       
       if (result.success) {
         toast({ title: "Bem-vindo à empresa! 🎉" });
@@ -76,7 +77,10 @@ export function OrganizationCard({
         setInviteCode("");
         await onRefresh();
       } else {
-        toast({ title: result.error || "Erro ao aceitar convite", variant: "destructive" });
+        toast({ 
+          title: result.rate_limited ? "Muitas tentativas" : result.error || "Erro ao aceitar convite", 
+          variant: "destructive" 
+        });
       }
     } catch (err) {
       console.error("Erro ao aceitar convite:", err);

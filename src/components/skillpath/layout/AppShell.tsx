@@ -27,6 +27,7 @@ import { useStreak } from "@/hooks/useStreak";
 import { cn } from "@/lib/utils";
 import { UserSettingsDropdown } from "@/components/game/common/UserSettingsDropdown";
 import { StreakModal } from "@/components/game/common/StreakModal";
+import { NotificationsDropdown } from "@/components/notifications/NotificationsDropdown";
 
 export type GameiaSection = "gamification" | "guidance" | "profile";
 export type DashboardTab = "dashboard" | "badges" | "trainings" | "games" | "bets" | "skills" | "store" | "ranking";
@@ -169,16 +170,19 @@ export function AppShell({
                 ))}
               </div>
 
-              {/* User dropdown or login */}
+              {/* Notifications + User dropdown or login */}
               {isAuthenticated ? (
-                <UserSettingsDropdown
-                  displayName={displayName}
-                  avatarUrl={profile?.avatar_url}
-                  streak={streak.currentStreak}
-                  onViewProfile={() => onSectionChange("profile")}
-                  onViewStreak={() => setStreakModalOpen(true)}
-                  onLogout={handleLogout}
-                />
+                <>
+                  <NotificationsDropdown />
+                  <UserSettingsDropdown
+                    displayName={displayName}
+                    avatarUrl={profile?.avatar_url}
+                    streak={streak.currentStreak}
+                    onViewProfile={() => onSectionChange("profile")}
+                    onViewStreak={() => setStreakModalOpen(true)}
+                    onLogout={handleLogout}
+                  />
+                </>
               ) : (
                 <button
                   type="button"
