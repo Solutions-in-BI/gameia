@@ -162,12 +162,12 @@ export function TeamFormModal({
           {members.length > 0 && (
             <div className="space-y-2">
               <Label>Gestor (opcional)</Label>
-              <Select value={managerId} onValueChange={setManagerId}>
+              <Select value={managerId || "none"} onValueChange={(v) => setManagerId(v === "none" ? "" : v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione um gestor" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Nenhum</SelectItem>
+                  <SelectItem value="none">Nenhum</SelectItem>
                   {members.map((m) => (
                     <SelectItem key={m.user_id} value={m.user_id}>
                       {m.nickname}
