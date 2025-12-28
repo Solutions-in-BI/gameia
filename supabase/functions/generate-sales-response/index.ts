@@ -95,18 +95,26 @@ Retorne um JSON com:
       
 Diga algo que um cliente real diria neste momento da conversa de vendas.
 
+IMPORTANTE: As opções de resposta (response_options) devem ser RESPOSTAS DO VENDEDOR para o cliente, NÃO perguntas do cliente!
+O jogador é o vendedor e precisa escolher como responder ao cliente.
+
+Exemplos de boas opções de resposta DO VENDEDOR:
+- "Entendo sua preocupação. Posso mostrar como outros clientes reduziram custos em 30%?"
+- "Vamos analisar juntos quais são os principais gargalos do seu processo atual."
+- "Fico feliz em saber disso! Temos cases de sucesso em empresas similares à sua."
+
 Retorne um JSON com:
 {
   "client_response": "Sua fala inicial como cliente",
   "response_options": [
     {
-      "text": "Opção de resposta 1 para o vendedor",
+      "text": "Resposta do vendedor (NÃO do cliente) - uma frase que o vendedor diria",
       "quality": "optimal" | "good" | "neutral" | "poor",
       "rapport_impact": número -10 a +10,
       "score_value": número 0-100,
       "feedback": "Feedback sobre esta escolha"
     },
-    // mais 2-3 opções
+    // mais 2-3 opções de respostas DO VENDEDOR
   ]
 }`;
 
