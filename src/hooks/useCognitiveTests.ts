@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useOrganization } from "@/hooks/useOrganization";
 import { toast } from "sonner";
+import type { Json } from "@/integrations/supabase/types";
 
 export interface CognitiveTest {
   id: string;
@@ -13,7 +14,7 @@ export interface CognitiveTest {
   difficulty: string;
   time_limit_minutes: number | null;
   questions_count: number;
-  config: Record<string, unknown>;
+  config: Json;
   xp_reward: number;
   is_active: boolean;
   created_at: string;
