@@ -8,37 +8,20 @@ import { motion } from "framer-motion";
 import {
   Building2,
   Users,
-  BarChart3,
-  Settings,
+  Shield,
   Trophy,
   Mail,
-  Link,
   Copy,
   Plus,
-  UserPlus,
-  Crown,
-  Shield,
-  ChevronRight,
   Loader2,
-  Gamepad2,
-  Award,
-  TrendingUp,
-  Target,
-  ArrowLeft,
-  RefreshCcw,
-  UsersRound,
-  FileText,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useOrganization } from "@/hooks/useOrganization";
-import { useOrgMetrics, MetricPeriod } from "@/hooks/useOrgMetrics";
+import { useOrgMetrics } from "@/hooks/useOrgMetrics";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { GameConfigSettings } from "./settings/GameConfigSettings";
 import { BadgeConfigSettings } from "./settings/BadgeConfigSettings";
 import { LevelConfigSettings } from "./settings/LevelConfigSettings";
@@ -48,24 +31,25 @@ import { EngagementMetrics } from "./metrics/EngagementMetrics";
 import { LearningMetrics } from "./metrics/LearningMetrics";
 import { CompetencyMetrics } from "./metrics/CompetencyMetrics";
 import { DecisionMetrics } from "./metrics/DecisionMetrics";
-import { MembersMetricsTable } from "./metrics/MembersMetricsTable";
 import { TeamManagement } from "./teams";
 import { ExecutiveDashboard, ActivityFeed } from "./dashboard";
 import { MembersManagement } from "./members";
 import { ReportsPage } from "./reports";
 import { useOrgTeams } from "@/hooks/useOrgTeams";
-
-type AdminTab = "overview" | "teams" | "members" | "invites" | "challenges" | "reports" | "settings";
+import { AdminSidebar, AdminSection } from "./layout";
+import { AdminHeader } from "./layout/AdminHeader";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 
 export function AdminCenter() {
   const { user, isAuthenticated } = useAuth();
   const { currentOrg: organization, members, challenges, isAdmin } = useOrganization();
-  const [activeTab, setActiveTab] = useState<AdminTab>("overview");
+  const [activeSection, setActiveSection] = useState<AdminSection>("overview");
   const [invites, setInvites] = useState<any[]>([]);
   const isOrgOwner = isAdmin;
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [isCreatingInvite, setIsCreatingInvite] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const { teams, assignMemberToTeam } = useOrgTeams(organization?.id);
   const {
     engagement,
@@ -74,7 +58,6 @@ export function AdminCenter() {
     decision,
     membersWithMetrics,
     isLoading: isLoadingMetrics,
-    period,
     hasFetched,
     fetchAllMetrics,
   } = useOrgMetrics(organization?.id);
@@ -146,6 +129,11 @@ export function AdminCenter() {
     toast.success('Link copiado!');
   };
 
+  const handleSectionChange = (section: AdminSection) => {
+    setActiveSection(section);
+    setIsMobileSidebarOpen(false);
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -182,83 +170,11 @@ export function AdminCenter() {
     );
   }
 
-  const tabs = [
-    { id: "overview" as const, label: "Visão Geral", icon: BarChart3 },
-    { id: "teams" as const, label: "Equipes", icon: UsersRound },
-    { id: "members" as const, label: "Membros", icon: Users },
-    { id: "invites" as const, label: "Convites", icon: UserPlus },
-    { id: "challenges" as const, label: "Desafios", icon: Trophy },
-    { id: "reports" as const, label: "Relatórios", icon: FileText },
-    { id: "settings" as const, label: "Configurações", icon: Settings },
-  ];
-
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                <Building2 className="w-6 h-6 text-primary-foreground" />
-              </div>
-              <div>
-                <h1 className="text-xl font-display font-bold text-foreground">
-                  {organization.name}
-                </h1>
-                <p className="text-sm text-muted-foreground">Admin Center</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/")}
-                className="mr-2"
-              >
-                <ArrowLeft className="w-4 h-4 mr-1" />
-                Voltar
-              </Button>
-              <span className="px-3 py-1 bg-primary/10 text-primary text-sm font-medium rounded-full">
-                <Crown className="w-4 h-4 inline mr-1" />
-                Admin
-              </span>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Tabs */}
-      <div className="border-b border-border bg-card/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex gap-1 overflow-x-auto py-2">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm whitespace-nowrap transition-all",
-                  activeTab === tab.id
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                )}
-              >
-                <tab.icon className="w-4 h-4" />
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        {activeTab === "overview" && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
-          >
+  const renderContent = () => {
+    switch (activeSection) {
+      case "overview":
+        return (
+          <div className="space-y-6">
             <ExecutiveDashboard
               engagement={engagement}
               learning={learning}
@@ -268,40 +184,27 @@ export function AdminCenter() {
               isLoading={isLoadingMetrics}
             />
             <ActivityFeed orgId={organization.id} />
-          </motion.div>
-        )}
+          </div>
+        );
 
-        {activeTab === "teams" && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <TeamManagement orgId={organization.id} />
-          </motion.div>
-        )}
+      case "teams":
+        return <TeamManagement orgId={organization.id} />;
 
-        {activeTab === "members" && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <MembersManagement
-              members={membersWithMetrics}
-              teams={teams}
-              isLoading={isLoadingMetrics}
-              onMoveToTeam={(userId, teamId) => assignMemberToTeam(userId, teamId)}
-            />
-          </motion.div>
-        )}
+      case "members":
+        return (
+          <MembersManagement
+            members={membersWithMetrics}
+            teams={teams}
+            isLoading={isLoadingMetrics}
+            onMoveToTeam={(userId, teamId) => assignMemberToTeam(userId, teamId)}
+          />
+        );
 
-        {activeTab === "invites" && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
-          >
+      case "invites":
+        return (
+          <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h3 className="font-display font-bold text-foreground">
+              <h3 className="font-display font-bold text-foreground text-xl">
                 Convites Pendentes
               </h3>
               <button
@@ -351,17 +254,14 @@ export function AdminCenter() {
                 </div>
               )}
             </div>
-          </motion.div>
-        )}
+          </div>
+        );
 
-        {activeTab === "challenges" && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="gameia-card p-6"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-display font-bold text-foreground">
+      case "challenges":
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h3 className="font-display font-bold text-foreground text-xl">
                 Desafios da Organização
               </h3>
               <button className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl font-medium text-sm">
@@ -370,124 +270,141 @@ export function AdminCenter() {
               </button>
             </div>
             
-            {challenges.length === 0 ? (
-              <div className="text-center py-8">
-                <Trophy className="w-12 h-12 mx-auto mb-3 text-muted-foreground/50" />
-                <p className="text-muted-foreground">Nenhum desafio criado</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {challenges.map((challenge) => (
-                  <div
-                    key={challenge.id}
-                    className="flex items-center justify-between p-4 bg-muted/30 rounded-xl"
-                  >
-                    <div>
-                      <div className="font-medium text-foreground">{challenge.title}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {challenge.xp_reward} XP • {challenge.coins_reward} moedas
+            <div className="gameia-card p-6">
+              {challenges.length === 0 ? (
+                <div className="text-center py-8">
+                  <Trophy className="w-12 h-12 mx-auto mb-3 text-muted-foreground/50" />
+                  <p className="text-muted-foreground">Nenhum desafio criado</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {challenges.map((challenge) => (
+                    <div
+                      key={challenge.id}
+                      className="flex items-center justify-between p-4 bg-muted/30 rounded-xl"
+                    >
+                      <div>
+                        <div className="font-medium text-foreground">{challenge.title}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {challenge.xp_reward} XP • {challenge.coins_reward} moedas
+                        </div>
                       </div>
+                      <span className={cn(
+                        "px-3 py-1 rounded-full text-xs font-medium",
+                        challenge.is_active ? "bg-green-500/20 text-green-500" : "bg-muted text-muted-foreground"
+                      )}>
+                        {challenge.is_active ? 'Ativo' : 'Inativo'}
+                      </span>
                     </div>
-                    <span className={cn(
-                      "px-3 py-1 rounded-full text-xs font-medium",
-                      challenge.is_active ? "bg-green-500/20 text-green-500" : "bg-muted text-muted-foreground"
-                    )}>
-                      {challenge.is_active ? 'Ativo' : 'Inativo'}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </motion.div>
-        )}
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        );
 
-        {activeTab === "reports" && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <ReportsPage />
-          </motion.div>
-        )}
+      case "games-config":
+        return (
+          <div className="gameia-card p-6">
+            <GameConfigSettings />
+          </div>
+        );
 
-        {activeTab === "settings" && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="gameia-card p-6"
-          >
-            <Tabs defaultValue="organization" className="w-full">
-              <TabsList className="grid w-full grid-cols-5 mb-6">
-                <TabsTrigger value="organization" className="gap-1.5">
-                  <Building2 className="w-4 h-4" />
-                  <span className="hidden sm:inline">Empresa</span>
-                </TabsTrigger>
-                <TabsTrigger value="games" className="gap-1.5">
-                  <Gamepad2 className="w-4 h-4" />
-                  <span className="hidden sm:inline">Jogos</span>
-                </TabsTrigger>
-                <TabsTrigger value="badges" className="gap-1.5">
-                  <Award className="w-4 h-4" />
-                  <span className="hidden sm:inline">Badges</span>
-                </TabsTrigger>
-                <TabsTrigger value="levels" className="gap-1.5">
-                  <TrendingUp className="w-4 h-4" />
-                  <span className="hidden sm:inline">Níveis</span>
-                </TabsTrigger>
-                <TabsTrigger value="skills" className="gap-1.5">
-                  <Target className="w-4 h-4" />
-                  <span className="hidden sm:inline">Skills</span>
-                </TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="organization">
-                <OrganizationSettings />
-              </TabsContent>
-              <TabsContent value="games">
-                <GameConfigSettings />
-              </TabsContent>
-              <TabsContent value="badges">
-                <BadgeConfigSettings />
-              </TabsContent>
-              <TabsContent value="levels">
-                <LevelConfigSettings />
-              </TabsContent>
-              <TabsContent value="skills">
-                <SkillConfigSettings />
-              </TabsContent>
-            </Tabs>
-          </motion.div>
-        )}
-      </main>
-    </div>
-  );
-}
+      case "reports":
+        return <ReportsPage />;
 
-interface StatCardProps {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: number | string;
-  color: "primary" | "secondary" | "accent" | "warning";
-}
+      case "metrics":
+        return (
+          <div className="space-y-6">
+            <h3 className="font-display font-bold text-foreground text-xl">
+              Métricas Detalhadas
+            </h3>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <EngagementMetrics metrics={engagement} isLoading={isLoadingMetrics} />
+              <LearningMetrics metrics={learning} isLoading={isLoadingMetrics} />
+              <CompetencyMetrics metrics={competency} isLoading={isLoadingMetrics} />
+              <DecisionMetrics metrics={decision} isLoading={isLoadingMetrics} />
+            </div>
+          </div>
+        );
 
-function StatCard({ icon: Icon, label, value, color }: StatCardProps) {
-  const colorClasses = {
-    primary: "bg-primary/10 text-primary",
-    secondary: "bg-secondary/10 text-secondary",
-    accent: "bg-accent/10 text-accent",
-    warning: "bg-gameia-warning/10 text-gameia-warning",
+      case "organization":
+        return (
+          <div className="gameia-card p-6">
+            <OrganizationSettings />
+          </div>
+        );
+
+      case "badges":
+        return (
+          <div className="gameia-card p-6">
+            <BadgeConfigSettings />
+          </div>
+        );
+
+      case "levels":
+        return (
+          <div className="gameia-card p-6">
+            <LevelConfigSettings />
+          </div>
+        );
+
+      case "skills":
+        return (
+          <div className="gameia-card p-6">
+            <SkillConfigSettings />
+          </div>
+        );
+
+      default:
+        return null;
+    }
   };
 
   return (
-    <div className="gameia-card p-6">
-      <div className={cn(
-        "w-12 h-12 rounded-xl flex items-center justify-center mb-3",
-        colorClasses[color]
-      )}>
-        <Icon className="w-6 h-6" />
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Header */}
+      <AdminHeader
+        organizationName={organization.name}
+        currentSection={activeSection}
+        onNavigate={handleSectionChange}
+        onToggleSidebar={() => setIsMobileSidebarOpen(true)}
+      />
+
+      {/* Main Layout */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Desktop Sidebar */}
+        <div className="hidden lg:block">
+          <AdminSidebar
+            activeSection={activeSection}
+            onSectionChange={handleSectionChange}
+          />
+        </div>
+
+        {/* Mobile Sidebar */}
+        <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
+          <SheetContent side="left" className="p-0 w-64">
+            <AdminSidebar
+              activeSection={activeSection}
+              onSectionChange={handleSectionChange}
+            />
+          </SheetContent>
+        </Sheet>
+
+        {/* Content */}
+        <main className="flex-1 overflow-auto">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+            <motion.div
+              key={activeSection}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              {renderContent()}
+            </motion.div>
+          </div>
+        </main>
       </div>
-      <div className="text-sm text-muted-foreground">{label}</div>
-      <div className="text-2xl font-display font-bold text-foreground">{value}</div>
     </div>
   );
 }

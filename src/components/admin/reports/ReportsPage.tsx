@@ -10,7 +10,7 @@ import {
   Download, FileSpreadsheet, FileType, User, Building2, Loader2,
   BarChart3, Calendar
 } from 'lucide-react';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -258,12 +258,47 @@ export function ReportsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      {/* Header com filtros inline */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold">Central de Relatórios</h2>
           <p className="text-muted-foreground">Gere e exporte relatórios detalhados</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Filtro de Relatório */}
+          <Select value={selectedReport} onValueChange={(v) => {
+            setSelectedReport(v);
+            const report = REPORTS.find(r => r.id === v);
+            if (report) setSelectedCategory(report.category);
+          }}>
+            <SelectTrigger className="w-[200px]">
+              <FileText className="h-4 w-4 mr-2" />
+              <SelectValue placeholder="Selecione o relatório" />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(CATEGORY_LABELS).map(([catKey, { label: catLabel }]) => {
+                const catReports = REPORTS.filter(r => r.category === catKey);
+                if (catReports.length === 0) return null;
+                return (
+                  <div key={catKey}>
+                    <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                      {catLabel}
+                    </div>
+                    {catReports.map((report) => (
+                      <SelectItem key={report.id} value={report.id}>
+                        <div className="flex items-center gap-2">
+                          <report.icon className="h-4 w-4" />
+                          {report.name}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </div>
+                );
+              })}
+            </SelectContent>
+          </Select>
+
+          {/* Filtro de Período */}
           <Select value={period} onValueChange={(v) => setPeriod(v as ReportPeriod)}>
             <SelectTrigger className="w-[130px]">
               <Calendar className="h-4 w-4 mr-2" />
@@ -275,154 +310,118 @@ export function ReportsPage() {
               ))}
             </SelectContent>
           </Select>
+
+          {/* Filtro de Membro (condicional) */}
+          {needsMemberSelection && (
+            <Select value={selectedMemberId} onValueChange={setSelectedMemberId}>
+              <SelectTrigger className="w-[180px]">
+                <User className="h-4 w-4 mr-2" />
+                <SelectValue placeholder="Membro" />
+              </SelectTrigger>
+              <SelectContent>
+                {members.map((member) => (
+                  <SelectItem key={member.id} value={member.id}>
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-5 w-5">
+                        <AvatarImage src={member.avatar_url || undefined} />
+                        <AvatarFallback className="text-xs">{member.nickname[0]}</AvatarFallback>
+                      </Avatar>
+                      {member.nickname}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+
+          {/* Filtro de Equipe (condicional) */}
+          {needsTeamSelection && (
+            <Select value={selectedTeamId} onValueChange={setSelectedTeamId}>
+              <SelectTrigger className="w-[180px]">
+                <Users className="h-4 w-4 mr-2" />
+                <SelectValue placeholder="Equipe" />
+              </SelectTrigger>
+              <SelectContent>
+                {teams.map((team) => (
+                  <SelectItem key={team.id} value={team.id}>
+                    {team.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
       </div>
 
-      <Tabs value={selectedCategory} onValueChange={(v) => handleCategoryChange(v as ReportCategory)}>
-        <TabsList className="grid w-full grid-cols-5">
-          {Object.entries(CATEGORY_LABELS).map(([key, { label, icon: Icon }]) => (
-            <TabsTrigger key={key} value={key} className="gap-2">
-              <Icon className="h-4 w-4" />
-              <span className="hidden sm:inline">{label}</span>
-            </TabsTrigger>
-          ))}
-        </TabsList>
+      {/* Área de conteúdo principal */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Sidebar com Exportação */}
+        <div className="lg:col-span-1 space-y-4">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Download className="h-4 w-4" />
+                Exportar
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start gap-2"
+                onClick={handleExportExcel}
+                disabled={isExporting || !currentReportData}
+              >
+                {isExporting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <FileSpreadsheet className="h-4 w-4 text-green-600" />
+                )}
+                Exportar Excel
+              </Button>
+              <Button 
+                variant="outline" 
+                className="w-full justify-start gap-2"
+                onClick={handleExportPdf}
+                disabled={isExporting || !currentReportData}
+              >
+                {isExporting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <FileType className="h-4 w-4 text-red-600" />
+                )}
+                Exportar PDF
+              </Button>
+            </CardContent>
+          </Card>
 
-        <div className="mt-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="lg:col-span-1 space-y-4">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
-                  Relatórios
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-2">
-                <ScrollArea className="h-[300px]">
-                  <div className="space-y-1">
-                    {filteredReports.map((report) => (
-                      <button
-                        key={report.id}
-                        onClick={() => setSelectedReport(report.id)}
-                        className={`w-full text-left p-3 rounded-lg transition-colors ${
-                          selectedReport === report.id
-                            ? 'bg-primary text-primary-foreground'
-                            : 'hover:bg-muted'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <report.icon className="h-4 w-4 flex-shrink-0" />
-                          <div>
-                            <p className="font-medium text-sm">{report.name}</p>
-                            <p className={`text-xs ${
-                              selectedReport === report.id 
-                                ? 'text-primary-foreground/80' 
-                                : 'text-muted-foreground'
-                            }`}>
-                              {report.description}
-                            </p>
-                          </div>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-
-            {needsMemberSelection && (
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    Selecionar Membro
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Select value={selectedMemberId} onValueChange={setSelectedMemberId}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Escolha um membro" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {members.map((member) => (
-                        <SelectItem key={member.id} value={member.id}>
-                          <div className="flex items-center gap-2">
-                            <Avatar className="h-6 w-6">
-                              <AvatarImage src={member.avatar_url || undefined} />
-                              <AvatarFallback>{member.nickname[0]}</AvatarFallback>
-                            </Avatar>
-                            {member.nickname}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </CardContent>
-              </Card>
-            )}
-
-            {needsTeamSelection && (
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Users className="h-4 w-4" />
-                    Selecionar Equipe
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Select value={selectedTeamId} onValueChange={setSelectedTeamId}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Escolha uma equipe" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {teams.map((team) => (
-                        <SelectItem key={team.id} value={team.id}>
-                          {team.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </CardContent>
-              </Card>
-            )}
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Download className="h-4 w-4" />
-                  Exportar
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <Button 
-                  variant="outline" 
-                  className="w-full justify-start gap-2"
-                  onClick={handleExportExcel}
-                  disabled={isExporting || !currentReportData}
-                >
-                  {isExporting ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <FileSpreadsheet className="h-4 w-4 text-green-600" />
-                  )}
-                  Exportar Excel
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="w-full justify-start gap-2"
-                  onClick={handleExportPdf}
-                  disabled={isExporting || !currentReportData}
-                >
-                  {isExporting ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <FileType className="h-4 w-4 text-red-600" />
-                  )}
-                  Exportar PDF
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
+          {/* Info do relatório selecionado */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                {(() => {
+                  const report = REPORTS.find(r => r.id === selectedReport);
+                  if (report) {
+                    const Icon = report.icon;
+                    return <Icon className="h-4 w-4" />;
+                  }
+                  return <FileText className="h-4 w-4" />;
+                })()}
+                Relatório Atual
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="font-medium text-sm">
+                {REPORTS.find(r => r.id === selectedReport)?.name}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {REPORTS.find(r => r.id === selectedReport)?.description}
+              </p>
+              <Badge variant="secondary" className="mt-3">
+                {CATEGORY_LABELS[selectedCategory]?.label}
+              </Badge>
+            </CardContent>
+          </Card>
+        </div>
 
           <div className="lg:col-span-3">
             <Card className="min-h-[600px]">
@@ -463,9 +462,8 @@ export function ReportsPage() {
                 </AnimatePresence>
               </CardContent>
             </Card>
-          </div>
         </div>
-      </Tabs>
+      </div>
     </div>
   );
 }
