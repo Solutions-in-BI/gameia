@@ -14,11 +14,14 @@ import {
   Coins,
   Brain,
   Lightbulb,
-  Rocket
+  Rocket,
+  Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GameLayout } from "../common/GameLayout";
 import { AIScenarioGenerator } from "./AIScenarioGenerator";
+import { UpgradePrompt } from "@/components/common/UpgradePrompt";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
 
 type GamePhase = "intro" | "playing" | "results";
 
@@ -31,6 +34,8 @@ export function AIScenarioGame({ onBack }: AIScenarioGameProps) {
   const [scenariosCompleted, setScenariosCompleted] = useState(0);
   const [totalXP, setTotalXP] = useState(0);
   const [totalCoins, setTotalCoins] = useState(0);
+
+  const { hasMinimumPlan, isLoading: planLoading } = usePlanLimits();
 
   const handleScenarioComplete = (xp: number, coins: number) => {
     setScenariosCompleted((prev) => prev + 1);
@@ -48,6 +53,30 @@ export function AIScenarioGame({ onBack }: AIScenarioGameProps) {
     setTotalCoins(0);
     setPhase("playing");
   };
+
+  // Loading state
+  if (planLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Check if user has access to AI scenarios (Business+)
+  if (!hasMinimumPlan('business')) {
+    return (
+      <div className="min-h-screen bg-background p-4 flex items-center justify-center">
+        <div className="max-w-md w-full">
+          <UpgradePrompt
+            feature="Game IA com Cenários Avançados"
+            requiredPlan="Business"
+            onClose={onBack}
+          />
+        </div>
+      </div>
+    );
+  }
 
   // Intro Phase
   if (phase === "intro") {

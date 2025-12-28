@@ -14,6 +14,7 @@ import {
   Trash2,
   RefreshCw,
   ExternalLink,
+  AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -35,7 +36,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { useOrgInvites, type OrgInvite } from "@/hooks/useOrgInvites";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
+import { UpgradePrompt } from "@/components/common/UpgradePrompt";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
@@ -170,6 +174,9 @@ export function InviteManagement({
     getInviteUrl,
   } = useOrgInvites();
 
+  const { checkMemberLimit, currentPlan } = usePlanLimits();
+  const memberLimit = checkMemberLimit();
+
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [newInviteEmail, setNewInviteEmail] = useState("");
   const [newInviteRole, setNewInviteRole] = useState<"member" | "admin">("member");
@@ -217,6 +224,36 @@ export function InviteManagement({
 
   return (
     <div className="space-y-6">
+      {/* Member Limit Warning */}
+      {memberLimit.percentage >= 80 && (
+        <div className={cn(
+          "p-4 rounded-xl border flex items-start gap-3",
+          memberLimit.upgradeRequired 
+            ? "bg-destructive/10 border-destructive/20" 
+            : "bg-amber-500/10 border-amber-500/20"
+        )}>
+          <AlertTriangle className={cn(
+            "w-5 h-5 flex-shrink-0 mt-0.5",
+            memberLimit.upgradeRequired ? "text-destructive" : "text-amber-500"
+          )} />
+          <div className="flex-1">
+            <p className={cn(
+              "font-medium",
+              memberLimit.upgradeRequired ? "text-destructive" : "text-amber-600 dark:text-amber-400"
+            )}>
+              {memberLimit.upgradeRequired 
+                ? "Limite de membros atingido" 
+                : "Próximo do limite de membros"}
+            </p>
+            <p className="text-sm text-muted-foreground mt-1">
+              {memberLimit.current} de {memberLimit.limit === Infinity ? 'ilimitados' : memberLimit.limit} membros 
+              no plano {memberLimit.planName}
+            </p>
+            <Progress value={memberLimit.percentage} className="h-1.5 mt-2" />
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -236,9 +273,19 @@ export function InviteManagement({
           >
             <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
           </Button>
-          <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+          <Dialog open={showCreateDialog} onOpenChange={(open) => {
+            if (open && memberLimit.upgradeRequired) {
+              toast({
+                title: "Limite atingido",
+                description: "Faça upgrade do plano para convidar mais membros",
+                variant: "destructive",
+              });
+              return;
+            }
+            setShowCreateDialog(open);
+          }}>
             <DialogTrigger asChild>
-              <Button>
+              <Button disabled={memberLimit.upgradeRequired}>
                 <UserPlus className="w-4 h-4 mr-2" />
                 Novo Convite
               </Button>
