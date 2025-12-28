@@ -23,6 +23,7 @@ import {
   BookOpen,
   Shield,
   Key,
+  GraduationCap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -48,6 +49,7 @@ export type AdminSection =
   | "skill-mapping"
   | "quiz-content"
   | "scenario-content"
+  | "trainings-config"
   | "sso"
   | "integrations";
 
@@ -83,6 +85,7 @@ const ADMIN_NAV: NavEntry[] = [
     label: "Conteúdo",
     icon: BookOpen,
     children: [
+      { id: "trainings-config", label: "Treinamentos", icon: GraduationCap },
       { id: "quiz-content", label: "Perguntas Quiz", icon: HelpCircle },
       { id: "scenario-content", label: "Cenários", icon: Brain },
     ],
@@ -250,6 +253,7 @@ export function getSectionLabel(section: AdminSection): string {
     "skill-mapping": "Mapeamento de Skills",
     "quiz-content": "Perguntas Quiz",
     "scenario-content": "Cenários",
+    "trainings-config": "Treinamentos",
     sso: "SSO Corporativo",
     integrations: "Integrações",
   };
@@ -274,6 +278,7 @@ export function getSectionParent(section: AdminSection): { id: string; label: st
     "skill-mapping": { id: "settings", label: "Configurações" },
     "quiz-content": { id: "content", label: "Conteúdo" },
     "scenario-content": { id: "content", label: "Conteúdo" },
+    "trainings-config": { id: "content", label: "Conteúdo" },
     sso: { id: "settings", label: "Configurações" },
     integrations: { id: "settings", label: "Configurações" },
   };
