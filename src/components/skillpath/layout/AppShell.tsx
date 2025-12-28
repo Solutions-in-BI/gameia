@@ -28,6 +28,7 @@ import { cn } from "@/lib/utils";
 import { UserSettingsDropdown } from "@/components/game/common/UserSettingsDropdown";
 import { StreakModal } from "@/components/game/common/StreakModal";
 import { NotificationsDropdown } from "@/components/notifications/NotificationsDropdown";
+import { Logo } from "@/components/common/Logo";
 
 export type GameiaSection = "gamification" | "guidance" | "profile";
 export type DashboardTab = "dashboard" | "badges" | "trainings" | "games" | "bets" | "skills" | "store" | "ranking";
@@ -119,14 +120,8 @@ export function AppShell({
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-14 gap-4">
             {/* Logo */}
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm font-display">G</span>
-              </div>
-              <span className="font-display font-bold text-lg text-foreground hidden lg:block">
-                Gameia
-              </span>
-            </div>
+            <Logo variant="full" size="sm" className="hidden lg:flex" />
+            <Logo variant="icon" size="sm" className="lg:hidden" />
 
             {/* Center Navigation - Dashboard Tabs */}
             {activeSection === "gamification" && (
