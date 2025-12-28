@@ -25,20 +25,28 @@ import {
   TrendingUp,
   Target,
   ArrowLeft,
+  RefreshCcw,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useOrganization } from "@/hooks/useOrganization";
+import { useOrgMetrics, MetricPeriod } from "@/hooks/useOrgMetrics";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { GameConfigSettings } from "./settings/GameConfigSettings";
 import { BadgeConfigSettings } from "./settings/BadgeConfigSettings";
 import { LevelConfigSettings } from "./settings/LevelConfigSettings";
 import { SkillConfigSettings } from "./settings/SkillConfigSettings";
 import { OrganizationSettings } from "./settings/OrganizationSettings";
+import { EngagementMetrics } from "./metrics/EngagementMetrics";
+import { LearningMetrics } from "./metrics/LearningMetrics";
+import { CompetencyMetrics } from "./metrics/CompetencyMetrics";
+import { DecisionMetrics } from "./metrics/DecisionMetrics";
+import { MembersMetricsTable } from "./metrics/MembersMetricsTable";
 
 type AdminTab = "overview" | "members" | "invites" | "challenges" | "settings";
 
@@ -51,10 +59,22 @@ export function AdminCenter() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [isCreatingInvite, setIsCreatingInvite] = useState(false);
+  
+  const {
+    engagement,
+    learning,
+    competency,
+    decision,
+    membersWithMetrics,
+    isLoading: isLoadingMetrics,
+    period,
+    fetchAllMetrics,
+  } = useOrgMetrics(organization?.id);
 
   useEffect(() => {
     if (organization) {
       fetchInvites();
+      fetchAllMetrics();
       setIsLoading(false);
     }
   }, [organization]);
@@ -224,33 +244,46 @@ export function AdminCenter() {
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6"
           >
-            {/* Stats */}
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <StatCard
-                icon={Users}
-                label="Membros Ativos"
-                value={members.length}
-                color="primary"
-              />
-              <StatCard
-                icon={Trophy}
-                label="Desafios Ativos"
-                value={challenges.filter(c => c.is_active).length}
-                color="secondary"
-              />
-              <StatCard
-                icon={UserPlus}
-                label="Convites Pendentes"
-                value={invites.length}
-                color="accent"
-              />
-              <StatCard
-                icon={BarChart3}
-                label="Taxa de Engajamento"
-                value="87%"
-                color="warning"
-              />
+            {/* Period Selector & Refresh */}
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-display font-bold text-foreground">
+                Métricas da Organização
+              </h2>
+              <div className="flex items-center gap-3">
+                <Select
+                  value={period}
+                  onValueChange={(value: MetricPeriod) => fetchAllMetrics(value)}
+                >
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue placeholder="Período" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="7d">Últimos 7 dias</SelectItem>
+                    <SelectItem value="30d">Últimos 30 dias</SelectItem>
+                    <SelectItem value="90d">Últimos 90 dias</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => fetchAllMetrics(period)}
+                  disabled={isLoadingMetrics}
+                >
+                  <RefreshCcw className={cn("w-4 h-4", isLoadingMetrics && "animate-spin")} />
+                </Button>
+              </div>
             </div>
+
+            {/* Metrics Grid */}
+            <div className="grid lg:grid-cols-2 gap-6">
+              <EngagementMetrics metrics={engagement} isLoading={isLoadingMetrics} />
+              <LearningMetrics metrics={learning} isLoading={isLoadingMetrics} />
+              <CompetencyMetrics metrics={competency} isLoading={isLoadingMetrics} />
+              <DecisionMetrics metrics={decision} isLoading={isLoadingMetrics} />
+            </div>
+
+            {/* Members Table */}
+            <MembersMetricsTable members={membersWithMetrics} isLoading={isLoadingMetrics} />
 
             {/* Quick Actions */}
             <div className="gameia-card p-6">
