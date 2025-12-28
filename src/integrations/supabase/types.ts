@@ -269,6 +269,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "competency_assessments_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "vw_org_skill_metrics"
+            referencedColumns: ["skill_id"]
+          },
+          {
             foreignKeyName: "competency_assessments_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
@@ -1940,39 +1947,54 @@ export type Database = {
           color: string | null
           created_at: string | null
           description: string | null
+          display_order: number | null
           icon: string | null
           id: string
+          is_unlocked_by_default: boolean | null
+          level: number | null
           max_level: number | null
           name: string
           organization_id: string | null
+          parent_skill_id: string | null
           related_games: string[] | null
           skill_key: string
+          xp_per_level: number | null
         }
         Insert: {
           category?: string | null
           color?: string | null
           created_at?: string | null
           description?: string | null
+          display_order?: number | null
           icon?: string | null
           id?: string
+          is_unlocked_by_default?: boolean | null
+          level?: number | null
           max_level?: number | null
           name: string
           organization_id?: string | null
+          parent_skill_id?: string | null
           related_games?: string[] | null
           skill_key: string
+          xp_per_level?: number | null
         }
         Update: {
           category?: string | null
           color?: string | null
           created_at?: string | null
           description?: string | null
+          display_order?: number | null
           icon?: string | null
           id?: string
+          is_unlocked_by_default?: boolean | null
+          level?: number | null
           max_level?: number | null
           name?: string
           organization_id?: string | null
+          parent_skill_id?: string | null
           related_games?: string[] | null
           skill_key?: string
+          xp_per_level?: number | null
         }
         Relationships: [
           {
@@ -1980,6 +2002,81 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "skill_configurations_parent_skill_id_fkey"
+            columns: ["parent_skill_id"]
+            isOneToOne: false
+            referencedRelation: "skill_configurations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "skill_configurations_parent_skill_id_fkey"
+            columns: ["parent_skill_id"]
+            isOneToOne: false
+            referencedRelation: "vw_org_skill_metrics"
+            referencedColumns: ["skill_id"]
+          },
+        ]
+      }
+      skill_events_log: {
+        Row: {
+          created_at: string | null
+          event_type: string
+          id: string
+          metadata: Json | null
+          new_value: Json | null
+          old_value: Json | null
+          skill_id: string | null
+          source_id: string | null
+          source_type: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          new_value?: Json | null
+          old_value?: Json | null
+          skill_id?: string | null
+          source_id?: string | null
+          source_type?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          new_value?: Json | null
+          old_value?: Json | null
+          skill_id?: string | null
+          source_id?: string | null
+          source_type?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skill_events_log_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skill_configurations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "skill_events_log_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "vw_org_skill_metrics"
+            referencedColumns: ["skill_id"]
+          },
+          {
+            foreignKeyName: "skill_events_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -2313,30 +2410,39 @@ export type Database = {
       user_activity_log: {
         Row: {
           activity_type: string
+          coins_earned: number | null
           created_at: string | null
           game_type: string | null
           id: string
           metadata: Json | null
           organization_id: string | null
+          skill_id: string | null
           user_id: string
+          xp_earned: number | null
         }
         Insert: {
           activity_type: string
+          coins_earned?: number | null
           created_at?: string | null
           game_type?: string | null
           id?: string
           metadata?: Json | null
           organization_id?: string | null
+          skill_id?: string | null
           user_id: string
+          xp_earned?: number | null
         }
         Update: {
           activity_type?: string
+          coins_earned?: number | null
           created_at?: string | null
           game_type?: string | null
           id?: string
           metadata?: Json | null
           organization_id?: string | null
+          skill_id?: string | null
           user_id?: string
+          xp_earned?: number | null
         }
         Relationships: [
           {
@@ -2345,6 +2451,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_activity_log_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skill_configurations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_activity_log_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "vw_org_skill_metrics"
+            referencedColumns: ["skill_id"]
           },
           {
             foreignKeyName: "user_activity_log_user_id_fkey"
@@ -2559,6 +2679,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "skill_configurations"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_competency_scores_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "vw_org_skill_metrics"
+            referencedColumns: ["skill_id"]
           },
           {
             foreignKeyName: "user_competency_scores_user_id_fkey"
@@ -2827,39 +2954,71 @@ export type Database = {
       }
       user_skill_levels: {
         Row: {
+          created_at: string | null
           current_level: number | null
           current_xp: number | null
           id: string
+          is_unlocked: boolean | null
           last_practiced: string | null
+          mastery_level: number | null
+          organization_id: string | null
           skill_id: string
           total_xp: number | null
+          unlocked_at: string | null
+          updated_at: string | null
           user_id: string
         }
         Insert: {
+          created_at?: string | null
           current_level?: number | null
           current_xp?: number | null
           id?: string
+          is_unlocked?: boolean | null
           last_practiced?: string | null
+          mastery_level?: number | null
+          organization_id?: string | null
           skill_id: string
           total_xp?: number | null
+          unlocked_at?: string | null
+          updated_at?: string | null
           user_id: string
         }
         Update: {
+          created_at?: string | null
           current_level?: number | null
           current_xp?: number | null
           id?: string
+          is_unlocked?: boolean | null
           last_practiced?: string | null
+          mastery_level?: number | null
+          organization_id?: string | null
           skill_id?: string
           total_xp?: number | null
+          unlocked_at?: string | null
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "user_skill_levels_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "user_skill_levels_skill_id_fkey"
             columns: ["skill_id"]
             isOneToOne: false
             referencedRelation: "skill_configurations"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_skill_levels_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "vw_org_skill_metrics"
+            referencedColumns: ["skill_id"]
           },
         ]
       }
@@ -3170,6 +3329,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "user_xp_history_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "vw_org_skill_metrics"
+            referencedColumns: ["skill_id"]
+          },
+          {
             foreignKeyName: "user_xp_history_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
@@ -3180,7 +3346,93 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      vw_org_skill_metrics: {
+        Row: {
+          avg_level: number | null
+          avg_total_xp: number | null
+          category: string | null
+          mastery_count: number | null
+          organization_id: string | null
+          skill_id: string | null
+          skill_key: string | null
+          skill_name: string | null
+          total_users: number | null
+          unlocked_count: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skill_configurations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vw_user_skill_progress: {
+        Row: {
+          category: string | null
+          color: string | null
+          current_level: number | null
+          current_xp: number | null
+          description: string | null
+          icon: string | null
+          id: string | null
+          is_maxed: boolean | null
+          is_unlocked: boolean | null
+          last_practiced: string | null
+          mastery_level: number | null
+          max_level: number | null
+          organization_id: string | null
+          parent_skill_id: string | null
+          progress_percent: number | null
+          related_games: string[] | null
+          skill_id: string | null
+          skill_key: string | null
+          skill_name: string | null
+          total_xp: number | null
+          unlocked_at: string | null
+          user_id: string | null
+          xp_per_level: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skill_configurations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "skill_configurations_parent_skill_id_fkey"
+            columns: ["parent_skill_id"]
+            isOneToOne: false
+            referencedRelation: "skill_configurations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "skill_configurations_parent_skill_id_fkey"
+            columns: ["parent_skill_id"]
+            isOneToOne: false
+            referencedRelation: "vw_org_skill_metrics"
+            referencedColumns: ["skill_id"]
+          },
+          {
+            foreignKeyName: "user_skill_levels_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skill_configurations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_skill_levels_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "vw_org_skill_metrics"
+            referencedColumns: ["skill_id"]
+          },
+        ]
+      }
     }
     Functions: {
       accept_invite: { Args: { p_invite_code: string }; Returns: Json }
@@ -3188,10 +3440,21 @@ export type Database = {
         Args: { p_client_ip?: string; p_invite_code: string }
         Returns: Json
       }
+      add_skill_xp: {
+        Args: {
+          p_skill_id: string
+          p_source_id?: string
+          p_source_type?: string
+          p_user_id: string
+          p_xp_amount: number
+        }
+        Returns: Json
+      }
       can_view_user_data: {
         Args: { _org_id: string; _target_user_id: string }
         Returns: boolean
       }
+      check_skills_health: { Args: never; Returns: Json }
       create_org_invite: {
         Args: {
           p_email?: string
