@@ -18,6 +18,9 @@ import {
   Target,
   ChevronDown,
   ChevronRight,
+  HelpCircle,
+  Brain,
+  BookOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -40,7 +43,9 @@ export type AdminSection =
   | "badges" 
   | "levels" 
   | "skills"
-  | "skill-mapping";
+  | "skill-mapping"
+  | "quiz-content"
+  | "scenario-content";
 
 interface NavItem {
   id: AdminSection;
@@ -67,6 +72,15 @@ const ADMIN_NAV: NavEntry[] = [
       { id: "members", label: "Membros", icon: Users },
       { id: "teams", label: "Equipes", icon: UsersRound },
       { id: "invites", label: "Convites", icon: UserPlus },
+    ],
+  },
+  {
+    id: "content",
+    label: "Conteúdo",
+    icon: BookOpen,
+    children: [
+      { id: "quiz-content", label: "Perguntas Quiz", icon: HelpCircle },
+      { id: "scenario-content", label: "Cenários", icon: Brain },
     ],
   },
   {
@@ -228,6 +242,8 @@ export function getSectionLabel(section: AdminSection): string {
     levels: "Níveis",
     skills: "Skills",
     "skill-mapping": "Mapeamento de Skills",
+    "quiz-content": "Perguntas Quiz",
+    "scenario-content": "Cenários",
   };
   return labels[section];
 }
@@ -248,6 +264,8 @@ export function getSectionParent(section: AdminSection): { id: string; label: st
     levels: { id: "settings", label: "Configurações" },
     skills: { id: "settings", label: "Configurações" },
     "skill-mapping": { id: "settings", label: "Configurações" },
+    "quiz-content": { id: "content", label: "Conteúdo" },
+    "scenario-content": { id: "content", label: "Conteúdo" },
   };
   return parentMap[section];
 }

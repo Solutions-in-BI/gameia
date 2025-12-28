@@ -35,6 +35,7 @@ import { TeamManagement } from "./teams";
 import { ExecutiveDashboard, ActivityFeed } from "./dashboard";
 import { MembersManagement } from "./members";
 import { ReportsPage } from "./reports";
+import { QuizManagement, ScenarioManagement } from "./content";
 import { useOrgTeams } from "@/hooks/useOrgTeams";
 import { AdminSidebar, AdminSection } from "./layout";
 import { AdminHeader } from "./layout/AdminHeader";
@@ -360,6 +361,20 @@ export function AdminCenter() {
           <div className="space-y-6">
             <SkillManagement />
             <SkillMappingMatrix />
+          </div>
+        );
+
+      case "quiz-content":
+        return (
+          <div className="gameia-card p-6">
+            <QuizManagement />
+          </div>
+        );
+
+      case "scenario-content":
+        return (
+          <div className="gameia-card p-6">
+            <ScenarioManagement />
           </div>
         );
 
