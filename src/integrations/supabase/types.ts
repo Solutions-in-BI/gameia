@@ -1284,6 +1284,47 @@ export type Database = {
           },
         ]
       }
+      organization_sso_config: {
+        Row: {
+          allowed_domains: string[]
+          auto_join_enabled: boolean | null
+          created_at: string | null
+          id: string
+          is_enabled: boolean | null
+          organization_id: string
+          require_domain_match: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          allowed_domains?: string[]
+          auto_join_enabled?: boolean | null
+          created_at?: string | null
+          id?: string
+          is_enabled?: boolean | null
+          organization_id: string
+          require_domain_match?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          allowed_domains?: string[]
+          auto_join_enabled?: boolean | null
+          created_at?: string | null
+          id?: string
+          is_enabled?: boolean | null
+          organization_id?: string
+          require_domain_match?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_sso_config_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_teams: {
         Row: {
           color: string | null
@@ -4032,6 +4073,10 @@ export type Database = {
         Returns: string
       }
       revoke_org_invite: { Args: { p_invite_id: string }; Returns: Json }
+      validate_email_domain: {
+        Args: { p_email: string; p_organization_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "super_admin" | "admin" | "manager" | "user"

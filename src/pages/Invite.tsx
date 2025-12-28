@@ -6,7 +6,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Building2, Check, AlertTriangle, LogIn, Loader2 } from "lucide-react";
+import { Building2, Check, AlertTriangle, LogIn, Loader2, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useOrgInvites } from "@/hooks/useOrgInvites";
@@ -15,14 +15,17 @@ import { supabase } from "@/integrations/supabase/client";
 export default function InvitePage() {
   const { code } = useParams<{ code: string }>();
   const navigate = useNavigate();
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { acceptInvite, isLoading } = useOrgInvites();
   
   const [inviteInfo, setInviteInfo] = useState<{
     valid: boolean;
     organization_name?: string;
+    organization_id?: string;
     role?: string;
     error?: string;
+    ssoBlocked?: boolean;
+    allowedDomains?: string[];
   } | null>(null);
   const [accepted, setAccepted] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,6 +43,7 @@ export default function InvitePage() {
             role,
             expires_at,
             used_at,
+            organization_id,
             organizations (name)
           `)
           .eq("invite_code", code)
@@ -63,6 +67,7 @@ export default function InvitePage() {
         setInviteInfo({
           valid: true,
           organization_name: (data.organizations as any)?.name,
+          organization_id: data.organization_id,
           role: data.role,
         });
       } catch (err) {
@@ -73,6 +78,40 @@ export default function InvitePage() {
 
     checkInvite();
   }, [code]);
+
+  // Verifica SSO quando usuário está autenticado
+  useEffect(() => {
+    if (!isAuthenticated || !user?.email || !inviteInfo?.organization_id || !inviteInfo.valid) return;
+
+    const checkSSO = async () => {
+      try {
+        const { data: ssoConfig } = await supabase
+          .from("organization_sso_config")
+          .select("*")
+          .eq("organization_id", inviteInfo.organization_id)
+          .maybeSingle();
+
+        if (!ssoConfig || !ssoConfig.is_enabled || !ssoConfig.require_domain_match) {
+          return; // SSO não habilitado, permite qualquer email
+        }
+
+        const userDomain = user.email!.toLowerCase().split("@")[1];
+        const allowedDomains = (ssoConfig.allowed_domains as string[]) || [];
+        
+        if (!allowedDomains.includes(userDomain)) {
+          setInviteInfo(prev => prev ? {
+            ...prev,
+            ssoBlocked: true,
+            allowedDomains,
+          } : null);
+        }
+      } catch (err) {
+        console.error("Erro ao verificar SSO:", err);
+      }
+    };
+
+    checkSSO();
+  }, [isAuthenticated, user?.email, inviteInfo?.organization_id, inviteInfo?.valid]);
 
   // Aceita o convite
   const handleAccept = async () => {
@@ -155,6 +194,43 @@ export default function InvitePage() {
           >
             <LogIn className="w-4 h-4 mr-2" />
             Fazer Login
+          </Button>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // SSO bloqueado - email não permitido
+  if (inviteInfo.ssoBlocked) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="w-full max-w-md p-8 rounded-2xl bg-card border border-border text-center"
+        >
+          <div className="w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center mx-auto mb-4">
+            <Shield className="w-8 h-8 text-amber-500" />
+          </div>
+          <h1 className="text-xl font-semibold text-foreground mb-2">
+            Acesso Restrito por SSO
+          </h1>
+          <p className="text-muted-foreground mb-4">
+            A organização <span className="font-medium text-foreground">{inviteInfo.organization_name}</span> requer email corporativo.
+          </p>
+          <div className="p-3 rounded-lg bg-muted/50 text-sm text-muted-foreground mb-4">
+            <p className="font-medium mb-1">Domínios permitidos:</p>
+            {inviteInfo.allowedDomains?.map(domain => (
+              <span key={domain} className="inline-block px-2 py-1 bg-primary/10 text-primary rounded mr-1 mt-1">
+                @{domain}
+              </span>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground mb-6">
+            Seu email: <span className="font-mono">{user?.email}</span>
+          </p>
+          <Button onClick={() => navigate("/")} className="w-full">
+            Voltar ao Início
           </Button>
         </motion.div>
       </div>

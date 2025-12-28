@@ -27,6 +27,8 @@ import { BadgeConfigSettings } from "./settings/BadgeConfigSettings";
 import { LevelConfigSettings } from "./settings/LevelConfigSettings";
 import { SkillManagement, SkillMappingMatrix } from "./skills";
 import { OrganizationSettings } from "./settings/OrganizationSettings";
+import { SSOSettings } from "./settings/SSOSettings";
+import { IntegrationsSettings } from "./settings/IntegrationsSettings";
 import { EngagementMetrics } from "./metrics/EngagementMetrics";
 import { LearningMetrics } from "./metrics/LearningMetrics";
 import { CompetencyMetrics } from "./metrics/CompetencyMetrics";
@@ -375,6 +377,20 @@ export function AdminCenter() {
         return (
           <div className="gameia-card p-6">
             <ScenarioManagement />
+          </div>
+        );
+
+      case "sso":
+        return (
+          <div className="gameia-card p-6">
+            <SSOSettings />
+          </div>
+        );
+
+      case "integrations":
+        return (
+          <div className="gameia-card p-6">
+            <IntegrationsSettings />
           </div>
         );
 
