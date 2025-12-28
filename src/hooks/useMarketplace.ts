@@ -8,10 +8,23 @@ export interface MarketplaceItem {
   name: string;
   description: string | null;
   icon: string;
+  image_url: string | null;
   category: string;
   price: number;
   rarity: string;
   is_active: boolean;
+  stock: number | null;
+  is_limited_edition: boolean;
+  is_featured: boolean;
+}
+
+export interface MarketplaceCategory {
+  id: string;
+  name: string;
+  slug: string;
+  icon: string;
+  section: string;
+  sort_order: number;
 }
 
 export interface InventoryItem {
@@ -28,6 +41,7 @@ export function useMarketplace() {
   const { toast } = useToast();
   
   const [items, setItems] = useState<MarketplaceItem[]>([]);
+  const [categories, setCategories] = useState<MarketplaceCategory[]>([]);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [coins, setCoins] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,9 +52,22 @@ export function useMarketplace() {
       .from("marketplace_items")
       .select("*")
       .eq("is_active", true)
+      .order("is_featured", { ascending: false })
+      .order("sort_order", { ascending: true })
       .order("price", { ascending: true });
     
-    if (data) setItems(data);
+    if (data) setItems(data as MarketplaceItem[]);
+  }, []);
+
+  // Busca categorias
+  const fetchCategories = useCallback(async () => {
+    const { data } = await supabase
+      .from("marketplace_categories")
+      .select("*")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true });
+    
+    if (data) setCategories(data as MarketplaceCategory[]);
   }, []);
 
   // Busca inventário do usuário
@@ -77,7 +104,7 @@ export function useMarketplace() {
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
-      await fetchItems();
+      await Promise.all([fetchItems(), fetchCategories()]);
       if (isAuthenticated) {
         await Promise.all([fetchInventory(), fetchCoins()]);
       }
@@ -85,62 +112,48 @@ export function useMarketplace() {
     };
     
     loadData();
-  }, [fetchItems, fetchInventory, fetchCoins, isAuthenticated]);
+  }, [fetchItems, fetchCategories, fetchInventory, fetchCoins, isAuthenticated]);
 
-  // Comprar item
+  // Comprar item (usando função atômica do banco)
   const purchaseItem = async (itemId: string) => {
     if (!user) {
       toast({ title: "Erro", description: "Faça login para comprar", variant: "destructive" });
       return { success: false };
     }
 
-    const item = items.find(i => i.id === itemId);
-    if (!item) {
-      toast({ title: "Erro", description: "Item não encontrado", variant: "destructive" });
+    const { data, error } = await supabase.rpc("purchase_marketplace_item", {
+      p_item_id: itemId
+    });
+
+    if (error) {
+      toast({ title: "Erro ao processar compra", description: error.message, variant: "destructive" });
       return { success: false };
     }
 
-    if (coins < item.price) {
-      toast({ title: "Moedas insuficientes", description: `Você precisa de ${item.price} moedas`, variant: "destructive" });
-      return { success: false };
-    }
+    const result = data as { success: boolean; error?: string; item_name?: string; coins_spent?: number };
 
-    // Verifica se já possui
-    if (inventory.some(inv => inv.item_id === itemId)) {
-      toast({ title: "Você já possui este item!", variant: "destructive" });
-      return { success: false };
-    }
-
-    // Deduz moedas
-    const { error: coinsError } = await supabase
-      .from("user_stats")
-      .update({ coins: coins - item.price })
-      .eq("user_id", user.id);
-
-    if (coinsError) {
-      toast({ title: "Erro ao processar compra", variant: "destructive" });
-      return { success: false };
-    }
-
-    // Adiciona ao inventário
-    const { error: invError } = await supabase
-      .from("user_inventory")
-      .insert({ user_id: user.id, item_id: itemId });
-
-    if (invError) {
-      // Reverte moedas
-      await supabase.from("user_stats").update({ coins }).eq("user_id", user.id);
-      toast({ title: "Erro ao adicionar item", variant: "destructive" });
+    if (!result.success) {
+      const errorMessages: Record<string, string> = {
+        not_authenticated: "Faça login para comprar",
+        item_not_found: "Item não encontrado",
+        out_of_stock: "Item esgotado",
+        already_owned: "Você já possui este item",
+        insufficient_coins: "Moedas insuficientes",
+      };
+      
+      toast({ 
+        title: errorMessages[result.error || ""] || "Erro ao comprar", 
+        variant: "destructive" 
+      });
       return { success: false };
     }
 
     // Atualiza estado local
-    setCoins(prev => prev - item.price);
-    await fetchInventory();
+    await Promise.all([fetchInventory(), fetchCoins()]);
     
     toast({ 
-      title: "Compra realizada!", 
-      description: `Você adquiriu ${item.name}` 
+      title: "Compra realizada! 🎉", 
+      description: `Você adquiriu ${result.item_name}` 
     });
     
     return { success: true };
@@ -192,15 +205,24 @@ export function useMarketplace() {
     return inventory.find(inv => inv.is_equipped && inv.item?.category === category);
   };
 
+  // Itens em destaque
+  const featuredItems = items.filter(i => i.is_featured);
+
+  // Verificar se possui item
+  const ownsItem = (itemId: string) => inventory.some(inv => inv.item_id === itemId);
+
   return {
     items,
+    categories,
     inventory,
     coins,
     isLoading,
+    featuredItems,
     purchaseItem,
     toggleEquip,
     addCoins,
     getEquippedItem,
-    refresh: () => Promise.all([fetchItems(), fetchInventory(), fetchCoins()]),
+    ownsItem,
+    refresh: () => Promise.all([fetchItems(), fetchCategories(), fetchInventory(), fetchCoins()]),
   };
 }
