@@ -57,7 +57,7 @@ export function ActivityFeed({ orgId, limit = 10 }: ActivityFeedProps) {
           game_type,
           xp_earned,
           coins_earned,
-          score,
+          metadata,
           created_at,
           profiles!inner(nickname, avatar_url)
         `)
@@ -67,18 +67,21 @@ export function ActivityFeed({ orgId, limit = 10 }: ActivityFeedProps) {
 
       if (error) throw error;
 
-      const formatted = (data || []).map((a: any) => ({
-        id: a.id,
-        user_id: a.user_id,
-        activity_type: a.activity_type,
-        game_type: a.game_type,
-        xp_earned: a.xp_earned || 0,
-        coins_earned: a.coins_earned || 0,
-        score: a.score || 0,
-        created_at: a.created_at,
-        nickname: a.profiles?.nickname,
-        avatar_url: a.profiles?.avatar_url,
-      }));
+      const formatted = (data || []).map((a: any) => {
+        const metadata = a.metadata as Record<string, unknown> | null;
+        return {
+          id: a.id,
+          user_id: a.user_id,
+          activity_type: a.activity_type,
+          game_type: a.game_type,
+          xp_earned: a.xp_earned || 0,
+          coins_earned: a.coins_earned || 0,
+          score: (metadata?.score as number) || 0,
+          created_at: a.created_at,
+          nickname: a.profiles?.nickname,
+          avatar_url: a.profiles?.avatar_url,
+        };
+      });
 
       setActivities(formatted);
     } catch (error) {
