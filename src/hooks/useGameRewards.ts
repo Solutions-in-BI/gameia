@@ -1,19 +1,25 @@
+/**
+ * Hook para gerenciar recompensas de jogos
+ * Conectado ao backend para persistir XP, coins, atividades e streaks
+ */
+
 import { useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
+import { useOrganization } from "./useOrganization";
 import { toast } from "sonner";
 
 interface GameConfig {
   id: string;
   game_type: string;
   display_name: string;
-  xp_base_reward: number;
-  xp_multiplier: number;
-  coins_base_reward: number;
-  coins_multiplier: number;
-  skill_categories: string[];
-  difficulty_multipliers: any;
-  streak_bonus_config: any;
+  xp_base_reward: number | null;
+  xp_multiplier: number | null;
+  coins_base_reward: number | null;
+  coins_multiplier: number | null;
+  skill_categories: string[] | null;
+  difficulty_multipliers: Record<string, number> | null;
+  streak_bonus_config: Record<string, unknown> | null;
 }
 
 interface RewardResult {
@@ -23,10 +29,21 @@ interface RewardResult {
   bonuses: { type: string; amount: number }[];
 }
 
+interface GameResult {
+  gameType: string;
+  score: number;
+  difficulty?: string;
+  timeSpentSeconds?: number;
+  metadata?: Record<string, unknown>;
+}
+
 export function useGameRewards() {
   const { user } = useAuth();
+  const { currentOrg } = useOrganization();
 
-  // Calculate rewards based on game config and performance
+  /**
+   * Calculate rewards based on game config and performance
+   */
   const calculateRewards = useCallback(async (
     gameType: string,
     baseScore: number,
@@ -35,15 +52,19 @@ export function useGameRewards() {
     bonusMultiplier?: number
   ): Promise<RewardResult | null> => {
     try {
-      // Get game configuration
-      const { data: config, error } = await supabase
+      // Get game configuration (org-specific or global)
+      const { data: configs, error } = await supabase
         .from('game_configurations')
         .select('*')
         .eq('game_type', gameType)
         .eq('is_active', true)
-        .maybeSingle();
+        .or(`organization_id.is.null,organization_id.eq.${currentOrg?.id || 'null'}`);
 
       if (error) throw error;
+
+      // Prefer org-specific config
+      const config = configs?.find(c => c.organization_id === currentOrg?.id) 
+        || configs?.find(c => !c.organization_id);
 
       if (!config) {
         // Fallback defaults if no config found
@@ -55,7 +76,7 @@ export function useGameRewards() {
         };
       }
 
-      const gameConfig = config as GameConfig;
+      const gameConfig = config as unknown as GameConfig;
       let xpMultiplier = gameConfig.xp_multiplier || 1;
       let coinsMultiplier = gameConfig.coins_multiplier || 1;
       const bonuses: { type: string; amount: number }[] = [];
@@ -71,11 +92,11 @@ export function useGameRewards() {
       }
 
       // Apply streak bonus
-      if (streakDays && gameConfig.streak_bonus_config?.enabled) {
-        const streakBonus = Math.min(
-          streakDays * (gameConfig.streak_bonus_config.bonus_per_day || 5),
-          gameConfig.streak_bonus_config.max_bonus || 50
-        );
+      const streakConfig = gameConfig.streak_bonus_config as { enabled?: boolean; bonus_per_day?: number; max_bonus?: number } | null;
+      if (streakDays && streakDays > 0 && streakConfig?.enabled) {
+        const bonusPerDay = Number(streakConfig.bonus_per_day) || 5;
+        const maxBonus = Number(streakConfig.max_bonus) || 50;
+        const streakBonus = Math.min(streakDays * bonusPerDay, maxBonus);
         xpMultiplier *= (1 + streakBonus / 100);
         if (streakBonus > 0) {
           bonuses.push({ type: 'streak', amount: streakBonus });
@@ -90,8 +111,10 @@ export function useGameRewards() {
 
       // Calculate final rewards
       const scoreMultiplier = Math.max(0.1, Math.log10(baseScore + 1) / 2);
-      const xp = Math.round((gameConfig.xp_base_reward + baseScore * scoreMultiplier) * xpMultiplier);
-      const coins = Math.round((gameConfig.coins_base_reward + baseScore * 0.05) * coinsMultiplier);
+      const baseXp = (gameConfig.xp_base_reward || 10);
+      const baseCoins = (gameConfig.coins_base_reward || 5);
+      const xp = Math.round((baseXp + baseScore * scoreMultiplier) * xpMultiplier);
+      const coins = Math.round((baseCoins + baseScore * 0.05) * coinsMultiplier);
 
       // Calculate skill points
       const skills: Record<string, number> = {};
@@ -106,23 +129,136 @@ export function useGameRewards() {
       console.error('Error calculating rewards:', error);
       return null;
     }
-  }, []);
+  }, [currentOrg?.id]);
 
-  // Apply rewards to user account
+  /**
+   * Get current user streak
+   */
+  const getCurrentStreak = useCallback(async (): Promise<number> => {
+    if (!user) return 0;
+
+    try {
+      const { data, error } = await supabase
+        .from('user_streaks')
+        .select('current_streak')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data?.current_streak || 0;
+    } catch (error) {
+      console.error('Error getting streak:', error);
+      return 0;
+    }
+  }, [user]);
+
+  /**
+   * Update user streak after activity
+   */
+  const updateStreak = useCallback(async (): Promise<number> => {
+    if (!user) return 0;
+
+    try {
+      const today = new Date().toISOString().split('T')[0];
+
+      // Get current streak data
+      const { data: streak, error: fetchError } = await supabase
+        .from('user_streaks')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (fetchError && fetchError.code !== 'PGRST116') throw fetchError;
+
+      const lastPlayed = streak?.last_played_at 
+        ? new Date(streak.last_played_at).toISOString().split('T')[0]
+        : null;
+
+      let newStreak = 1;
+      let longestStreak = streak?.longest_streak || 1;
+
+      if (lastPlayed) {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+        if (lastPlayed === today) {
+          // Already played today, keep current streak
+          newStreak = streak?.current_streak || 1;
+        } else if (lastPlayed === yesterdayStr) {
+          // Played yesterday, increment streak
+          newStreak = (streak?.current_streak || 0) + 1;
+        }
+        // Otherwise, streak resets to 1
+      }
+
+      longestStreak = Math.max(longestStreak, newStreak);
+
+      const { error: upsertError } = await supabase
+        .from('user_streaks')
+        .upsert({
+          user_id: user.id,
+          organization_id: currentOrg?.id || null,
+          current_streak: newStreak,
+          longest_streak: longestStreak,
+          last_played_at: new Date().toISOString(),
+          total_active_days: (streak?.total_active_days || 0) + (lastPlayed === today ? 0 : 1),
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id' });
+
+      if (upsertError) throw upsertError;
+
+      return newStreak;
+    } catch (error) {
+      console.error('Error updating streak:', error);
+      return 0;
+    }
+  }, [user, currentOrg?.id]);
+
+  /**
+   * Register activity in the log
+   */
+  const logActivity = useCallback(async (
+    activityType: string,
+    gameType: string,
+    xpEarned: number,
+    coinsEarned: number,
+    metadata?: Record<string, unknown>
+  ): Promise<void> => {
+    if (!user) return;
+
+    try {
+      await supabase.from('user_activity_log').insert([{
+        user_id: user.id,
+        organization_id: currentOrg?.id || null,
+        activity_type: activityType,
+        game_type: gameType,
+        xp_earned: xpEarned,
+        coins_earned: coinsEarned,
+        metadata: (metadata || {}) as unknown as Record<string, never>
+      }]);
+    } catch (error) {
+      console.error('Error logging activity:', error);
+    }
+  }, [user, currentOrg?.id]);
+
+  /**
+   * Apply rewards to user account
+   */
   const applyRewards = useCallback(async (
     gameType: string,
     rewards: RewardResult,
     sourceId?: string
-  ) => {
+  ): Promise<boolean> => {
     if (!user) return false;
 
     try {
-      // Update user_stats
+      // Get current stats
       const { data: currentStats, error: statsError } = await supabase
         .from('user_stats')
-        .select('xp, coins, level')
+        .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (statsError && statsError.code !== 'PGRST116') throw statsError;
 
@@ -145,9 +281,24 @@ export function useGameRewards() {
         }
       }
 
-      const leveledUp = newLevel > (currentStats?.level || 1);
+      const currentLevel = currentStats?.level || 1;
+      const leveledUp = newLevel > currentLevel;
 
-      // Update or insert user stats
+      // Update game-specific stats
+      const gameStats: Record<string, unknown> = {};
+      const gameKey = gameType.toLowerCase();
+      
+      if (gameKey === 'snake') {
+        gameStats.snake_games_played = (currentStats?.snake_games_played || 0) + 1;
+      } else if (gameKey === 'memory') {
+        gameStats.memory_games_played = (currentStats?.memory_games_played || 0) + 1;
+      } else if (gameKey === 'dino') {
+        gameStats.dino_games_played = (currentStats?.dino_games_played || 0) + 1;
+      } else if (gameKey === 'tetris') {
+        gameStats.tetris_games_played = (currentStats?.tetris_games_played || 0) + 1;
+      }
+
+      // Upsert user stats
       const { error: updateError } = await supabase
         .from('user_stats')
         .upsert({
@@ -155,7 +306,8 @@ export function useGameRewards() {
           xp: newXP,
           coins: newCoins,
           level: newLevel,
-          total_games_played: (currentStats as any)?.total_games_played + 1 || 1,
+          total_games_played: (currentStats?.total_games_played || 0) + 1,
+          ...gameStats,
           updated_at: new Date().toISOString()
         }, { onConflict: 'user_id' });
 
@@ -166,20 +318,22 @@ export function useGameRewards() {
         user_id: user.id,
         transaction_type: 'xp',
         source_type: gameType,
-        source_id: sourceId,
+        source_id: sourceId || null,
         amount: rewards.xp,
         metadata: { bonuses: rewards.bonuses }
       });
 
       // Record coins transaction
-      await supabase.from('reward_transactions').insert({
-        user_id: user.id,
-        transaction_type: 'coins',
-        source_type: gameType,
-        source_id: sourceId,
-        amount: rewards.coins,
-        metadata: {}
-      });
+      if (rewards.coins > 0) {
+        await supabase.from('reward_transactions').insert({
+          user_id: user.id,
+          transaction_type: 'coins',
+          source_type: gameType,
+          source_id: sourceId || null,
+          amount: rewards.coins,
+          metadata: {}
+        });
+      }
 
       // Update skills
       for (const [skillKey, xpGained] of Object.entries(rewards.skills)) {
@@ -198,18 +352,30 @@ export function useGameRewards() {
             .maybeSingle();
 
           const newTotalXP = (existingSkill?.total_xp || 0) + xpGained;
-          const newLevel = Math.floor(newTotalXP / 100);
+          const newSkillLevel = Math.floor(newTotalXP / 100);
 
           await supabase.from('user_skill_levels').upsert({
             user_id: user.id,
             skill_id: skillConfig.id,
-            current_level: newLevel,
+            organization_id: currentOrg?.id || null,
+            current_level: newSkillLevel,
             current_xp: newTotalXP % 100,
             total_xp: newTotalXP,
-            last_practiced: new Date().toISOString()
+            is_unlocked: true,
+            last_practiced: new Date().toISOString(),
+            updated_at: new Date().toISOString()
           }, { onConflict: 'user_id,skill_id' });
         }
       }
+
+      // Log activity
+      await logActivity('game_played', gameType, rewards.xp, rewards.coins, {
+        score: rewards.xp,
+        bonuses: rewards.bonuses
+      });
+
+      // Update streak
+      await updateStreak();
 
       // Show reward toast
       toast.success(`+${rewards.xp} XP | +${rewards.coins} 🪙`, {
@@ -228,10 +394,46 @@ export function useGameRewards() {
       toast.error('Erro ao aplicar recompensas');
       return false;
     }
-  }, [user]);
+  }, [user, currentOrg?.id, logActivity, updateStreak]);
+
+  /**
+   * Complete game flow: calculate + apply rewards
+   */
+  const completeGame = useCallback(async (result: GameResult): Promise<RewardResult | null> => {
+    if (!user) return null;
+
+    try {
+      // Get streak for bonus calculation
+      const streak = await getCurrentStreak();
+
+      // Calculate rewards
+      const rewards = await calculateRewards(
+        result.gameType,
+        result.score,
+        result.difficulty,
+        streak
+      );
+
+      if (!rewards) return null;
+
+      // Apply rewards
+      const success = await applyRewards(result.gameType, rewards);
+
+      if (!success) return null;
+
+      return rewards;
+    } catch (error) {
+      console.error('Error completing game:', error);
+      return null;
+    }
+  }, [user, calculateRewards, applyRewards, getCurrentStreak]);
 
   return {
     calculateRewards,
-    applyRewards
+    applyRewards,
+    completeGame,
+    getCurrentStreak,
+    updateStreak,
+    logActivity
   };
 }

@@ -10,8 +10,7 @@ import { useSnakeGame } from "@/hooks/useSnakeGame";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { useStreak } from "@/hooks/useStreak";
-import { useActivityLog } from "@/hooks/useActivityLog";
+import { useGameRewards } from "@/hooks/useGameRewards";
 import { OPPOSITE_DIRECTIONS } from "@/constants/game";
 import { Direction } from "@/types/game";
 
@@ -20,8 +19,7 @@ import { Direction } from "@/types/game";
  * COMPONENTE: SnakeGame
  * ===========================================
  * 
- * Jogo Snake para RECREAÇÃO apenas.
- * NÃO gera XP nem Moedas - apenas diversão!
+ * Jogo Snake - Ganha XP e Moedas baseado no score!
  */
 
 interface SnakeGameProps {
@@ -46,22 +44,23 @@ export function SnakeGame({ onBack }: SnakeGameProps) {
   const { addScore } = useLeaderboard("snake");
   const { profile, isAuthenticated } = useAuth();
   const { toast } = useToast();
-  const { recordPlay } = useStreak();
-  const { logGamePlayed } = useActivityLog();
+  const { completeGame } = useGameRewards();
 
   const [hasSavedScore, setHasSavedScore] = useState(false);
 
-  // Salva score quando game over (apenas recorde, sem XP/Coins)
+  // Salva score e aplica recompensas quando game over
   useEffect(() => {
     if (isGameOver && score > 0 && !hasSavedScore) {
       setHasSavedScore(true);
       
-      // Registra play para streak
-      recordPlay();
-      
-      // Registra atividade no log
-      logGamePlayed("snake", score);
+      // Aplica recompensas via useGameRewards
+      completeGame({
+        gameType: "snake",
+        score,
+        metadata: { snakeLength: snake.length }
+      });
 
+      // Salva no leaderboard se score alto
       if (isAuthenticated && profile && score >= 30) {
         addScore({
           player_name: profile.nickname,
@@ -78,7 +77,7 @@ export function SnakeGame({ onBack }: SnakeGameProps) {
         });
       }
     }
-  }, [isGameOver, score, hasSavedScore, isAuthenticated, profile, addScore, toast, recordPlay, logGamePlayed]);
+  }, [isGameOver, score, hasSavedScore, isAuthenticated, profile, addScore, toast, completeGame, snake.length]);
 
   const handleReset = () => {
     setHasSavedScore(false);
@@ -95,7 +94,7 @@ export function SnakeGame({ onBack }: SnakeGameProps) {
   return (
     <GameLayout 
       title="Snake" 
-      subtitle="Jogo recreativo - apenas diversão!"
+      subtitle="Colete comida para ganhar XP e Moedas!"
       maxWidth="2xl"
       onBack={onBack}
     >
