@@ -2,14 +2,14 @@
  * Hook para gerenciar o sistema de insígnias
  * Verifica automaticamente quando uma insígnia pode ser desbloqueada
  * baseado em XP, skills, scores de jogos, streak e missões
+ * 
+ * Refatorado para buscar dados diretamente do DB em vez de usar hooks aninhados
  */
 
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
-import { useToast } from "./use-toast";
-import { useLevel } from "./useLevel";
-import { useStreak } from "./useStreak";
+import { toast } from "sonner";
 
 export interface Insignia {
   id: string;
@@ -67,14 +67,15 @@ interface UseInsignias {
 }
 
 export function useInsignias(): UseInsignias {
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const { xp } = useLevel();
-  const { streak } = useStreak();
+  const { user, isAuthenticated } = useAuth();
   
   const [insignias, setInsignias] = useState<InsigniaWithProgress[]>([]);
   const [userInsignias, setUserInsignias] = useState<UserInsignia[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Cache for user stats fetched from DB
+  const [userXP, setUserXP] = useState(0);
+  const [userStreak, setUserStreak] = useState(0);
 
   const fetchInsignias = useCallback(async () => {
     setIsLoading(true);
@@ -89,13 +90,15 @@ export function useInsignias(): UseInsignias {
 
       if (insigniasError) throw insigniasError;
 
-      // Fetch user insignias if authenticated
+      // Fetch user data if authenticated
       let userInsigniasData: UserInsignia[] = [];
       let userSkills: { skill_id: string; mastery_level: number }[] = [];
       let userGameStats: { game_type: string; average_score: number }[] = [];
+      let currentXP = 0;
+      let currentStreak = 0;
 
       if (user) {
-        const [userInsigniasResult, userSkillsResult, gameStatsResult] = await Promise.all([
+        const [userInsigniasResult, userSkillsResult, gameStatsResult, userStatsResult, streakResult] = await Promise.all([
           supabase
             .from("user_insignias")
             .select("*")
@@ -108,11 +111,26 @@ export function useInsignias(): UseInsignias {
             .from("user_game_stats")
             .select("game_type, average_score")
             .eq("user_id", user.id),
+          supabase
+            .from("user_stats")
+            .select("xp")
+            .eq("user_id", user.id)
+            .maybeSingle(),
+          supabase
+            .from("user_streaks")
+            .select("current_streak")
+            .eq("user_id", user.id)
+            .maybeSingle(),
         ]);
 
         userInsigniasData = (userInsigniasResult.data || []) as UserInsignia[];
         userSkills = (userSkillsResult.data || []) as { skill_id: string; mastery_level: number }[];
         userGameStats = (gameStatsResult.data || []) as { game_type: string; average_score: number }[];
+        currentXP = userStatsResult.data?.xp || 0;
+        currentStreak = streakResult.data?.current_streak || 0;
+        
+        setUserXP(currentXP);
+        setUserStreak(currentStreak);
       }
 
       setUserInsignias(userInsigniasData);
@@ -133,12 +151,12 @@ export function useInsignias(): UseInsignias {
         const isUnlocked = !!userInsignia;
 
         // Calculate progress for each requirement
-        const xpMet = xp >= insignia.required_xp;
+        const xpMet = currentXP >= insignia.required_xp;
         const skillLevel = insignia.required_skill_id 
           ? userSkillMap.get(insignia.required_skill_id) || 0 
           : 0;
         const skillMet = !insignia.required_skill_id || skillLevel >= insignia.required_skill_level;
-        const streakMet = streak.currentStreak >= insignia.required_streak_days;
+        const streakMet = currentStreak >= insignia.required_streak_days;
         const gameScore = insignia.required_game_type 
           ? userGameStatsMap.get(insignia.required_game_type) || 0 
           : 0;
@@ -149,9 +167,9 @@ export function useInsignias(): UseInsignias {
 
         // Calculate overall progress percentage
         const requirements = [
-          { weight: 30, met: xpMet, progress: Math.min(xp / Math.max(insignia.required_xp, 1), 1) },
+          { weight: 30, met: xpMet, progress: Math.min(currentXP / Math.max(insignia.required_xp, 1), 1) },
           { weight: 25, met: skillMet, progress: insignia.required_skill_id ? Math.min(skillLevel / Math.max(insignia.required_skill_level, 1), 1) : 1 },
-          { weight: 20, met: streakMet, progress: insignia.required_streak_days > 0 ? Math.min(streak.currentStreak / insignia.required_streak_days, 1) : 1 },
+          { weight: 20, met: streakMet, progress: insignia.required_streak_days > 0 ? Math.min(currentStreak / insignia.required_streak_days, 1) : 1 },
           { weight: 15, met: gameScoreMet, progress: insignia.required_game_type ? Math.min(gameScore / Math.max(insignia.required_game_score_min, 1), 1) : 1 },
           { weight: 10, met: missionsMet, progress: missionsMet ? 1 : 0 },
         ];
@@ -164,9 +182,9 @@ export function useInsignias(): UseInsignias {
           unlockedAt: userInsignia?.unlocked_at || null,
           progress: isUnlocked ? 100 : totalProgress,
           progressDetails: {
-            xp: { current: xp, required: insignia.required_xp, met: xpMet },
+            xp: { current: currentXP, required: insignia.required_xp, met: xpMet },
             skill: { current: skillLevel, required: insignia.required_skill_level, met: skillMet },
-            streak: { current: streak.currentStreak, required: insignia.required_streak_days, met: streakMet },
+            streak: { current: currentStreak, required: insignia.required_streak_days, met: streakMet },
             gameScore: { current: gameScore, required: insignia.required_game_score_min, met: gameScoreMet },
             missions: { current: 0, required: insignia.required_missions_completed, met: missionsMet },
           },
@@ -179,7 +197,7 @@ export function useInsignias(): UseInsignias {
     } finally {
       setIsLoading(false);
     }
-  }, [user, xp, streak.currentStreak]);
+  }, [user]);
 
   useEffect(() => {
     fetchInsignias();
@@ -240,13 +258,12 @@ export function useInsignias(): UseInsignias {
     }
 
     if (newlyUnlocked.length > 0) {
-      toast({
-        title: `🏅 ${newlyUnlocked.length} Nova${newlyUnlocked.length > 1 ? "s" : ""} Insígnia${newlyUnlocked.length > 1 ? "s" : ""}!`,
+      toast.success(`🏅 ${newlyUnlocked.length} Nova${newlyUnlocked.length > 1 ? "s" : ""} Insígnia${newlyUnlocked.length > 1 ? "s" : ""}!`, {
         description: newlyUnlocked.map((i) => i.name).join(", "),
       });
       await fetchInsignias();
     }
-  }, [user, insignias, userInsignias, xp, toast, fetchInsignias]);
+  }, [user, insignias, userInsignias, fetchInsignias]);
 
   const toggleDisplayInsignia = useCallback(
     async (insigniaId: string) => {
