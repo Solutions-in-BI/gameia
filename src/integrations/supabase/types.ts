@@ -14,6 +14,59 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          ip_address: unknown
+          metadata: Json | null
+          new_values: Json | null
+          old_values: Json | null
+          organization_id: string | null
+          resource_id: string | null
+          resource_type: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json | null
+          new_values?: Json | null
+          old_values?: Json | null
+          organization_id?: string | null
+          resource_id?: string | null
+          resource_type: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json | null
+          new_values?: Json | null
+          old_values?: Json | null
+          organization_id?: string | null
+          resource_id?: string | null
+          resource_type?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       badge_categories: {
         Row: {
           category_key: string
@@ -2952,6 +3005,47 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          expires_at: string | null
+          granted_at: string
+          granted_by: string | null
+          id: string
+          is_active: boolean
+          organization_id: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          expires_at?: string | null
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          is_active?: boolean
+          organization_id?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          expires_at?: string | null
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          is_active?: boolean
+          organization_id?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_skill_levels: {
         Row: {
           created_at: string | null
@@ -3510,6 +3604,22 @@ export type Database = {
         Args: { _org_id: string; _period?: string }
         Returns: Json
       }
+      get_user_role: {
+        Args: { _org_id?: string; _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_role: {
+        Args: {
+          _org_id?: string
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_admin: {
+        Args: { _org_id?: string; _user_id: string }
+        Returns: boolean
+      }
       is_org_admin: {
         Args: { _org_id: string; _user_id: string }
         Returns: boolean
@@ -3530,6 +3640,18 @@ export type Database = {
           used_by: string
         }[]
       }
+      log_audit_event: {
+        Args: {
+          _action: string
+          _metadata?: Json
+          _new_values?: Json
+          _old_values?: Json
+          _org_id?: string
+          _resource_id?: string
+          _resource_type: string
+        }
+        Returns: string
+      }
       log_user_activity: {
         Args: {
           p_activity_type: string
@@ -3545,6 +3667,7 @@ export type Database = {
       revoke_org_invite: { Args: { p_invite_id: string }; Returns: Json }
     }
     Enums: {
+      app_role: "super_admin" | "admin" | "manager" | "user"
       friendship_status: "pending" | "accepted" | "blocked"
       gift_status: "pending" | "accepted" | "rejected"
       org_role: "owner" | "admin" | "manager" | "member"
@@ -3677,6 +3800,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["super_admin", "admin", "manager", "user"],
       friendship_status: ["pending", "accepted", "blocked"],
       gift_status: ["pending", "accepted", "rejected"],
       org_role: ["owner", "admin", "manager", "member"],
