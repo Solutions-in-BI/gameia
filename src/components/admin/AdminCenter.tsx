@@ -40,6 +40,7 @@ import { ReportsPage } from "./reports";
 import { QuizManagement, ScenarioManagement } from "./content";
 import { TrainingManagement } from "./training";
 import { MarketplaceManagement } from "./marketplace";
+import { Assessment360Management, PDIManagement, OneOnOneManagement, CognitiveTestsManagement } from "./hr";
 import { useOrgTeams } from "@/hooks/useOrgTeams";
 import { AdminSidebar, AdminSection } from "./layout";
 import { AdminHeader } from "./layout/AdminHeader";
@@ -405,6 +406,18 @@ export function AdminCenter() {
             <IntegrationsSettings />
           </div>
         );
+
+      case "assessment-360":
+        return <Assessment360Management />;
+
+      case "pdi":
+        return <PDIManagement />;
+
+      case "one-on-one":
+        return <OneOnOneManagement />;
+
+      case "cognitive-tests":
+        return <CognitiveTestsManagement />;
 
       default:
         return null;
