@@ -1,595 +1,775 @@
 /**
- * Aba de Relatórios com Exportação - Versão Aprimorada
+ * Central de Relatórios Avançada
+ * Integra Backend RPCs com exportação Excel/PDF
  */
 
-import { useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  FileText, Users, Trophy, Gamepad2, GraduationCap, TrendingUp,
+  Download, FileSpreadsheet, FileType, User, Building2, Loader2,
+  BarChart3, Calendar
+} from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { toast } from 'sonner';
+import { useReports, useReportMembers, useReportTeams, ReportPeriod } from '@/hooks/useReports';
+import { ReportPreviewChart } from './ReportPreviewChart';
+import { ReportDataTable } from './ReportDataTable';
+import { 
+  exportMemberReportToExcel, 
+  exportTeamReportToExcel, 
+  exportTeamsComparisonToExcel,
+  exportGamesReportToExcel,
+  exportTrainingsReportToExcel,
+  exportRankingToExcel,
+  exportTemporalEvolutionToExcel
+} from '@/utils/exportExcel';
 import {
-  FileText,
-  TrendingUp,
-  Users,
-  Trophy,
-  Calendar,
-  Target,
-  Brain,
-  Gamepad2,
-  BarChart3,
-  PieChart,
-  Activity,
-} from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "sonner";
-import type { MemberWithMetrics } from "@/hooks/useOrgMetrics";
-import type { OrgTeam } from "@/hooks/useOrgTeams";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+  exportMemberReportToPdf,
+  exportTeamReportToPdf,
+  exportTeamsComparisonToPdf
+} from '@/utils/exportPdf';
 
-import { ReportCard } from "./ReportCard";
-import { ReportDataTable } from "./ReportDataTable";
-import { ReportPreviewChart } from "./ReportPreviewChart";
-import { ReportExportPanel, ExportFormat } from "./ReportExportPanel";
-
-interface ReportsPageProps {
-  members: MemberWithMetrics[];
-  teams: OrgTeam[];
-  orgName: string;
-}
-
-type ReportType =
-  | "engagement"
-  | "team-performance"
-  | "member-ranking"
-  | "activity-log"
-  | "competency"
-  | "game-stats";
+type ReportCategory = 'individual' | 'team' | 'organization' | 'games' | 'trainings';
 
 interface ReportDefinition {
-  id: ReportType;
-  title: string;
+  id: string;
+  name: string;
   description: string;
-  icon: React.ComponentType<{ className?: string }>;
-  category: string;
+  icon: React.ElementType;
+  category: ReportCategory;
 }
 
-export function ReportsPage({ members, teams, orgName }: ReportsPageProps) {
-  const [selectedReport, setSelectedReport] = useState<ReportType>("engagement");
+const REPORTS: ReportDefinition[] = [
+  { id: 'member-full', name: 'Perfil Completo', description: 'Relatório detalhado do membro', icon: User, category: 'individual' },
+  { id: 'team-performance', name: 'Performance da Equipe', description: 'Métricas e membros da equipe', icon: Users, category: 'team' },
+  { id: 'teams-comparison', name: 'Comparativo de Equipes', description: 'Benchmark entre equipes', icon: BarChart3, category: 'team' },
+  { id: 'members-ranking', name: 'Ranking de Membros', description: 'Top performers da organização', icon: Trophy, category: 'organization' },
+  { id: 'temporal-evolution', name: 'Evolução Temporal', description: 'Crescimento ao longo do tempo', icon: TrendingUp, category: 'organization' },
+  { id: 'games-stats', name: 'Estatísticas de Jogos', description: 'Performance em gamificação', icon: Gamepad2, category: 'games' },
+  { id: 'trainings-progress', name: 'Progresso de Treinamentos', description: 'Status e conclusões', icon: GraduationCap, category: 'trainings' },
+];
+
+const CATEGORY_LABELS: Record<ReportCategory, { label: string; icon: React.ElementType }> = {
+  individual: { label: 'Individual', icon: User },
+  team: { label: 'Equipe', icon: Users },
+  organization: { label: 'Organização', icon: Building2 },
+  games: { label: 'Jogos', icon: Gamepad2 },
+  trainings: { label: 'Treinamentos', icon: GraduationCap },
+};
+
+const PERIOD_LABELS: Record<ReportPeriod, string> = {
+  '7d': '7 dias',
+  '30d': '30 dias',
+  '90d': '90 dias',
+  '1y': '1 ano',
+};
+
+export function ReportsPage() {
+  const [selectedCategory, setSelectedCategory] = useState<ReportCategory>('organization');
+  const [selectedReport, setSelectedReport] = useState<string>('members-ranking');
+  const [period, setPeriod] = useState<ReportPeriod>('30d');
+  const [selectedMemberId, setSelectedMemberId] = useState<string>('');
+  const [selectedTeamId, setSelectedTeamId] = useState<string>('');
   const [isExporting, setIsExporting] = useState(false);
 
-  const reports: ReportDefinition[] = [
-    {
-      id: "engagement",
-      title: "Relatório de Engajamento",
-      description: "Métricas de DAU, WAU, MAU e taxa de atividade por período",
-      icon: TrendingUp,
-      category: "Engajamento",
-    },
-    {
-      id: "team-performance",
-      title: "Performance por Equipe",
-      description: "Comparativo de XP, streaks e atividades entre equipes",
-      icon: Users,
-      category: "Equipes",
-    },
-    {
-      id: "member-ranking",
-      title: "Ranking de Membros",
-      description: "Classificação dos membros por XP, streak ou atividades",
-      icon: Trophy,
-      category: "Membros",
-    },
-    {
-      id: "activity-log",
-      title: "Log de Atividades",
-      description: "Histórico detalhado de ações e interações dos membros",
-      icon: Calendar,
-      category: "Atividades",
-    },
-    {
-      id: "competency",
-      title: "Competências",
-      description: "Avaliação de skills e progresso de competências",
-      icon: Brain,
-      category: "Aprendizado",
-    },
-    {
-      id: "game-stats",
-      title: "Estatísticas de Jogos",
-      description: "Performance nos jogos e distribuição de pontuações",
-      icon: Gamepad2,
-      category: "Gamificação",
-    },
-  ];
+  const { data: members = [] } = useReportMembers();
+  const { data: teams = [] } = useReportTeams();
 
-  const selectedReportDef = reports.find((r) => r.id === selectedReport)!;
+  const {
+    memberReport,
+    teamReport,
+    teamsComparison,
+    gamesReport,
+    trainingsReport,
+    temporalEvolution,
+    membersRanking,
+  } = useReports({
+    period,
+    memberId: selectedMemberId || undefined,
+    teamId: selectedTeamId || undefined,
+    granularity: period === '7d' ? 'day' : period === '30d' ? 'day' : 'week',
+  });
 
-  // Generate report data based on selected report
-  const reportData = useMemo(() => {
-    const filterByTeam = (data: MemberWithMetrics[], teamId: string) => {
-      if (teamId === "all") return data;
-      if (teamId === "none") return data.filter((m) => !m.team_id);
-      return data.filter((m) => m.team_id === teamId);
-    };
+  const filteredReports = useMemo(() => 
+    REPORTS.filter(r => r.category === selectedCategory),
+    [selectedCategory]
+  );
 
+  const currentReportData = useMemo(() => {
     switch (selectedReport) {
-      case "engagement": {
-        const activeMembers = members.filter((m) => m.activities_week > 0);
-        const totalXP = members.reduce((sum, m) => sum + m.total_xp, 0);
-        const avgStreak =
-          members.reduce((sum, m) => sum + m.current_streak, 0) /
-          Math.max(members.length, 1);
-
-        return {
-          summary: {
-            total_members: members.length,
-            active_members: activeMembers.length,
-            engagement_rate: ((activeMembers.length / Math.max(members.length, 1)) * 100).toFixed(1),
-            total_xp: totalXP,
-            avg_streak: avgStreak.toFixed(1),
-            total_activities: members.reduce((sum, m) => sum + m.activities_week, 0),
-          },
-          chartData: [
-            { name: "Ativos", value: activeMembers.length },
-            { name: "Inativos", value: members.length - activeMembers.length },
-          ],
-          tableData: members.map((m) => ({
-            nickname: m.nickname,
-            team: m.team_name || "Sem equipe",
-            status: m.activities_week > 0 ? "Ativo" : "Inativo",
-            activities: m.activities_week,
-            streak: m.current_streak,
-          })),
-        };
-      }
-
-      case "team-performance": {
-        const teamData = teams.map((team) => {
-          const teamMembers = members.filter((m) => m.team_id === team.id);
-          const totalXP = teamMembers.reduce((sum, m) => sum + m.total_xp, 0);
-          const avgStreak =
-            teamMembers.reduce((sum, m) => sum + m.current_streak, 0) /
-            Math.max(teamMembers.length, 1);
-          return {
-            name: team.name,
-            members: teamMembers.length,
-            total_xp: totalXP,
-            avg_xp: Math.round(totalXP / Math.max(teamMembers.length, 1)),
-            avg_streak: Number(avgStreak.toFixed(1)),
-            activities: teamMembers.reduce((sum, m) => sum + m.activities_week, 0),
-          };
-        });
-
-        // Add "Sem equipe" group
-        const noTeamMembers = members.filter((m) => !m.team_id);
-        if (noTeamMembers.length > 0) {
-          const totalXP = noTeamMembers.reduce((sum, m) => sum + m.total_xp, 0);
-          teamData.push({
-            name: "Sem equipe",
-            members: noTeamMembers.length,
-            total_xp: totalXP,
-            avg_xp: Math.round(totalXP / noTeamMembers.length),
-            avg_streak: Number(
-              (noTeamMembers.reduce((sum, m) => sum + m.current_streak, 0) /
-                noTeamMembers.length).toFixed(1)
-            ),
-            activities: noTeamMembers.reduce((sum, m) => sum + m.activities_week, 0),
-          });
-        }
-
-        return {
-          chartData: teamData.map((t) => ({ name: t.name, value: t.total_xp })),
-          tableData: teamData,
-        };
-      }
-
-      case "member-ranking": {
-        const ranked = [...members]
-          .sort((a, b) => b.total_xp - a.total_xp)
-          .map((m, i) => ({
-            rank: i + 1,
-            nickname: m.nickname,
-            team: m.team_name || "Sem equipe",
-            role: m.org_role,
-            xp: m.total_xp,
-            streak: m.current_streak,
-            activities: m.activities_week,
-            joined: format(new Date(m.joined_at), "dd/MM/yyyy"),
-          }));
-
-        return {
-          chartData: ranked.slice(0, 10).map((m) => ({
-            name: m.nickname.slice(0, 10),
-            value: m.xp,
-          })),
-          tableData: ranked,
-        };
-      }
-
-      case "activity-log": {
-        const activityData = members.map((m) => ({
-          nickname: m.nickname,
-          team: m.team_name || "Sem equipe",
-          activities_week: m.activities_week,
-          streak: m.current_streak,
-          status: m.activities_week > 0 ? "Ativo" : "Inativo",
-          engagement:
-            m.activities_week > 10
-              ? "Alto"
-              : m.activities_week > 5
-              ? "Médio"
-              : m.activities_week > 0
-              ? "Baixo"
-              : "Nenhum",
-        }));
-
-        const engagementDist = {
-          Alto: activityData.filter((a) => a.engagement === "Alto").length,
-          Médio: activityData.filter((a) => a.engagement === "Médio").length,
-          Baixo: activityData.filter((a) => a.engagement === "Baixo").length,
-          Nenhum: activityData.filter((a) => a.engagement === "Nenhum").length,
-        };
-
-        return {
-          chartData: Object.entries(engagementDist).map(([name, value]) => ({
-            name,
-            value,
-          })),
-          tableData: activityData.sort((a, b) => b.activities_week - a.activities_week),
-        };
-      }
-
-      case "competency": {
-        // Simulated competency data based on XP distribution
-        const xpTiers = [
-          { name: "Expert (10k+)", min: 10000, max: Infinity },
-          { name: "Avançado (5k-10k)", min: 5000, max: 10000 },
-          { name: "Intermediário (1k-5k)", min: 1000, max: 5000 },
-          { name: "Iniciante (0-1k)", min: 0, max: 1000 },
-        ];
-
-        const tierData = xpTiers.map((tier) => ({
-          name: tier.name,
-          value: members.filter(
-            (m) => m.total_xp >= tier.min && m.total_xp < tier.max
-          ).length,
-        }));
-
-        const tableData = members.map((m) => {
-          const tier = xpTiers.find(
-            (t) => m.total_xp >= t.min && m.total_xp < t.max
-          );
-          return {
-            nickname: m.nickname,
-            team: m.team_name || "Sem equipe",
-            xp: m.total_xp,
-            tier: tier?.name || "Iniciante",
-            streak: m.current_streak,
-            progress: Math.min(100, Math.round((m.total_xp / 10000) * 100)),
-          };
-        });
-
-        return {
-          chartData: tierData,
-          tableData: tableData.sort((a, b) => b.xp - a.xp),
-        };
-      }
-
-      case "game-stats": {
-        // Game stats based on activities and streaks
-        const gameData = members.map((m) => ({
-          nickname: m.nickname,
-          team: m.team_name || "Sem equipe",
-          total_xp: m.total_xp,
-          streak: m.current_streak,
-          activities: m.activities_week,
-          score_estimate: Math.round(m.total_xp * 0.1 + m.current_streak * 50),
-        }));
-
-        const streakDist = [
-          { name: "0 dias", value: members.filter((m) => m.current_streak === 0).length },
-          { name: "1-7 dias", value: members.filter((m) => m.current_streak >= 1 && m.current_streak <= 7).length },
-          { name: "8-30 dias", value: members.filter((m) => m.current_streak >= 8 && m.current_streak <= 30).length },
-          { name: "30+ dias", value: members.filter((m) => m.current_streak > 30).length },
-        ];
-
-        return {
-          chartData: streakDist,
-          tableData: gameData.sort((a, b) => b.score_estimate - a.score_estimate),
-        };
-      }
-
-      default:
-        return { chartData: [], tableData: [] };
+      case 'member-full': return memberReport.data;
+      case 'team-performance': return teamReport.data;
+      case 'teams-comparison': return teamsComparison.data;
+      case 'members-ranking': return membersRanking.data;
+      case 'temporal-evolution': return temporalEvolution.data;
+      case 'games-stats': return gamesReport.data;
+      case 'trainings-progress': return trainingsReport.data;
+      default: return null;
     }
-  }, [selectedReport, members, teams]);
+  }, [selectedReport, memberReport.data, teamReport.data, teamsComparison.data, 
+      membersRanking.data, temporalEvolution.data, gamesReport.data, trainingsReport.data]);
 
-  // Get columns for table based on report type
-  const tableColumns = useMemo(() => {
+  const isLoading = useMemo(() => {
     switch (selectedReport) {
-      case "engagement":
-        return [
-          { key: "nickname", label: "Membro" },
-          { key: "team", label: "Equipe" },
-          { key: "status", label: "Status" },
-          { key: "activities", label: "Atividades", align: "right" as const },
-          { key: "streak", label: "Streak", align: "right" as const },
-        ];
-
-      case "team-performance":
-        return [
-          { key: "name", label: "Equipe" },
-          { key: "members", label: "Membros", align: "right" as const },
-          {
-            key: "total_xp",
-            label: "XP Total",
-            align: "right" as const,
-            format: (v: number) => v.toLocaleString("pt-BR"),
-          },
-          {
-            key: "avg_xp",
-            label: "XP Médio",
-            align: "right" as const,
-            format: (v: number) => v.toLocaleString("pt-BR"),
-          },
-          { key: "avg_streak", label: "Streak Médio", align: "right" as const },
-          { key: "activities", label: "Atividades", align: "right" as const },
-        ];
-
-      case "member-ranking":
-        return [
-          { key: "rank", label: "#", align: "center" as const },
-          { key: "nickname", label: "Membro" },
-          { key: "team", label: "Equipe" },
-          { key: "role", label: "Cargo" },
-          {
-            key: "xp",
-            label: "XP",
-            align: "right" as const,
-            format: (v: number) => v.toLocaleString("pt-BR"),
-          },
-          { key: "streak", label: "Streak", align: "right" as const },
-          { key: "joined", label: "Entrou em" },
-        ];
-
-      case "activity-log":
-        return [
-          { key: "nickname", label: "Membro" },
-          { key: "team", label: "Equipe" },
-          { key: "activities_week", label: "Atividades", align: "right" as const },
-          { key: "streak", label: "Streak", align: "right" as const },
-          { key: "engagement", label: "Engajamento" },
-          { key: "status", label: "Status" },
-        ];
-
-      case "competency":
-        return [
-          { key: "nickname", label: "Membro" },
-          { key: "team", label: "Equipe" },
-          { key: "tier", label: "Nível" },
-          {
-            key: "xp",
-            label: "XP",
-            align: "right" as const,
-            format: (v: number) => v.toLocaleString("pt-BR"),
-          },
-          { key: "streak", label: "Streak", align: "right" as const },
-          {
-            key: "progress",
-            label: "Progresso",
-            align: "right" as const,
-            format: (v: number) => `${v}%`,
-          },
-        ];
-
-      case "game-stats":
-        return [
-          { key: "nickname", label: "Membro" },
-          { key: "team", label: "Equipe" },
-          {
-            key: "total_xp",
-            label: "XP Total",
-            align: "right" as const,
-            format: (v: number) => v.toLocaleString("pt-BR"),
-          },
-          { key: "streak", label: "Streak", align: "right" as const },
-          { key: "activities", label: "Atividades", align: "right" as const },
-          {
-            key: "score_estimate",
-            label: "Score",
-            align: "right" as const,
-            format: (v: number) => v.toLocaleString("pt-BR"),
-          },
-        ];
-
-      default:
-        return [];
+      case 'member-full': return memberReport.isLoading;
+      case 'team-performance': return teamReport.isLoading;
+      case 'teams-comparison': return teamsComparison.isLoading;
+      case 'members-ranking': return membersRanking.isLoading;
+      case 'temporal-evolution': return temporalEvolution.isLoading;
+      case 'games-stats': return gamesReport.isLoading;
+      case 'trainings-progress': return trainingsReport.isLoading;
+      default: return false;
     }
-  }, [selectedReport]);
+  }, [selectedReport, memberReport.isLoading, teamReport.isLoading, teamsComparison.isLoading,
+      membersRanking.isLoading, temporalEvolution.isLoading, gamesReport.isLoading, trainingsReport.isLoading]);
 
-  // Export handler
-  const handleExport = async (config: {
-    format: ExportFormat;
-    teamFilter: string;
-    period: string;
-  }) => {
+  const handleCategoryChange = (category: ReportCategory) => {
+    setSelectedCategory(category);
+    const firstReport = REPORTS.find(r => r.category === category);
+    if (firstReport) {
+      setSelectedReport(firstReport.id);
+    }
+  };
+
+  const handleExportExcel = async () => {
+    if (!currentReportData) {
+      toast.error('Nenhum dado para exportar');
+      return;
+    }
+
     setIsExporting(true);
-
     try {
-      const timestamp = new Date().toISOString().split("T")[0];
-      let filteredMembers = [...members];
-
-      if (config.teamFilter !== "all") {
-        if (config.teamFilter === "none") {
-          filteredMembers = members.filter((m) => !m.team_id);
-        } else {
-          filteredMembers = members.filter((m) => m.team_id === config.teamFilter);
+      switch (selectedReport) {
+        case 'member-full': {
+          const member = members.find(m => m.id === selectedMemberId);
+          exportMemberReportToExcel(currentReportData, member?.nickname || 'membro');
+          break;
         }
+        case 'team-performance': {
+          const team = teams.find(t => t.id === selectedTeamId);
+          exportTeamReportToExcel(currentReportData, team?.name || 'equipe');
+          break;
+        }
+        case 'teams-comparison':
+          exportTeamsComparisonToExcel(currentReportData);
+          break;
+        case 'games-stats':
+          exportGamesReportToExcel(currentReportData);
+          break;
+        case 'trainings-progress':
+          exportTrainingsReportToExcel(currentReportData);
+          break;
+        case 'members-ranking':
+          exportRankingToExcel(currentReportData);
+          break;
+        case 'temporal-evolution':
+          exportTemporalEvolutionToExcel(currentReportData);
+          break;
       }
-
-      const filename = `${selectedReport}_${orgName.replace(/\s+/g, "_")}_${timestamp}`;
-      const data = reportData.tableData;
-
-      if (config.format === "csv") {
-        const headers = tableColumns.map((c) => c.label);
-        const keys = tableColumns.map((c) => c.key);
-        const csvRows = [headers.join(",")];
-
-        data.forEach((row: Record<string, any>) => {
-          const values = keys.map((key) => {
-            const value = row[key] ?? "";
-            return typeof value === "string" && value.includes(",")
-              ? `"${value}"`
-              : value;
-          });
-          csvRows.push(values.join(","));
-        });
-
-        downloadFile(csvRows.join("\n"), `${filename}.csv`, "text/csv;charset=utf-8");
-      } else {
-        downloadFile(
-          JSON.stringify({ report: selectedReport, data, generated_at: timestamp }, null, 2),
-          `${filename}.json`,
-          "application/json"
-        );
-      }
-
-      toast.success("Relatório exportado com sucesso!");
+      toast.success('Excel exportado com sucesso!');
     } catch (error) {
-      console.error("Export error:", error);
-      toast.error("Erro ao exportar relatório");
+      toast.error('Erro ao exportar Excel');
     } finally {
       setIsExporting(false);
     }
   };
 
-  const downloadFile = (content: string, filename: string, type: string) => {
-    const blob = new Blob([content], { type });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  const handleExportPdf = async () => {
+    if (!currentReportData) {
+      toast.error('Nenhum dado para exportar');
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      switch (selectedReport) {
+        case 'member-full': {
+          const member = members.find(m => m.id === selectedMemberId);
+          exportMemberReportToPdf(currentReportData, member?.nickname || 'Membro', period);
+          break;
+        }
+        case 'team-performance': {
+          const team = teams.find(t => t.id === selectedTeamId);
+          exportTeamReportToPdf(currentReportData, team?.name || 'Equipe', period);
+          break;
+        }
+        case 'teams-comparison':
+          exportTeamsComparisonToPdf(currentReportData, period);
+          break;
+        default:
+          toast.info('PDF disponível para relatórios individuais e de equipe');
+      }
+    } catch (error) {
+      toast.error('Erro ao exportar PDF');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
-  const chartType =
-    selectedReport === "team-performance" || selectedReport === "member-ranking"
-      ? "bar"
-      : selectedReport === "engagement" ||
-        selectedReport === "activity-log" ||
-        selectedReport === "competency" ||
-        selectedReport === "game-stats"
-      ? "pie"
-      : "area";
+  const renderReportPreview = () => {
+    if (isLoading) {
+      return (
+        <div className="space-y-4">
+          <Skeleton className="h-[200px] w-full" />
+          <Skeleton className="h-[300px] w-full" />
+        </div>
+      );
+    }
+
+    if (!currentReportData) {
+      return (
+        <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+          <FileText className="h-12 w-12 mb-4 opacity-50" />
+          <p>Selecione os filtros para gerar o relatório</p>
+        </div>
+      );
+    }
+
+    switch (selectedReport) {
+      case 'member-full':
+        return <MemberReportPreview data={currentReportData} />;
+      case 'team-performance':
+        return <TeamReportPreview data={currentReportData} />;
+      case 'teams-comparison':
+        return <TeamsComparisonPreview data={currentReportData} />;
+      case 'members-ranking':
+        return <RankingPreview data={currentReportData} />;
+      case 'temporal-evolution':
+        return <TemporalEvolutionPreview data={currentReportData} />;
+      case 'games-stats':
+        return <GamesReportPreview data={currentReportData} />;
+      case 'trainings-progress':
+        return <TrainingsReportPreview data={currentReportData} />;
+      default:
+        return null;
+    }
+  };
+
+  const needsMemberSelection = selectedReport === 'member-full';
+  const needsTeamSelection = selectedReport === 'team-performance';
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-primary" />
-            Relatórios
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Gere e exporte relatórios detalhados da organização
-          </p>
+          <h2 className="text-2xl font-bold">Central de Relatórios</h2>
+          <p className="text-muted-foreground">Gere e exporte relatórios detalhados</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Select value={period} onValueChange={(v) => setPeriod(v as ReportPeriod)}>
+            <SelectTrigger className="w-[130px]">
+              <Calendar className="h-4 w-4 mr-2" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(PERIOD_LABELS).map(([value, label]) => (
+                <SelectItem key={value} value={value}>{label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
-      {/* Report Selection Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        {reports.map((report) => (
-          <ReportCard
-            key={report.id}
-            id={report.id}
-            title={report.title}
-            description={report.description}
-            icon={report.icon}
-            category={report.category}
-            isSelected={selectedReport === report.id}
-            onClick={() => setSelectedReport(report.id)}
-          />
-        ))}
+      <Tabs value={selectedCategory} onValueChange={(v) => handleCategoryChange(v as ReportCategory)}>
+        <TabsList className="grid w-full grid-cols-5">
+          {Object.entries(CATEGORY_LABELS).map(([key, { label, icon: Icon }]) => (
+            <TabsTrigger key={key} value={key} className="gap-2">
+              <Icon className="h-4 w-4" />
+              <span className="hidden sm:inline">{label}</span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+
+        <div className="mt-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="lg:col-span-1 space-y-4">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Relatórios
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-2">
+                <ScrollArea className="h-[300px]">
+                  <div className="space-y-1">
+                    {filteredReports.map((report) => (
+                      <button
+                        key={report.id}
+                        onClick={() => setSelectedReport(report.id)}
+                        className={`w-full text-left p-3 rounded-lg transition-colors ${
+                          selectedReport === report.id
+                            ? 'bg-primary text-primary-foreground'
+                            : 'hover:bg-muted'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <report.icon className="h-4 w-4 flex-shrink-0" />
+                          <div>
+                            <p className="font-medium text-sm">{report.name}</p>
+                            <p className={`text-xs ${
+                              selectedReport === report.id 
+                                ? 'text-primary-foreground/80' 
+                                : 'text-muted-foreground'
+                            }`}>
+                              {report.description}
+                            </p>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+
+            {needsMemberSelection && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    Selecionar Membro
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Select value={selectedMemberId} onValueChange={setSelectedMemberId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Escolha um membro" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {members.map((member) => (
+                        <SelectItem key={member.id} value={member.id}>
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-6 w-6">
+                              <AvatarImage src={member.avatar_url || undefined} />
+                              <AvatarFallback>{member.nickname[0]}</AvatarFallback>
+                            </Avatar>
+                            {member.nickname}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </CardContent>
+              </Card>
+            )}
+
+            {needsTeamSelection && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    Selecionar Equipe
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Select value={selectedTeamId} onValueChange={setSelectedTeamId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Escolha uma equipe" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {teams.map((team) => (
+                        <SelectItem key={team.id} value={team.id}>
+                          {team.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </CardContent>
+              </Card>
+            )}
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Download className="h-4 w-4" />
+                  Exportar
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start gap-2"
+                  onClick={handleExportExcel}
+                  disabled={isExporting || !currentReportData}
+                >
+                  {isExporting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <FileSpreadsheet className="h-4 w-4 text-green-600" />
+                  )}
+                  Exportar Excel
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start gap-2"
+                  onClick={handleExportPdf}
+                  disabled={isExporting || !currentReportData}
+                >
+                  {isExporting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <FileType className="h-4 w-4 text-red-600" />
+                  )}
+                  Exportar PDF
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="lg:col-span-3">
+            <Card className="min-h-[600px]">
+              <CardHeader className="border-b">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      {(() => {
+                        const report = REPORTS.find(r => r.id === selectedReport);
+                        if (report) {
+                          const Icon = report.icon;
+                          return <Icon className="h-5 w-5" />;
+                        }
+                        return null;
+                      })()}
+                      {REPORTS.find(r => r.id === selectedReport)?.name}
+                    </CardTitle>
+                    <CardDescription>
+                      Período: {PERIOD_LABELS[period]}
+                    </CardDescription>
+                  </div>
+                  <Badge variant="secondary">
+                    {isLoading ? 'Carregando...' : currentReportData ? 'Dados atualizados' : 'Aguardando filtros'}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="p-6">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={selectedReport + period + selectedMemberId + selectedTeamId}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {renderReportPreview()}
+                  </motion.div>
+                </AnimatePresence>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </Tabs>
+    </div>
+  );
+}
+
+// Preview Components
+
+function MemberReportPreview({ data }: { data: Record<string, unknown> }) {
+  const xp = data.xp as Record<string, unknown> | undefined;
+  const activities = data.activities as Record<string, unknown> | undefined;
+  const streak = data.streak as Record<string, unknown> | undefined;
+  const badges = data.badges as Record<string, unknown> | undefined;
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <StatCard label="XP no Período" value={Number(xp?.total_period) || 0} icon={TrendingUp} />
+        <StatCard label="Atividades" value={Number(activities?.total_period) || 0} icon={BarChart3} />
+        <StatCard label="Streak" value={Number(streak?.current) || 0} icon={Calendar} />
+        <StatCard label="Badges" value={Number(badges?.total) || 0} icon={Trophy} />
       </div>
 
-      {/* Export Panel */}
-      <ReportExportPanel
-        reportTitle={selectedReportDef.title}
-        teams={teams}
-        onExport={handleExport}
-        isExporting={isExporting}
+      {Array.isArray(xp?.by_source) && xp.by_source.length > 0 && (
+        <Card>
+          <CardHeader><CardTitle className="text-base">XP por Fonte</CardTitle></CardHeader>
+          <CardContent>
+            <ReportPreviewChart
+              data={xp.by_source.map((s: Record<string, unknown>) => ({
+                name: String(s.source),
+                value: Number(s.total),
+              }))}
+              type="pie"
+              height={200}
+            />
+          </CardContent>
+        </Card>
+      )}
+
+      {Array.isArray(data.games) && data.games.length > 0 && (
+        <Card>
+          <CardHeader><CardTitle className="text-base">Performance em Jogos</CardTitle></CardHeader>
+          <CardContent>
+            <ReportDataTable
+              columns={[
+                { key: 'game_type', label: 'Jogo' },
+                { key: 'games_played', label: 'Partidas', align: 'right' },
+                { key: 'best_score', label: 'Melhor Score', align: 'right' },
+                { key: 'total_xp_earned', label: 'XP Total', align: 'right' },
+              ]}
+              data={data.games}
+              maxRows={5}
+            />
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+function TeamReportPreview({ data }: { data: Record<string, unknown> }) {
+  const metrics = data.metrics as Record<string, unknown> | undefined;
+  const members = data.members as Record<string, unknown>[] | undefined;
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <StatCard label="Total Membros" value={Number(metrics?.total_members) || 0} icon={Users} />
+        <StatCard label="Membros Ativos" value={Number(metrics?.active_members) || 0} icon={User} />
+        <StatCard label="XP Total" value={Number(metrics?.total_xp) || 0} icon={TrendingUp} />
+        <StatCard label="XP Médio" value={Number(metrics?.avg_xp) || 0} icon={BarChart3} />
+        <StatCard label="Atividades" value={Number(metrics?.total_activities) || 0} icon={Calendar} />
+        <StatCard label="Streak Médio" value={Number(metrics?.avg_streak) || 0} icon={Trophy} />
+      </div>
+
+      {members && members.length > 0 && (
+        <Card>
+          <CardHeader><CardTitle className="text-base">Membros da Equipe</CardTitle></CardHeader>
+          <CardContent>
+            <ReportDataTable
+              columns={[
+                { key: 'nickname', label: 'Nome' },
+                { key: 'job_title', label: 'Cargo' },
+                { key: 'xp_period', label: 'XP', align: 'right' },
+                { key: 'activities', label: 'Atividades', align: 'right' },
+                { key: 'streak', label: 'Streak', align: 'right' },
+              ]}
+              data={members}
+              maxRows={10}
+            />
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+function TeamsComparisonPreview({ data }: { data: Record<string, unknown> }) {
+  const teams = data.teams as Record<string, unknown>[] | undefined;
+
+  if (!teams || teams.length === 0) {
+    return <EmptyState message="Nenhuma equipe encontrada" />;
+  }
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader><CardTitle className="text-base">XP por Equipe</CardTitle></CardHeader>
+        <CardContent>
+          <ReportPreviewChart
+            data={teams.map((t) => ({ name: String(t.name), value: Number(t.total_xp) }))}
+            type="bar"
+            height={250}
+          />
+        </CardContent>
+      </Card>
+
+      <ReportDataTable
+        columns={[
+          { key: 'name', label: 'Equipe' },
+          { key: 'member_count', label: 'Membros', align: 'right' },
+          { key: 'total_xp', label: 'XP Total', align: 'right' },
+          { key: 'total_activities', label: 'Atividades', align: 'right' },
+          { key: 'engagement_rate', label: 'Engajamento %', align: 'right' },
+        ]}
+        data={teams}
+        maxRows={15}
       />
+    </div>
+  );
+}
 
-      {/* Report Preview */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={selectedReport}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
-          className="space-y-4"
-        >
-          <Tabs defaultValue="chart" className="w-full">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold">Prévia: {selectedReportDef.title}</h3>
-              <TabsList>
-                <TabsTrigger value="chart" className="gap-1">
-                  <PieChart className="h-4 w-4" />
-                  Gráfico
-                </TabsTrigger>
-                <TabsTrigger value="table" className="gap-1">
-                  <Activity className="h-4 w-4" />
-                  Tabela
-                </TabsTrigger>
-              </TabsList>
-            </div>
+function RankingPreview({ data }: { data: Record<string, unknown> }) {
+  const ranking = data.ranking as Record<string, unknown>[] | undefined;
 
-            <TabsContent value="chart" className="mt-0">
-              <div className="rounded-xl border bg-card p-6">
-                <ReportPreviewChart
-                  type={chartType}
-                  data={reportData.chartData}
-                />
-              </div>
-            </TabsContent>
+  if (!ranking || ranking.length === 0) {
+    return <EmptyState message="Nenhum dado de ranking" />;
+  }
 
-            <TabsContent value="table" className="mt-0">
-              <div className="rounded-xl border bg-card p-6">
-                <ReportDataTable
-                  columns={tableColumns}
-                  data={reportData.tableData}
-                  maxRows={15}
-                />
-              </div>
-            </TabsContent>
-          </Tabs>
-        </motion.div>
-      </AnimatePresence>
+  return (
+    <ReportDataTable
+      columns={[
+        { key: 'rank', label: '#', align: 'center' },
+        { key: 'nickname', label: 'Membro' },
+        { key: 'team_name', label: 'Equipe' },
+        { key: 'xp_period', label: 'XP', align: 'right' },
+        { key: 'activities', label: 'Atividades', align: 'right' },
+        { key: 'streak', label: 'Streak', align: 'right' },
+        { key: 'badges_earned', label: 'Badges', align: 'right' },
+      ]}
+      data={ranking}
+      maxRows={20}
+    />
+  );
+}
 
-      {/* Summary Stats */}
-      {selectedReport === "engagement" && reportData.summary && (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {Object.entries(reportData.summary).map(([key, value]) => (
-            <div key={key} className="rounded-lg border bg-card p-4 text-center">
-              <p className="text-2xl font-bold text-primary">
-                {typeof value === "number" ? value.toLocaleString("pt-BR") : value}
-                {key === "engagement_rate" && "%"}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {key === "total_members" && "Total de Membros"}
-                {key === "active_members" && "Membros Ativos"}
-                {key === "engagement_rate" && "Taxa de Engajamento"}
-                {key === "total_xp" && "XP Total"}
-                {key === "avg_streak" && "Streak Médio"}
-                {key === "total_activities" && "Atividades (7d)"}
-              </p>
-            </div>
-          ))}
+function TemporalEvolutionPreview({ data }: { data: Record<string, unknown> }) {
+  const xpEvolution = data.xp_evolution as Record<string, unknown>[] | undefined;
+  const activityEvolution = data.activity_evolution as Record<string, unknown>[] | undefined;
+
+  return (
+    <div className="space-y-6">
+      {xpEvolution && xpEvolution.length > 0 && (
+        <Card>
+          <CardHeader><CardTitle className="text-base">Evolução de XP</CardTitle></CardHeader>
+          <CardContent>
+            <ReportPreviewChart
+              data={xpEvolution.map((d) => ({
+                name: new Date(String(d.period_date)).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }),
+                value: Number(d.total_xp),
+              }))}
+              type="area"
+              height={250}
+            />
+          </CardContent>
+        </Card>
+      )}
+
+      {activityEvolution && activityEvolution.length > 0 && (
+        <Card>
+          <CardHeader><CardTitle className="text-base">Evolução de Atividades</CardTitle></CardHeader>
+          <CardContent>
+            <ReportPreviewChart
+              data={activityEvolution.map((d) => ({
+                name: new Date(String(d.period_date)).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }),
+                value: Number(d.total_activities),
+              }))}
+              type="area"
+              height={250}
+            />
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+function GamesReportPreview({ data }: { data: Record<string, unknown> }) {
+  const gameStats = data.game_stats as Record<string, unknown>[] | undefined;
+  const topPlayers = data.top_players as Record<string, unknown>[] | undefined;
+
+  return (
+    <div className="space-y-6">
+      {gameStats && gameStats.length > 0 && (
+        <>
+          <Card>
+            <CardHeader><CardTitle className="text-base">Partidas por Jogo</CardTitle></CardHeader>
+            <CardContent>
+              <ReportPreviewChart
+                data={gameStats.map((g) => ({ name: String(g.game_type), value: Number(g.total_plays) }))}
+                type="bar"
+                height={200}
+              />
+            </CardContent>
+          </Card>
+
+          <ReportDataTable
+            columns={[
+              { key: 'game_type', label: 'Jogo' },
+              { key: 'total_plays', label: 'Partidas', align: 'right' },
+              { key: 'unique_players', label: 'Jogadores', align: 'right' },
+              { key: 'top_score', label: 'Top Score', align: 'right' },
+              { key: 'total_xp', label: 'XP Total', align: 'right' },
+            ]}
+            data={gameStats}
+            maxRows={10}
+          />
+        </>
+      )}
+
+      {topPlayers && topPlayers.length > 0 && (
+        <Card>
+          <CardHeader><CardTitle className="text-base">Top Jogadores</CardTitle></CardHeader>
+          <CardContent>
+            <ReportDataTable
+              columns={[
+                { key: 'nickname', label: 'Jogador' },
+                { key: 'total_xp', label: 'XP Total', align: 'right' },
+                { key: 'total_games', label: 'Partidas', align: 'right' },
+                { key: 'best_score', label: 'Melhor Score', align: 'right' },
+              ]}
+              data={topPlayers}
+              maxRows={10}
+            />
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+function TrainingsReportPreview({ data }: { data: Record<string, unknown> }) {
+  const trainings = data.trainings as Record<string, unknown>[] | undefined;
+  const summary = data.summary as Record<string, unknown> | undefined;
+
+  return (
+    <div className="space-y-6">
+      {summary && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <StatCard label="Treinamentos" value={Number(summary.total_trainings) || 0} icon={GraduationCap} />
+          <StatCard label="Inscrições" value={Number(summary.total_enrollments) || 0} icon={Users} />
+          <StatCard label="Conclusões" value={Number(summary.total_completions) || 0} icon={Trophy} />
+          <StatCard label="No Período" value={Number(summary.completions_period) || 0} icon={Calendar} />
         </div>
       )}
+
+      {trainings && trainings.length > 0 && (
+        <ReportDataTable
+          columns={[
+            { key: 'name', label: 'Treinamento' },
+            { key: 'category', label: 'Categoria' },
+            { key: 'enrolled_users', label: 'Inscritos', align: 'right' },
+            { key: 'completed_users', label: 'Concluídos', align: 'right' },
+            { key: 'completion_rate', label: 'Taxa %', align: 'right' },
+          ]}
+          data={trainings}
+          maxRows={15}
+        />
+      )}
+    </div>
+  );
+}
+
+function StatCard({ label, value, icon: Icon }: { label: string; value: number; icon: React.ElementType }) {
+  return (
+    <Card>
+      <CardContent className="p-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-primary/10">
+            <Icon className="h-4 w-4 text-primary" />
+          </div>
+          <div>
+            <p className="text-2xl font-bold">{value.toLocaleString('pt-BR')}</p>
+            <p className="text-xs text-muted-foreground">{label}</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function EmptyState({ message }: { message: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+      <FileText className="h-12 w-12 mb-4 opacity-50" />
+      <p>{message}</p>
     </div>
   );
 }

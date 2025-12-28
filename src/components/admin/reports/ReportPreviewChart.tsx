@@ -24,10 +24,11 @@ interface ChartDataPoint {
   [key: string]: string | number;
 }
 
-interface ReportPreviewChartProps {
+export interface ReportPreviewChartProps {
   type: "area" | "bar" | "pie";
   data: ChartDataPoint[];
   dataKey?: string;
+  height?: number;
   colors?: string[];
 }
 
@@ -43,6 +44,7 @@ export function ReportPreviewChart({
   type,
   data,
   dataKey = "value",
+  height = 300,
   colors = DEFAULT_COLORS,
 }: ReportPreviewChartProps) {
   if (!data || data.length === 0) {

@@ -269,10 +269,10 @@ export function exportMemberReportToPdf(
     title: 'Resumo do Período',
     type: 'summary',
     summaryItems: [
-      { label: 'XP Conquistado', value: xp?.total_period || 0 },
-      { label: 'Atividades', value: activities?.total_period || 0 },
-      { label: 'Streak Atual', value: streak?.current || 0 },
-      { label: 'Badges', value: badges?.total || 0 },
+      { label: 'XP Conquistado', value: Number(xp?.total_period) || 0 },
+      { label: 'Atividades', value: Number(activities?.total_period) || 0 },
+      { label: 'Streak Atual', value: Number(streak?.current) || 0 },
+      { label: 'Badges', value: Number(badges?.total) || 0 },
     ],
   });
   
