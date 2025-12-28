@@ -1,13 +1,12 @@
 /**
  * Hook para gerenciar streak diário
+ * Refatorado para evitar dependências circulares com useLevel/useMarketplace
  */
 
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
-import { useToast } from "./use-toast";
-import { useLevel } from "./useLevel";
-import { useMarketplace } from "./useMarketplace";
+import { toast } from "sonner";
 
 // Recompensas por dia de streak
 const STREAK_REWARDS = [
@@ -39,9 +38,6 @@ interface UseStreak {
 
 export function useStreak(): UseStreak {
   const { user, isAuthenticated } = useAuth();
-  const { toast } = useToast();
-  const { addXP } = useLevel();
-  const { addCoins } = useMarketplace();
   
   const [streak, setStreak] = useState<StreakData>({
     currentStreak: 0,
@@ -185,7 +181,7 @@ export function useStreak(): UseStreak {
     }
   }, [user, streak]);
 
-  // Resgata recompensa diária
+  // Resgata recompensa diária - aplica diretamente via supabase
   const claimDailyReward = useCallback(async (): Promise<boolean> => {
     if (!user || !canClaimToday()) return false;
     
@@ -201,17 +197,30 @@ export function useStreak(): UseStreak {
         })
         .eq("user_id", user.id);
       
-      // Dá as recompensas
-      await addCoins(reward.coins);
-      await addXP(reward.xp);
+      // Busca stats atuais e atualiza diretamente
+      const { data: currentStats } = await supabase
+        .from("user_stats")
+        .select("xp, coins")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      
+      const newXP = (currentStats?.xp || 0) + reward.xp;
+      const newCoins = (currentStats?.coins || 0) + reward.coins;
+      
+      await supabase
+        .from("user_stats")
+        .upsert({
+          user_id: user.id,
+          xp: newXP,
+          coins: newCoins,
+        }, { onConflict: "user_id" });
       
       setStreak(prev => ({
         ...prev,
         lastClaimedAt: today.toISOString(),
       }));
       
-      toast({
-        title: "🎁 Recompensa Resgatada!",
+      toast.success("🎁 Recompensa Resgatada!", {
         description: `+${reward.coins} moedas e +${reward.xp} XP`,
       });
       
@@ -220,7 +229,7 @@ export function useStreak(): UseStreak {
       console.error("Erro ao resgatar recompensa:", err);
       return false;
     }
-  }, [user, canClaimToday, getTodayReward, addCoins, addXP, toast]);
+  }, [user, canClaimToday, getTodayReward]);
 
   return {
     streak,
