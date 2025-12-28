@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useOrganization } from "@/hooks/useOrganization";
 import { toast } from "sonner";
+import type { Json } from "@/integrations/supabase/types";
 
 export interface AssessmentCycle {
   id: string;
@@ -13,7 +14,7 @@ export interface AssessmentCycle {
   start_date: string;
   end_date: string;
   status: string;
-  config: Record<string, unknown>;
+  config: Json;
   created_by: string | null;
   created_at: string;
 }
