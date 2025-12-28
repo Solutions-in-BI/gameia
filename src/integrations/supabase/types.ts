@@ -2999,6 +2999,18 @@ export type Database = {
         }
         Returns: Json
       }
+      get_games_report: {
+        Args: { _org_id: string; _period?: string }
+        Returns: Json
+      }
+      get_member_full_report: {
+        Args: { _org_id: string; _period?: string; _user_id: string }
+        Returns: Json
+      }
+      get_members_ranking: {
+        Args: { _limit?: number; _org_id: string; _period?: string }
+        Returns: Json
+      }
       get_org_competency_metrics: { Args: { _org_id: string }; Returns: Json }
       get_org_decision_metrics: {
         Args: { _org_id: string; _period?: string }
@@ -3016,6 +3028,22 @@ export type Database = {
       get_org_role: {
         Args: { _org_id: string; _user_id: string }
         Returns: string
+      }
+      get_team_report: {
+        Args: { _org_id: string; _period?: string; _team_id: string }
+        Returns: Json
+      }
+      get_teams_comparison: {
+        Args: { _org_id: string; _period?: string }
+        Returns: Json
+      }
+      get_temporal_evolution: {
+        Args: { _granularity?: string; _org_id: string; _period?: string }
+        Returns: Json
+      }
+      get_trainings_report: {
+        Args: { _org_id: string; _period?: string }
+        Returns: Json
       }
       is_org_admin: {
         Args: { _org_id: string; _user_id: string }
