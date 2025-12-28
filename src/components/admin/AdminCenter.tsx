@@ -38,6 +38,7 @@ import { ExecutiveDashboard, ActivityFeed } from "./dashboard";
 import { MembersManagement } from "./members";
 import { ReportsPage } from "./reports";
 import { QuizManagement, ScenarioManagement } from "./content";
+import { TrainingManagement } from "./training";
 import { useOrgTeams } from "@/hooks/useOrgTeams";
 import { AdminSidebar, AdminSection } from "./layout";
 import { AdminHeader } from "./layout/AdminHeader";
@@ -377,6 +378,13 @@ export function AdminCenter() {
         return (
           <div className="gameia-card p-6">
             <ScenarioManagement />
+          </div>
+        );
+
+      case "trainings-config":
+        return (
+          <div className="gameia-card p-6">
+            <TrainingManagement />
           </div>
         );
 
