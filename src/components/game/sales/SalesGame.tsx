@@ -1,15 +1,22 @@
+import { useState, useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
 import { useSalesGame } from "@/hooks/useSalesGame";
-import { SalesIntro } from "./SalesIntro";
+import { SalesGameModeSelector, SalesTrack } from "./SalesGameModeSelector";
+import { SalesTrackIntro } from "./SalesTrackIntro";
 import { SalesChat } from "./SalesChat";
 import { SalesResults } from "./SalesResults";
 import { Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SalesGameProps {
   onBack: () => void;
 }
 
 export function SalesGame({ onBack }: SalesGameProps) {
+  const [tracks, setTracks] = useState<SalesTrack[]>([]);
+  const [selectedTrack, setSelectedTrack] = useState<SalesTrack | null>(null);
+  const [isLoadingTracks, setIsLoadingTracks] = useState(true);
+
   const {
     stages,
     personas,
@@ -30,9 +37,51 @@ export function SalesGame({ onBack }: SalesGameProps) {
     handleResponse,
     resetGame,
     stagePerformance,
+    setTrackKey,
   } = useSalesGame();
 
-  if (isLoading) {
+  // Fetch available tracks
+  useEffect(() => {
+    const fetchTracks = async () => {
+      setIsLoadingTracks(true);
+      try {
+        const { data, error } = await supabase
+          .from('sales_tracks')
+          .select('*')
+          .eq('is_active', true)
+          .order('track_key');
+        
+        if (error) throw error;
+        setTracks(data || []);
+      } catch (err) {
+        console.error('Error fetching tracks:', err);
+      } finally {
+        setIsLoadingTracks(false);
+      }
+    };
+    fetchTracks();
+  }, []);
+
+  // Filter personas and stages by selected track
+  const filteredPersonas = selectedTrack 
+    ? personas.filter(p => !p.track_key || p.track_key === selectedTrack.track_key)
+    : personas;
+  
+  const filteredStages = selectedTrack
+    ? stages.filter(s => !s.track_key || s.track_key === selectedTrack.track_key)
+    : stages;
+
+  const handleSelectTrack = (track: SalesTrack) => {
+    setSelectedTrack(track);
+    setTrackKey?.(track.track_key);
+  };
+
+  const handleBackToTracks = () => {
+    setSelectedTrack(null);
+    resetGame();
+  };
+
+  if (isLoadingTracks || isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
@@ -46,19 +95,30 @@ export function SalesGame({ onBack }: SalesGameProps) {
   return (
     <div className="min-h-screen bg-background p-4">
       <AnimatePresence mode="wait">
-        {gameState === 'intro' && (
-          <SalesIntro 
-            personas={personas}
-            stages={stages}
-            onStart={startGame}
+        {/* Track Selection */}
+        {gameState === 'intro' && !selectedTrack && (
+          <SalesGameModeSelector 
+            tracks={tracks}
+            onSelectTrack={handleSelectTrack}
             onBack={onBack}
+          />
+        )}
+
+        {/* Persona Selection within Track */}
+        {gameState === 'intro' && selectedTrack && (
+          <SalesTrackIntro 
+            track={selectedTrack}
+            personas={filteredPersonas}
+            stages={filteredStages}
+            onStart={startGame}
+            onBack={handleBackToTracks}
           />
         )}
 
         {gameState === 'playing' && selectedPersona && (
           <SalesChat
             persona={selectedPersona}
-            stages={stages}
+            stages={filteredStages}
             currentStageIndex={currentStageIndex}
             messages={messages}
             responseOptions={responseOptions}
@@ -69,7 +129,7 @@ export function SalesGame({ onBack }: SalesGameProps) {
             feedback={showFeedback}
             isGenerating={isGenerating}
             onResponse={handleResponse}
-            onExit={() => resetGame()}
+            onExit={handleBackToTracks}
           />
         )}
 
@@ -79,9 +139,9 @@ export function SalesGame({ onBack }: SalesGameProps) {
             rapport={rapport}
             skills={skills}
             stagePerformance={stagePerformance}
-            stages={stages}
+            stages={filteredStages}
             saleClosed={rapport >= 50}
-            onRestart={resetGame}
+            onRestart={handleBackToTracks}
             onBack={onBack}
           />
         )}

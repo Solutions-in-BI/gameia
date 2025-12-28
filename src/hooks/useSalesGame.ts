@@ -13,6 +13,7 @@ export interface SalesStage {
   description: string | null;
   tips: string | null;
   icon: string | null;
+  track_key?: string | null;
 }
 
 export interface SalesPersona {
@@ -26,6 +27,7 @@ export interface SalesPersona {
   decision_factors: string[] | null;
   avatar: string | null;
   difficulty: string | null;
+  track_key?: string | null;
 }
 
 export interface ResponseOption {
