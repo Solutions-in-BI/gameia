@@ -1,26 +1,36 @@
 import { motion } from "framer-motion";
-import { Briefcase, Gamepad2, Filter, ArrowDownAZ, TrendingUp } from "lucide-react";
+import { Briefcase, Gift, Gamepad2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type CategorySection = "enterprise" | "recreation";
-export type Category = "all" | "avatar" | "frame" | "effect" | "banner" | "boost" | "title" | "pet";
+export type CategorySection = "rewards" | "customization" | "recreation";
+export type Category = "all" | "reward" | "experience" | "learning" | "gift" | "benefit" | "avatar" | "frame" | "banner" | "title" | "pet" | "effect" | "boost";
 export type SortOption = "rarity" | "price_asc" | "price_desc" | "name";
 
-// Enterprise categories (always available)
-export const ENTERPRISE_CATEGORIES: { key: Category; label: string; icon: string }[] = [
-  { key: "all", label: "Todos", icon: "🛒" },
-  { key: "avatar", label: "Avatares", icon: "😎" },
-  { key: "frame", label: "Molduras", icon: "🖼️" },
-  { key: "banner", label: "Banners", icon: "🎨" },
-  { key: "title", label: "Títulos", icon: "📜" },
-  { key: "pet", label: "Pets", icon: "🐾" },
+// Rewards categories (real benefits)
+export const REWARDS_CATEGORIES: { key: Category; label: string }[] = [
+  { key: "all", label: "Todos" },
+  { key: "reward", label: "Recompensas" },
+  { key: "experience", label: "Experiências" },
+  { key: "learning", label: "Desenvolvimento" },
+  { key: "gift", label: "Presentes" },
+  { key: "benefit", label: "Benefícios" },
 ];
 
-// Recreation categories (for casual games only)
-export const RECREATION_CATEGORIES: { key: Category; label: string; icon: string }[] = [
-  { key: "all", label: "Todos", icon: "🎮" },
-  { key: "effect", label: "Efeitos", icon: "✨" },
-  { key: "boost", label: "Boosts", icon: "🚀" },
+// Customization categories
+export const CUSTOMIZATION_CATEGORIES: { key: Category; label: string }[] = [
+  { key: "all", label: "Todos" },
+  { key: "avatar", label: "Avatares" },
+  { key: "frame", label: "Molduras" },
+  { key: "banner", label: "Banners" },
+  { key: "title", label: "Títulos" },
+  { key: "pet", label: "Mascotes" },
+];
+
+// Recreation categories
+export const RECREATION_CATEGORIES: { key: Category; label: string }[] = [
+  { key: "all", label: "Todos" },
+  { key: "effect", label: "Efeitos" },
+  { key: "boost", label: "Boosts" },
 ];
 
 interface CategoryFiltersProps {
@@ -40,7 +50,13 @@ export function CategoryFilters({
   onCategoryChange,
   onSortChange,
 }: CategoryFiltersProps) {
-  const currentCategories = section === "enterprise" ? ENTERPRISE_CATEGORIES : RECREATION_CATEGORIES;
+  const getCurrentCategories = () => {
+    switch (section) {
+      case "rewards": return REWARDS_CATEGORIES;
+      case "customization": return CUSTOMIZATION_CATEGORIES;
+      case "recreation": return RECREATION_CATEGORIES;
+    }
+  };
 
   const handleSectionChange = (newSection: CategorySection) => {
     onSectionChange(newSection);
@@ -49,131 +65,80 @@ export function CategoryFilters({
 
   return (
     <div className="space-y-4 mb-6">
-      {/* Section Toggle */}
+      {/* Section Tabs */}
       <div className="flex justify-center">
-        <div className="inline-flex p-1 bg-card rounded-2xl border border-border">
-          <motion.button
-            onClick={() => handleSectionChange("enterprise")}
+        <div className="inline-flex bg-muted/50 rounded-lg p-1 gap-1">
+          <button
+            onClick={() => handleSectionChange("rewards")}
             className={cn(
-              "relative flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all",
-              section === "enterprise" ? "text-primary" : "text-muted-foreground hover:text-foreground"
+              "flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all",
+              section === "rewards" 
+                ? "bg-background text-foreground shadow-sm" 
+                : "text-muted-foreground hover:text-foreground"
             )}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
           >
-            {section === "enterprise" && (
-              <motion.div
-                layoutId="section-indicator"
-                className="absolute inset-0 bg-primary/10 border border-primary/30 rounded-xl"
-                transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
-              />
+            <Gift className="w-4 h-4" />
+            <span className="hidden sm:inline">Benefícios</span>
+          </button>
+          <button
+            onClick={() => handleSectionChange("customization")}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all",
+              section === "customization" 
+                ? "bg-background text-foreground shadow-sm" 
+                : "text-muted-foreground hover:text-foreground"
             )}
-            <Briefcase className="w-4 h-4 relative z-10" />
-            <span className="relative z-10 hidden sm:inline">Gamificação</span>
-          </motion.button>
-
-          <motion.button
+          >
+            <Briefcase className="w-4 h-4" />
+            <span className="hidden sm:inline">Personalização</span>
+          </button>
+          <button
             onClick={() => handleSectionChange("recreation")}
             className={cn(
-              "relative flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all",
-              section === "recreation" ? "text-cyan-500" : "text-muted-foreground hover:text-foreground"
+              "flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all",
+              section === "recreation" 
+                ? "bg-background text-foreground shadow-sm" 
+                : "text-muted-foreground hover:text-foreground"
             )}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
           >
-            {section === "recreation" && (
-              <motion.div
-                layoutId="section-indicator"
-                className="absolute inset-0 bg-cyan-500/10 border border-cyan-500/30 rounded-xl"
-                transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
-              />
-            )}
-            <Gamepad2 className="w-4 h-4 relative z-10" />
-            <span className="relative z-10 hidden sm:inline">Recreação</span>
-          </motion.button>
+            <Gamepad2 className="w-4 h-4" />
+            <span className="hidden sm:inline">Jogos</span>
+          </button>
         </div>
       </div>
 
       {/* Category chips */}
       <div className="flex flex-wrap justify-center gap-2">
-        {currentCategories.map((cat, index) => (
-          <motion.button
+        {getCurrentCategories().map((cat) => (
+          <button
             key={cat.key}
             onClick={() => onCategoryChange(cat.key)}
             className={cn(
-              "relative px-3 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-1.5",
+              "px-3 py-1.5 rounded-md text-sm font-medium transition-all",
               category === cat.key
-                ? section === "enterprise"
-                  ? "text-primary"
-                  : "text-cyan-500"
-                : "text-muted-foreground hover:text-foreground"
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
             )}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
           >
-            {category === cat.key && (
-              <motion.div
-                layoutId="category-indicator"
-                className={cn(
-                  "absolute inset-0 rounded-xl border",
-                  section === "enterprise" 
-                    ? "bg-primary/10 border-primary/30" 
-                    : "bg-cyan-500/10 border-cyan-500/30"
-                )}
-                transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
-              />
-            )}
-            <span className="relative z-10 text-lg">{cat.icon}</span>
-            <span className="relative z-10 hidden sm:inline">{cat.label}</span>
-          </motion.button>
+            {cat.label}
+          </button>
         ))}
       </div>
 
       {/* Sort options */}
-      <div className="flex justify-center gap-2">
-        <div className="inline-flex items-center gap-1 p-1 bg-card rounded-lg border border-border text-xs">
-          <Filter className="w-3 h-3 text-muted-foreground ml-2" />
-          <button
-            onClick={() => onSortChange("rarity")}
-            className={cn(
-              "px-2 py-1 rounded transition-colors",
-              sortBy === "rarity" ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"
-            )}
+      <div className="flex justify-center">
+        <div className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+          <span>Ordenar:</span>
+          <select
+            value={sortBy}
+            onChange={(e) => onSortChange(e.target.value as SortOption)}
+            className="bg-transparent border-none text-xs font-medium text-foreground cursor-pointer focus:outline-none"
           >
-            <TrendingUp className="w-3 h-3 inline mr-1" />
-            Raridade
-          </button>
-          <button
-            onClick={() => onSortChange("price_asc")}
-            className={cn(
-              "px-2 py-1 rounded transition-colors",
-              sortBy === "price_asc" ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            💰 Menor
-          </button>
-          <button
-            onClick={() => onSortChange("price_desc")}
-            className={cn(
-              "px-2 py-1 rounded transition-colors",
-              sortBy === "price_desc" ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            💰 Maior
-          </button>
-          <button
-            onClick={() => onSortChange("name")}
-            className={cn(
-              "px-2 py-1 rounded transition-colors",
-              sortBy === "name" ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <ArrowDownAZ className="w-3 h-3 inline mr-1" />
-            Nome
-          </button>
+            <option value="rarity">Raridade</option>
+            <option value="price_asc">Menor preço</option>
+            <option value="price_desc">Maior preço</option>
+            <option value="name">Nome</option>
+          </select>
         </div>
       </div>
     </div>
