@@ -8,6 +8,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -152,6 +153,9 @@ export function TrainingFormModal({
           <DialogTitle>
             {training ? "Editar Treinamento" : "Novo Treinamento"}
           </DialogTitle>
+          <DialogDescription>
+            {training ? "Atualize os dados do treinamento" : "Preencha os dados para criar um novo treinamento"}
+          </DialogDescription>
         </DialogHeader>
 
         <ScrollArea className="max-h-[calc(90vh-120px)] pr-4">

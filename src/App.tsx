@@ -16,6 +16,8 @@ import About from "./pages/About";
 import Services from "./pages/Services";
 import Pricing from "./pages/Pricing";
 import Demo from "./pages/Demo";
+import TrainingDetail from "./pages/TrainingDetail";
+import ModulePlayer from "./pages/ModulePlayer";
 import { AdminGuard } from "./components/auth/AdminGuard";
 
 const queryClient = new QueryClient();
@@ -29,6 +31,8 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/app" element={<Dashboard />} />
+          <Route path="/app/trainings/:id" element={<TrainingDetail />} />
+          <Route path="/app/trainings/:trainingId/module/:moduleId" element={<ModulePlayer />} />
           <Route path="/sobre" element={<About />} />
           <Route path="/servicos" element={<Services />} />
           <Route path="/planos" element={<Pricing />} />

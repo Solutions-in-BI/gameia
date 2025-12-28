@@ -8,6 +8,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -211,6 +212,9 @@ export function ModuleFormModal({
           <DialogTitle>
             {module ? "Editar Módulo" : "Novo Módulo"}
           </DialogTitle>
+          <DialogDescription>
+            {module ? "Atualize os dados do módulo" : "Configure o conteúdo e recompensas do módulo"}
+          </DialogDescription>
         </DialogHeader>
 
         <ScrollArea className="max-h-[calc(90vh-120px)] pr-4">
