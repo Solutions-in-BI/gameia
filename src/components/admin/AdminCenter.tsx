@@ -195,11 +195,11 @@ export function AdminCenter() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border bg-card">
+      <header className="border-b border-border bg-card shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary via-primary/90 to-secondary shadow-lg flex items-center justify-center ring-2 ring-primary/20">
                 <Building2 className="w-6 h-6 text-primary-foreground" />
               </div>
               <div>
@@ -209,45 +209,45 @@ export function AdminCenter() {
                 <p className="text-sm text-muted-foreground">Admin Center</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate("/")}
-                className="mr-2"
+                className="text-muted-foreground hover:text-foreground"
               >
-                <ArrowLeft className="w-4 h-4 mr-1" />
+                <ArrowLeft className="w-4 h-4 mr-1.5" />
                 Voltar
               </Button>
-              <span className="px-3 py-1 bg-primary/10 text-primary text-sm font-medium rounded-full">
-                <Crown className="w-4 h-4 inline mr-1" />
+              <div className="px-4 py-1.5 bg-primary/10 text-primary text-sm font-medium rounded-full flex items-center gap-1.5 border border-primary/20">
+                <Crown className="w-4 h-4" />
                 Admin
-              </span>
+              </div>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Tabs */}
-      <div className="border-b border-border bg-card/50">
+      {/* Navigation Tabs */}
+      <div className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex gap-1 overflow-x-auto py-2">
+          <nav className="flex gap-1 overflow-x-auto py-3 scrollbar-none">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm whitespace-nowrap transition-all",
+                  "flex items-center gap-2 px-4 py-2.5 rounded-full font-medium text-sm whitespace-nowrap transition-all duration-200",
                   activeTab === tab.id
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/25"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
                 )}
               >
                 <tab.icon className="w-4 h-4" />
                 {tab.label}
               </button>
             ))}
-          </div>
+          </nav>
         </div>
       </div>
 
@@ -405,47 +405,66 @@ export function AdminCenter() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="gameia-card p-6"
+            className="space-y-6"
           >
             <Tabs defaultValue="organization" className="w-full">
-              <TabsList className="grid w-full grid-cols-5 mb-6">
-                <TabsTrigger value="organization" className="gap-1.5">
-                  <Building2 className="w-4 h-4" />
-                  <span className="hidden sm:inline">Empresa</span>
-                </TabsTrigger>
-                <TabsTrigger value="games" className="gap-1.5">
-                  <Gamepad2 className="w-4 h-4" />
-                  <span className="hidden sm:inline">Jogos</span>
-                </TabsTrigger>
-                <TabsTrigger value="badges" className="gap-1.5">
-                  <Award className="w-4 h-4" />
-                  <span className="hidden sm:inline">Badges</span>
-                </TabsTrigger>
-                <TabsTrigger value="levels" className="gap-1.5">
-                  <TrendingUp className="w-4 h-4" />
-                  <span className="hidden sm:inline">Níveis</span>
-                </TabsTrigger>
-                <TabsTrigger value="skills" className="gap-1.5">
-                  <Target className="w-4 h-4" />
-                  <span className="hidden sm:inline">Skills</span>
-                </TabsTrigger>
-              </TabsList>
+              <div className="bg-card rounded-2xl border border-border shadow-sm p-1.5 mb-6">
+                <TabsList className="grid w-full grid-cols-5 bg-transparent gap-1 h-auto p-0">
+                  <TabsTrigger 
+                    value="organization" 
+                    className="gap-2 py-3 px-4 rounded-xl data-[state=active]:bg-muted data-[state=active]:shadow-sm transition-all"
+                  >
+                    <Building2 className="w-4 h-4" />
+                    <span className="hidden sm:inline font-medium">Empresa</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="games" 
+                    className="gap-2 py-3 px-4 rounded-xl data-[state=active]:bg-muted data-[state=active]:shadow-sm transition-all"
+                  >
+                    <Gamepad2 className="w-4 h-4" />
+                    <span className="hidden sm:inline font-medium">Jogos</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="badges" 
+                    className="gap-2 py-3 px-4 rounded-xl data-[state=active]:bg-muted data-[state=active]:shadow-sm transition-all"
+                  >
+                    <Award className="w-4 h-4" />
+                    <span className="hidden sm:inline font-medium">Badges</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="levels" 
+                    className="gap-2 py-3 px-4 rounded-xl data-[state=active]:bg-muted data-[state=active]:shadow-sm transition-all"
+                  >
+                    <TrendingUp className="w-4 h-4" />
+                    <span className="hidden sm:inline font-medium">Níveis</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="skills" 
+                    className="gap-2 py-3 px-4 rounded-xl data-[state=active]:bg-muted data-[state=active]:shadow-sm transition-all"
+                  >
+                    <Target className="w-4 h-4" />
+                    <span className="hidden sm:inline font-medium">Skills</span>
+                  </TabsTrigger>
+                </TabsList>
+              </div>
               
-              <TabsContent value="organization">
-                <OrganizationSettings />
-              </TabsContent>
-              <TabsContent value="games">
-                <GameConfigSettings />
-              </TabsContent>
-              <TabsContent value="badges">
-                <BadgeConfigSettings />
-              </TabsContent>
-              <TabsContent value="levels">
-                <LevelConfigSettings />
-              </TabsContent>
-              <TabsContent value="skills">
-                <SkillConfigSettings />
-              </TabsContent>
+              <div className="bg-card rounded-2xl border border-border shadow-sm p-6">
+                <TabsContent value="organization" className="mt-0">
+                  <OrganizationSettings />
+                </TabsContent>
+                <TabsContent value="games" className="mt-0">
+                  <GameConfigSettings />
+                </TabsContent>
+                <TabsContent value="badges" className="mt-0">
+                  <BadgeConfigSettings />
+                </TabsContent>
+                <TabsContent value="levels" className="mt-0">
+                  <LevelConfigSettings />
+                </TabsContent>
+                <TabsContent value="skills" className="mt-0">
+                  <SkillConfigSettings />
+                </TabsContent>
+              </div>
             </Tabs>
           </motion.div>
         )}
