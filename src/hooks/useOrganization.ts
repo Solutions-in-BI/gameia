@@ -173,7 +173,7 @@ export function useOrganization(): UseOrganization {
         
         const membersWithProfiles: OrganizationMember[] = data.map(m => ({
           ...m,
-          role: m.role as "owner" | "admin" | "member",
+          role: (m.org_role || m.role || "member") as "owner" | "admin" | "member",
           profile: profileMap.get(m.user_id) as any,
         }));
         
