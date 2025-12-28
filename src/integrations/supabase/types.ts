@@ -210,6 +210,137 @@ export type Database = {
           },
         ]
       }
+      competency_assessments: {
+        Row: {
+          assessment_type: string
+          attempts_count: number | null
+          created_at: string | null
+          id: string
+          is_monitored: boolean | null
+          max_score: number
+          metadata: Json | null
+          organization_id: string | null
+          score: number
+          skill_id: string | null
+          time_spent_seconds: number | null
+          user_id: string
+        }
+        Insert: {
+          assessment_type: string
+          attempts_count?: number | null
+          created_at?: string | null
+          id?: string
+          is_monitored?: boolean | null
+          max_score?: number
+          metadata?: Json | null
+          organization_id?: string | null
+          score: number
+          skill_id?: string | null
+          time_spent_seconds?: number | null
+          user_id: string
+        }
+        Update: {
+          assessment_type?: string
+          attempts_count?: number | null
+          created_at?: string | null
+          id?: string
+          is_monitored?: boolean | null
+          max_score?: number
+          metadata?: Json | null
+          organization_id?: string | null
+          score?: number
+          skill_id?: string | null
+          time_spent_seconds?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competency_assessments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competency_assessments_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skill_configurations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competency_assessments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      decision_analytics: {
+        Row: {
+          category_id: string | null
+          created_at: string | null
+          decision_quality_score: number | null
+          id: string
+          is_optimal_choice: boolean | null
+          organization_id: string | null
+          prioritization_accuracy: number | null
+          reasoning_depth: string | null
+          response_time_seconds: number | null
+          scenario_id: string | null
+          user_id: string
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string | null
+          decision_quality_score?: number | null
+          id?: string
+          is_optimal_choice?: boolean | null
+          organization_id?: string | null
+          prioritization_accuracy?: number | null
+          reasoning_depth?: string | null
+          response_time_seconds?: number | null
+          scenario_id?: string | null
+          user_id: string
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string | null
+          decision_quality_score?: number | null
+          id?: string
+          is_optimal_choice?: boolean | null
+          organization_id?: string | null
+          prioritization_accuracy?: number | null
+          reasoning_depth?: string | null
+          response_time_seconds?: number | null
+          scenario_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "decision_analytics_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "decision_analytics_scenario_id_fkey"
+            columns: ["scenario_id"]
+            isOneToOne: false
+            referencedRelation: "decision_scenarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "decision_analytics_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       decision_options: {
         Row: {
           cost_score: number | null
@@ -1977,6 +2108,51 @@ export type Database = {
         }
         Relationships: []
       }
+      user_activity_log: {
+        Row: {
+          activity_type: string
+          created_at: string | null
+          game_type: string | null
+          id: string
+          metadata: Json | null
+          organization_id: string | null
+          user_id: string
+        }
+        Insert: {
+          activity_type: string
+          created_at?: string | null
+          game_type?: string | null
+          id?: string
+          metadata?: Json | null
+          organization_id?: string | null
+          user_id: string
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string | null
+          game_type?: string | null
+          id?: string
+          metadata?: Json | null
+          organization_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_activity_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_activity_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_badge_progress: {
         Row: {
           badge_id: string
@@ -2123,6 +2299,73 @@ export type Database = {
           weaknesses?: string[] | null
         }
         Relationships: []
+      }
+      user_competency_scores: {
+        Row: {
+          assessments_count: number | null
+          avg_score: number | null
+          best_score: number | null
+          current_score: number | null
+          id: string
+          last_assessed_at: string | null
+          organization_id: string | null
+          previous_score: number | null
+          skill_id: string
+          trend: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          assessments_count?: number | null
+          avg_score?: number | null
+          best_score?: number | null
+          current_score?: number | null
+          id?: string
+          last_assessed_at?: string | null
+          organization_id?: string | null
+          previous_score?: number | null
+          skill_id: string
+          trend?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          assessments_count?: number | null
+          avg_score?: number | null
+          best_score?: number | null
+          current_score?: number | null
+          id?: string
+          last_assessed_at?: string | null
+          organization_id?: string | null
+          previous_score?: number | null
+          skill_id?: string
+          trend?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_competency_scores_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_competency_scores_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skill_configurations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_competency_scores_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_decision_answers: {
         Row: {
@@ -2533,6 +2776,8 @@ export type Database = {
           last_claimed_at: string | null
           last_played_at: string | null
           longest_streak: number
+          organization_id: string | null
+          total_active_days: number | null
           updated_at: string
           user_id: string
         }
@@ -2543,6 +2788,8 @@ export type Database = {
           last_claimed_at?: string | null
           last_played_at?: string | null
           longest_streak?: number
+          organization_id?: string | null
+          total_active_days?: number | null
           updated_at?: string
           user_id: string
         }
@@ -2553,10 +2800,20 @@ export type Database = {
           last_claimed_at?: string | null
           last_played_at?: string | null
           longest_streak?: number
+          organization_id?: string | null
+          total_active_days?: number | null
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_streaks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_titles: {
         Row: {
@@ -2651,6 +2908,70 @@ export type Database = {
             columns: ["training_id"]
             isOneToOne: false
             referencedRelation: "trainings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_xp_history: {
+        Row: {
+          coins_earned: number
+          created_at: string | null
+          difficulty: string | null
+          id: string
+          organization_id: string | null
+          performance_score: number | null
+          skill_id: string | null
+          source: string
+          source_id: string | null
+          user_id: string
+          xp_earned: number
+        }
+        Insert: {
+          coins_earned?: number
+          created_at?: string | null
+          difficulty?: string | null
+          id?: string
+          organization_id?: string | null
+          performance_score?: number | null
+          skill_id?: string | null
+          source: string
+          source_id?: string | null
+          user_id: string
+          xp_earned?: number
+        }
+        Update: {
+          coins_earned?: number
+          created_at?: string | null
+          difficulty?: string | null
+          id?: string
+          organization_id?: string | null
+          performance_score?: number | null
+          skill_id?: string | null
+          source?: string
+          source_id?: string | null
+          user_id?: string
+          xp_earned?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_xp_history_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_xp_history_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skill_configurations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_xp_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
