@@ -21,7 +21,9 @@ interface RequestBody {
     description: string;
     tips: string;
   };
-  track_key: 'sdr' | 'closer';
+  track_key: 'sdr' | 'closer' | 'cold_outreach';
+  channel?: 'phone' | 'whatsapp' | 'linkedin';
+  is_cold_outreach?: boolean;
   product?: {
     name: string;
     description: string;
@@ -59,6 +61,8 @@ serve(async (req) => {
       persona, 
       stage, 
       track_key,
+      channel,
+      is_cold_outreach,
       product,
       objections,
       conversation_history, 
@@ -66,10 +70,15 @@ serve(async (req) => {
       rapport 
     }: RequestBody = await req.json();
 
-    console.log(`[generate-sales-response] Track: ${track_key}, Stage: ${stage.stage_key}, Rapport: ${rapport}`);
+    console.log(`[generate-sales-response] Track: ${track_key}, Channel: ${channel}, Stage: ${stage.stage_key}, Rapport: ${rapport}`);
 
     // Build context based on track
-    const trackContext = track_key === 'sdr' 
+    const trackContext = track_key === 'cold_outreach'
+      ? `Esta é uma PROSPECÇÃO FRIA (Cold Outreach). O prospect NÃO conhece você.
+         Canal: ${channel === 'phone' ? 'LIGAÇÃO TELEFÔNICA' : channel === 'whatsapp' ? 'MENSAGEM WHATSAPP' : 'MENSAGEM LINKEDIN'}
+         Você está MUITO ocupado e resistente. Quer se livrar da ligação/mensagem.
+         Seja difícil mas realista. Se o vendedor for bom, dê uma chance.`
+      : track_key === 'sdr' 
       ? `Esta é uma ligação de PROSPECÇÃO (SDR). O objetivo é qualificar o lead e agendar uma reunião.
          Você NÃO está pronto para comprar - está sendo abordado pela primeira vez.
          Seja mais resistente e questione a relevância da ligação.`

@@ -1465,6 +1465,7 @@ export type Database = {
       sales_client_personas: {
         Row: {
           avatar: string | null
+          channel: string | null
           company_name: string | null
           company_type: string | null
           created_at: string | null
@@ -1481,6 +1482,7 @@ export type Database = {
         }
         Insert: {
           avatar?: string | null
+          channel?: string | null
           company_name?: string | null
           company_type?: string | null
           created_at?: string | null
@@ -1497,6 +1499,7 @@ export type Database = {
         }
         Update: {
           avatar?: string | null
+          channel?: string | null
           company_name?: string | null
           company_type?: string | null
           created_at?: string | null
@@ -1523,6 +1526,7 @@ export type Database = {
       }
       sales_conversation_stages: {
         Row: {
+          channel: string | null
           created_at: string | null
           description: string | null
           icon: string | null
@@ -1535,6 +1539,7 @@ export type Database = {
           track_key: string | null
         }
         Insert: {
+          channel?: string | null
           created_at?: string | null
           description?: string | null
           icon?: string | null
@@ -1547,6 +1552,7 @@ export type Database = {
           track_key?: string | null
         }
         Update: {
+          channel?: string | null
           created_at?: string | null
           description?: string | null
           icon?: string | null
@@ -1744,6 +1750,56 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "sales_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_opening_scripts: {
+        Row: {
+          channel: string
+          context_tags: string[] | null
+          created_at: string | null
+          effectiveness_score: number | null
+          id: string
+          is_active: boolean | null
+          name: string
+          organization_id: string | null
+          script_template: string
+          track_key: string
+          usage_count: number | null
+        }
+        Insert: {
+          channel?: string
+          context_tags?: string[] | null
+          created_at?: string | null
+          effectiveness_score?: number | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          organization_id?: string | null
+          script_template: string
+          track_key?: string
+          usage_count?: number | null
+        }
+        Update: {
+          channel?: string
+          context_tags?: string[] | null
+          created_at?: string | null
+          effectiveness_score?: number | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          organization_id?: string | null
+          script_template?: string
+          track_key?: string
+          usage_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_opening_scripts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
