@@ -11,6 +11,7 @@ import { useLeaderboard } from "@/hooks/useLeaderboard";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useStreak } from "@/hooks/useStreak";
+import { useActivityLog } from "@/hooks/useActivityLog";
 
 /**
  * ===========================================
@@ -45,6 +46,7 @@ export function MemoryGame({ onBack }: MemoryGameProps) {
   const { profile, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const { recordPlay } = useStreak();
+  const { logGamePlayed } = useActivityLog();
 
   const [hasSavedScore, setHasSavedScore] = useState(false);
 
@@ -54,6 +56,9 @@ export function MemoryGame({ onBack }: MemoryGameProps) {
       
       // Registra play para streak
       recordPlay();
+      
+      // Registra atividade no log
+      logGamePlayed("memory", moves);
 
       if (isAuthenticated && profile) {
         addScore({
@@ -69,7 +74,7 @@ export function MemoryGame({ onBack }: MemoryGameProps) {
         });
       }
     }
-  }, [hasWon, moves, difficulty, hasSavedScore, isAuthenticated, profile, addScore, toast, recordPlay]);
+  }, [hasWon, moves, difficulty, hasSavedScore, isAuthenticated, profile, addScore, toast, recordPlay, logGamePlayed]);
 
   const handleReset = () => {
     setHasSavedScore(false);
