@@ -9,6 +9,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -153,6 +154,9 @@ export function TrainingModulesBuilder({
               </div>
             </div>
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            Adicione, edite e organize os módulos do treinamento
+          </DialogDescription>
         </DialogHeader>
 
         <div className="flex items-center justify-between py-4 border-b border-border">

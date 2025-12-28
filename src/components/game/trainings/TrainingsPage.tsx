@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Progress } from "@/components/ui/progress";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -297,6 +297,9 @@ function TrainingDetailModal({ training, modules, progress, isOpen, onClose }: T
               </div>
             </div>
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            Detalhes e módulos do treinamento {training.name}
+          </DialogDescription>
         </DialogHeader>
 
         <ScrollArea className="max-h-[60vh]">
@@ -364,7 +367,14 @@ function TrainingDetailModal({ training, modules, progress, isOpen, onClose }: T
             </div>
 
             {/* CTA Button */}
-            <Button className="w-full" size="lg">
+            <Button 
+              className="w-full" 
+              size="lg"
+              onClick={() => {
+                onClose();
+                window.location.href = `/app/trainings/${training.id}`;
+              }}
+            >
               {isCompleted ? (
                 <>
                   <CheckCircle className="w-4 h-4 mr-2" />
