@@ -1,5 +1,6 @@
 /**
  * Hook para gerenciar o jogo de cenários de decisão com sistema de progressão
+ * Integrado com useGameRewards para registro de atividades
  */
 
 import { useState, useEffect, useCallback, useMemo } from "react";
@@ -7,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 import { useToast } from "./use-toast";
 import { useLevel } from "./useLevel";
+import { useGameRewards } from "./useGameRewards";
 
 export interface DecisionScenario {
   id: string;
@@ -78,6 +80,7 @@ export function useDecisionGame(): UseDecisionGame {
   const { user } = useAuth();
   const { toast } = useToast();
   const { addXP } = useLevel();
+  const { logActivity, updateStreak } = useGameRewards();
 
   const [scenarios, setScenarios] = useState<DecisionScenario[]>([]);
   const [completedScenarios, setCompletedScenarios] = useState<Map<string, boolean>>(new Map());
@@ -281,6 +284,15 @@ export function useDecisionGame(): UseDecisionGame {
 
         // Award coins
         const coinsEarned = selectedOption.is_optimal ? 50 : selectedOption.impact_score > 0 ? 25 : 10;
+
+        // Registra atividade e atualiza streak
+        await logActivity("decision_made", "decision", xpEarned, coinsEarned, {
+          scenarioId: currentScenario.id,
+          isOptimal: selectedOption.is_optimal,
+          timeTaken,
+          difficulty: currentScenario.difficulty
+        });
+        await updateStreak();
         const { data: stats } = await supabase
           .from("user_stats")
           .select("coins")

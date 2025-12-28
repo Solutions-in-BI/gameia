@@ -1,5 +1,6 @@
 /**
  * Hook para gerenciar o jogo de Quiz Battle
+ * Integrado com useGameRewards para registro de atividades
  */
 
 import { useState, useEffect, useCallback } from "react";
@@ -7,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 import { useToast } from "./use-toast";
 import { useLevel } from "./useLevel";
+import { useGameRewards } from "./useGameRewards";
 
 export interface QuizCategory {
   id: string;
@@ -69,6 +71,7 @@ export function useQuizGame(): UseQuizGame {
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const { addXP } = useLevel();
+  const { logActivity, updateStreak } = useGameRewards();
 
   const [categories, setCategories] = useState<QuizCategory[]>([]);
   const [currentMatch, setCurrentMatch] = useState<QuizMatch | null>(null);
@@ -369,6 +372,15 @@ export function useQuizGame(): UseQuizGame {
       if (xpEarned > 0) {
         await addXP(xpEarned, "Quiz Battle concluído!");
       }
+
+      // Registra atividade e atualiza streak
+      await logActivity("quiz_completed", "quiz", xpEarned, coinsEarned, {
+        score,
+        correctAnswers,
+        totalQuestions: questions.length,
+        betAmount
+      });
+      await updateStreak();
 
       toast({
         title: "🎉 Jogo finalizado!",
