@@ -3,7 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
+import Home from "./pages/Home";
+import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import Invite from "./pages/Invite";
@@ -11,7 +12,8 @@ import Onboarding from "./pages/Onboarding";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
-import Landing from "./pages/Landing";
+import About from "./pages/About";
+import Services from "./pages/Services";
 import Pricing from "./pages/Pricing";
 import Demo from "./pages/Demo";
 import Subscription from "./pages/Subscription";
@@ -26,9 +28,11 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/landing" element={<Landing />} />
-          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/app" element={<Dashboard />} />
+          <Route path="/sobre" element={<About />} />
+          <Route path="/servicos" element={<Services />} />
+          <Route path="/planos" element={<Pricing />} />
           <Route path="/demo" element={<Demo />} />
           <Route path="/subscription" element={<Subscription />} />
           <Route path="/auth" element={<Auth />} />
