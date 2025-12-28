@@ -2999,6 +2999,20 @@ export type Database = {
         }
         Returns: Json
       }
+      get_org_competency_metrics: { Args: { _org_id: string }; Returns: Json }
+      get_org_decision_metrics: {
+        Args: { _org_id: string; _period?: string }
+        Returns: Json
+      }
+      get_org_engagement_metrics: {
+        Args: { _org_id: string; _period?: string }
+        Returns: Json
+      }
+      get_org_learning_metrics: {
+        Args: { _org_id: string; _period?: string }
+        Returns: Json
+      }
+      get_org_members_with_metrics: { Args: { _org_id: string }; Returns: Json }
       get_org_role: {
         Args: { _org_id: string; _user_id: string }
         Returns: string
