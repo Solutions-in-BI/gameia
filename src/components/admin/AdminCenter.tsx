@@ -26,6 +26,7 @@ import {
   Target,
   ArrowLeft,
   RefreshCcw,
+  UsersRound,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -47,8 +48,9 @@ import { LearningMetrics } from "./metrics/LearningMetrics";
 import { CompetencyMetrics } from "./metrics/CompetencyMetrics";
 import { DecisionMetrics } from "./metrics/DecisionMetrics";
 import { MembersMetricsTable } from "./metrics/MembersMetricsTable";
+import { TeamManagement } from "./teams";
 
-type AdminTab = "overview" | "members" | "invites" | "challenges" | "settings";
+type AdminTab = "overview" | "teams" | "members" | "invites" | "challenges" | "settings";
 
 export function AdminCenter() {
   const { user, isAuthenticated } = useAuth();
@@ -177,6 +179,7 @@ export function AdminCenter() {
 
   const tabs = [
     { id: "overview" as const, label: "Visão Geral", icon: BarChart3 },
+    { id: "teams" as const, label: "Equipes", icon: UsersRound },
     { id: "members" as const, label: "Membros", icon: Users },
     { id: "invites" as const, label: "Convites", icon: UserPlus },
     { id: "challenges" as const, label: "Desafios", icon: Trophy },
@@ -324,6 +327,15 @@ export function AdminCenter() {
                 </button>
               </div>
             </div>
+          </motion.div>
+        )}
+
+        {activeTab === "teams" && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <TeamManagement orgId={organization.id} />
           </motion.div>
         )}
 

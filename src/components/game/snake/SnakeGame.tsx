@@ -11,6 +11,7 @@ import { useLeaderboard } from "@/hooks/useLeaderboard";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useStreak } from "@/hooks/useStreak";
+import { useActivityLog } from "@/hooks/useActivityLog";
 import { OPPOSITE_DIRECTIONS } from "@/constants/game";
 import { Direction } from "@/types/game";
 
@@ -46,6 +47,7 @@ export function SnakeGame({ onBack }: SnakeGameProps) {
   const { profile, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const { recordPlay } = useStreak();
+  const { logGamePlayed } = useActivityLog();
 
   const [hasSavedScore, setHasSavedScore] = useState(false);
 
@@ -56,6 +58,9 @@ export function SnakeGame({ onBack }: SnakeGameProps) {
       
       // Registra play para streak
       recordPlay();
+      
+      // Registra atividade no log
+      logGamePlayed("snake", score);
 
       if (isAuthenticated && profile && score >= 30) {
         addScore({
@@ -73,7 +78,7 @@ export function SnakeGame({ onBack }: SnakeGameProps) {
         });
       }
     }
-  }, [isGameOver, score, hasSavedScore, isAuthenticated, profile, addScore, toast, recordPlay]);
+  }, [isGameOver, score, hasSavedScore, isAuthenticated, profile, addScore, toast, recordPlay, logGamePlayed]);
 
   const handleReset = () => {
     setHasSavedScore(false);

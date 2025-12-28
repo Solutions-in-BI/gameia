@@ -3037,6 +3037,18 @@ export type Database = {
           used_by: string
         }[]
       }
+      log_user_activity: {
+        Args: {
+          p_activity_type: string
+          p_coins_earned?: number
+          p_game_type?: string
+          p_metadata?: Json
+          p_score?: number
+          p_user_id: string
+          p_xp_earned?: number
+        }
+        Returns: string
+      }
       revoke_org_invite: { Args: { p_invite_id: string }; Returns: Json }
     }
     Enums: {

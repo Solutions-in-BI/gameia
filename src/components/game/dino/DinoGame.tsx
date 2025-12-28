@@ -9,6 +9,7 @@ import { useLeaderboard } from "@/hooks/useLeaderboard";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useStreak } from "@/hooks/useStreak";
+import { useActivityLog } from "@/hooks/useActivityLog";
 
 /**
  * ===========================================
@@ -29,6 +30,7 @@ export function DinoGame({ onBack }: DinoGameProps) {
   const { profile, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const { recordPlay } = useStreak();
+  const { logGamePlayed } = useActivityLog();
 
   const [hasSavedScore, setHasSavedScore] = useState(false);
 
@@ -38,6 +40,9 @@ export function DinoGame({ onBack }: DinoGameProps) {
       
       // Registra play para streak
       recordPlay();
+      
+      // Registra atividade no log
+      logGamePlayed("dino", score);
 
       if (isAuthenticated && profile && score >= 50) {
         addScore({
@@ -52,7 +57,7 @@ export function DinoGame({ onBack }: DinoGameProps) {
         });
       }
     }
-  }, [isGameOver, score, hasSavedScore, isAuthenticated, profile, addScore, toast, recordPlay]);
+  }, [isGameOver, score, hasSavedScore, isAuthenticated, profile, addScore, toast, recordPlay, logGamePlayed]);
 
   const handleReset = () => {
     setHasSavedScore(false);
