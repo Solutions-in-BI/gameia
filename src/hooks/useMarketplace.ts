@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 import { useToast } from "./use-toast";
@@ -37,14 +37,15 @@ export interface InventoryItem {
 }
 
 export function useMarketplace() {
-  const { user, isAuthenticated } = useAuth();
-  const { toast } = useToast();
-  
+  // All hooks must be called unconditionally at the top
   const [items, setItems] = useState<MarketplaceItem[]>([]);
   const [categories, setCategories] = useState<MarketplaceCategory[]>([]);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [coins, setCoins] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  
+  const { user, isAuthenticated } = useAuth();
+  const { toast } = useToast();
 
   // Busca itens do marketplace
   const fetchItems = useCallback(async () => {
@@ -200,16 +201,17 @@ export function useMarketplace() {
     }
   };
 
-  // Item equipado por categoria
-  const getEquippedItem = (category: string) => {
+  // Memoized values
+  const featuredItems = useMemo(() => items.filter(i => i.is_featured), [items]);
+
+  // Helper functions
+  const getEquippedItem = useCallback((category: string) => {
     return inventory.find(inv => inv.is_equipped && inv.item?.category === category);
-  };
+  }, [inventory]);
 
-  // Itens em destaque
-  const featuredItems = items.filter(i => i.is_featured);
-
-  // Verificar se possui item
-  const ownsItem = (itemId: string) => inventory.some(inv => inv.item_id === itemId);
+  const ownsItem = useCallback((itemId: string) => {
+    return inventory.some(inv => inv.item_id === itemId);
+  }, [inventory]);
 
   return {
     items,
