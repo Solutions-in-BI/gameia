@@ -24,6 +24,10 @@ import {
   Shield,
   Key,
   GraduationCap,
+  Heart,
+  Radar,
+  MessageCircle,
+  ClipboardList,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -52,7 +56,11 @@ export type AdminSection =
   | "scenario-content"
   | "trainings-config"
   | "sso"
-  | "integrations";
+  | "integrations"
+  | "assessment-360"
+  | "pdi"
+  | "one-on-one"
+  | "cognitive-tests";
 
 interface NavItem {
   id: AdminSection;
@@ -82,13 +90,24 @@ const ADMIN_NAV: NavEntry[] = [
     ],
   },
   {
+    id: "hr",
+    label: "Gestão de Pessoas",
+    icon: Heart,
+    children: [
+      { id: "assessment-360", label: "Avaliação 360°", icon: Radar },
+      { id: "pdi", label: "PDI", icon: Target },
+      { id: "one-on-one", label: "One-on-One", icon: MessageCircle },
+      { id: "cognitive-tests", label: "Testes Cognitivos", icon: Brain },
+    ],
+  },
+  {
     id: "content",
     label: "Conteúdo",
     icon: BookOpen,
     children: [
       { id: "trainings-config", label: "Treinamentos", icon: GraduationCap },
       { id: "quiz-content", label: "Perguntas Quiz", icon: HelpCircle },
-      { id: "scenario-content", label: "Cenários", icon: Brain },
+      { id: "scenario-content", label: "Cenários", icon: ClipboardList },
     ],
   },
   {
@@ -259,6 +278,10 @@ export function getSectionLabel(section: AdminSection): string {
     "trainings-config": "Treinamentos",
     sso: "SSO Corporativo",
     integrations: "Integrações",
+    "assessment-360": "Avaliação 360°",
+    pdi: "PDI",
+    "one-on-one": "One-on-One",
+    "cognitive-tests": "Testes Cognitivos",
   };
   return labels[section];
 }
@@ -285,6 +308,10 @@ export function getSectionParent(section: AdminSection): { id: string; label: st
     "trainings-config": { id: "content", label: "Conteúdo" },
     sso: { id: "settings", label: "Configurações" },
     integrations: { id: "settings", label: "Configurações" },
+    "assessment-360": { id: "hr", label: "Gestão de Pessoas" },
+    pdi: { id: "hr", label: "Gestão de Pessoas" },
+    "one-on-one": { id: "hr", label: "Gestão de Pessoas" },
+    "cognitive-tests": { id: "hr", label: "Gestão de Pessoas" },
   };
   return parentMap[section];
 }

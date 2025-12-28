@@ -68,6 +68,141 @@ export type Database = {
           },
         ]
       }
+      assessment_360_results: {
+        Row: {
+          ai_insights: string | null
+          consolidated_scores: Json | null
+          created_at: string | null
+          cycle_id: string | null
+          development_areas: string[] | null
+          id: string
+          strengths: string[] | null
+          user_id: string
+        }
+        Insert: {
+          ai_insights?: string | null
+          consolidated_scores?: Json | null
+          created_at?: string | null
+          cycle_id?: string | null
+          development_areas?: string[] | null
+          id?: string
+          strengths?: string[] | null
+          user_id: string
+        }
+        Update: {
+          ai_insights?: string | null
+          consolidated_scores?: Json | null
+          created_at?: string | null
+          cycle_id?: string | null
+          development_areas?: string[] | null
+          id?: string
+          strengths?: string[] | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_360_results_cycle_id_fkey"
+            columns: ["cycle_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_cycles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assessment_cycles: {
+        Row: {
+          config: Json | null
+          created_at: string | null
+          created_by: string | null
+          cycle_type: string | null
+          description: string | null
+          end_date: string
+          id: string
+          name: string
+          organization_id: string | null
+          start_date: string
+          status: string | null
+        }
+        Insert: {
+          config?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          cycle_type?: string | null
+          description?: string | null
+          end_date: string
+          id?: string
+          name: string
+          organization_id?: string | null
+          start_date: string
+          status?: string | null
+        }
+        Update: {
+          config?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          cycle_type?: string | null
+          description?: string | null
+          end_date?: string
+          id?: string
+          name?: string
+          organization_id?: string | null
+          start_date?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_cycles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assessments_360: {
+        Row: {
+          created_at: string | null
+          cycle_id: string | null
+          evaluatee_id: string
+          evaluator_id: string
+          id: string
+          relationship: string
+          responses: Json | null
+          status: string | null
+          submitted_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          cycle_id?: string | null
+          evaluatee_id: string
+          evaluator_id: string
+          id?: string
+          relationship: string
+          responses?: Json | null
+          status?: string | null
+          submitted_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          cycle_id?: string | null
+          evaluatee_id?: string
+          evaluator_id?: string
+          id?: string
+          relationship?: string
+          responses?: Json | null
+          status?: string | null
+          submitted_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessments_360_cycle_id_fkey"
+            columns: ["cycle_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_cycles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
@@ -310,6 +445,219 @@ export type Database = {
           },
           {
             foreignKeyName: "badges_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cognitive_profiles: {
+        Row: {
+          assessments_count: number | null
+          attention_to_detail: number | null
+          id: string
+          last_assessed_at: string | null
+          logical_reasoning: number | null
+          numerical_ability: number | null
+          organization_id: string | null
+          overall_score: number | null
+          processing_speed: number | null
+          spatial_reasoning: number | null
+          updated_at: string | null
+          user_id: string
+          verbal_reasoning: number | null
+          working_memory: number | null
+        }
+        Insert: {
+          assessments_count?: number | null
+          attention_to_detail?: number | null
+          id?: string
+          last_assessed_at?: string | null
+          logical_reasoning?: number | null
+          numerical_ability?: number | null
+          organization_id?: string | null
+          overall_score?: number | null
+          processing_speed?: number | null
+          spatial_reasoning?: number | null
+          updated_at?: string | null
+          user_id: string
+          verbal_reasoning?: number | null
+          working_memory?: number | null
+        }
+        Update: {
+          assessments_count?: number | null
+          attention_to_detail?: number | null
+          id?: string
+          last_assessed_at?: string | null
+          logical_reasoning?: number | null
+          numerical_ability?: number | null
+          organization_id?: string | null
+          overall_score?: number | null
+          processing_speed?: number | null
+          spatial_reasoning?: number | null
+          updated_at?: string | null
+          user_id?: string
+          verbal_reasoning?: number | null
+          working_memory?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cognitive_profiles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cognitive_test_questions: {
+        Row: {
+          avg_time_seconds: number | null
+          content: Json
+          correct_answer: string
+          created_at: string | null
+          difficulty: number | null
+          id: string
+          question_type: string
+          sort_order: number | null
+          test_id: string | null
+        }
+        Insert: {
+          avg_time_seconds?: number | null
+          content: Json
+          correct_answer: string
+          created_at?: string | null
+          difficulty?: number | null
+          id?: string
+          question_type: string
+          sort_order?: number | null
+          test_id?: string | null
+        }
+        Update: {
+          avg_time_seconds?: number | null
+          content?: Json
+          correct_answer?: string
+          created_at?: string | null
+          difficulty?: number | null
+          id?: string
+          question_type?: string
+          sort_order?: number | null
+          test_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cognitive_test_questions_test_id_fkey"
+            columns: ["test_id"]
+            isOneToOne: false
+            referencedRelation: "cognitive_tests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cognitive_test_sessions: {
+        Row: {
+          answers: Json | null
+          completed_at: string | null
+          id: string
+          is_proctored: boolean | null
+          organization_id: string | null
+          percentile: number | null
+          score: number | null
+          started_at: string | null
+          status: string | null
+          test_id: string | null
+          user_id: string
+        }
+        Insert: {
+          answers?: Json | null
+          completed_at?: string | null
+          id?: string
+          is_proctored?: boolean | null
+          organization_id?: string | null
+          percentile?: number | null
+          score?: number | null
+          started_at?: string | null
+          status?: string | null
+          test_id?: string | null
+          user_id: string
+        }
+        Update: {
+          answers?: Json | null
+          completed_at?: string | null
+          id?: string
+          is_proctored?: boolean | null
+          organization_id?: string | null
+          percentile?: number | null
+          score?: number | null
+          started_at?: string | null
+          status?: string | null
+          test_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cognitive_test_sessions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cognitive_test_sessions_test_id_fkey"
+            columns: ["test_id"]
+            isOneToOne: false
+            referencedRelation: "cognitive_tests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cognitive_tests: {
+        Row: {
+          config: Json | null
+          created_at: string | null
+          description: string | null
+          difficulty: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          organization_id: string | null
+          questions_count: number | null
+          test_type: string
+          time_limit_minutes: number | null
+          xp_reward: number | null
+        }
+        Insert: {
+          config?: Json | null
+          created_at?: string | null
+          description?: string | null
+          difficulty?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          organization_id?: string | null
+          questions_count?: number | null
+          test_type: string
+          time_limit_minutes?: number | null
+          xp_reward?: number | null
+        }
+        Update: {
+          config?: Json | null
+          created_at?: string | null
+          description?: string | null
+          difficulty?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          organization_id?: string | null
+          questions_count?: number | null
+          test_type?: string
+          time_limit_minutes?: number | null
+          xp_reward?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cognitive_tests_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -582,6 +930,132 @@ export type Database = {
         }
         Relationships: []
       }
+      development_goals: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          evidence_urls: string[] | null
+          id: string
+          manager_notes: string | null
+          plan_id: string | null
+          priority: string | null
+          progress: number | null
+          skill_id: string | null
+          status: string | null
+          success_criteria: string[] | null
+          target_date: string | null
+          title: string
+          xp_reward: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          evidence_urls?: string[] | null
+          id?: string
+          manager_notes?: string | null
+          plan_id?: string | null
+          priority?: string | null
+          progress?: number | null
+          skill_id?: string | null
+          status?: string | null
+          success_criteria?: string[] | null
+          target_date?: string | null
+          title: string
+          xp_reward?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          evidence_urls?: string[] | null
+          id?: string
+          manager_notes?: string | null
+          plan_id?: string | null
+          priority?: string | null
+          progress?: number | null
+          skill_id?: string | null
+          status?: string | null
+          success_criteria?: string[] | null
+          target_date?: string | null
+          title?: string
+          xp_reward?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "development_goals_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "development_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "development_goals_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skill_configurations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "development_goals_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "vw_org_skill_metrics"
+            referencedColumns: ["skill_id"]
+          },
+        ]
+      }
+      development_plans: {
+        Row: {
+          created_at: string | null
+          id: string
+          manager_id: string | null
+          organization_id: string | null
+          overall_progress: number | null
+          period_end: string | null
+          period_start: string | null
+          status: string | null
+          title: string
+          updated_at: string | null
+          user_id: string
+          xp_on_completion: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          manager_id?: string | null
+          organization_id?: string | null
+          overall_progress?: number | null
+          period_end?: string | null
+          period_start?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+          xp_on_completion?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          manager_id?: string | null
+          organization_id?: string | null
+          overall_progress?: number | null
+          period_end?: string | null
+          period_start?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+          xp_on_completion?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "development_plans_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       friend_group_members: {
         Row: {
           group_id: string
@@ -811,6 +1285,47 @@ export type Database = {
             columns: ["item_id"]
             isOneToOne: false
             referencedRelation: "marketplace_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      goal_check_ins: {
+        Row: {
+          blockers: string | null
+          checked_by: string | null
+          created_at: string | null
+          goal_id: string | null
+          id: string
+          new_progress: number | null
+          progress_update: string | null
+          user_id: string
+        }
+        Insert: {
+          blockers?: string | null
+          checked_by?: string | null
+          created_at?: string | null
+          goal_id?: string | null
+          id?: string
+          new_progress?: number | null
+          progress_update?: string | null
+          user_id: string
+        }
+        Update: {
+          blockers?: string | null
+          checked_by?: string | null
+          created_at?: string | null
+          goal_id?: string | null
+          id?: string
+          new_progress?: number | null
+          progress_update?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goal_check_ins_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "development_goals"
             referencedColumns: ["id"]
           },
         ]
@@ -1196,6 +1711,190 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      one_on_one_action_items: {
+        Row: {
+          assigned_to: string
+          completed_at: string | null
+          created_at: string | null
+          due_date: string | null
+          id: string
+          meeting_id: string | null
+          status: string | null
+          title: string
+        }
+        Insert: {
+          assigned_to: string
+          completed_at?: string | null
+          created_at?: string | null
+          due_date?: string | null
+          id?: string
+          meeting_id?: string | null
+          status?: string | null
+          title: string
+        }
+        Update: {
+          assigned_to?: string
+          completed_at?: string | null
+          created_at?: string | null
+          due_date?: string | null
+          id?: string
+          meeting_id?: string | null
+          status?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "one_on_one_action_items_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "one_on_one_meetings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      one_on_one_meetings: {
+        Row: {
+          created_at: string | null
+          duration_minutes: number | null
+          employee_id: string
+          id: string
+          location: string | null
+          manager_id: string
+          organization_id: string | null
+          recurrence: string | null
+          scheduled_at: string
+          status: string | null
+          template_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          duration_minutes?: number | null
+          employee_id: string
+          id?: string
+          location?: string | null
+          manager_id: string
+          organization_id?: string | null
+          recurrence?: string | null
+          scheduled_at: string
+          status?: string | null
+          template_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          duration_minutes?: number | null
+          employee_id?: string
+          id?: string
+          location?: string | null
+          manager_id?: string
+          organization_id?: string | null
+          recurrence?: string | null
+          scheduled_at?: string
+          status?: string | null
+          template_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "one_on_one_meetings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "one_on_one_meetings_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "one_on_one_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      one_on_one_notes: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string | null
+          id: string
+          is_private: boolean | null
+          meeting_id: string | null
+          related_goal_id: string | null
+          section: string
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string | null
+          id?: string
+          is_private?: boolean | null
+          meeting_id?: string | null
+          related_goal_id?: string | null
+          section: string
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_private?: boolean | null
+          meeting_id?: string | null
+          related_goal_id?: string | null
+          section?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "one_on_one_notes_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "one_on_one_meetings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "one_on_one_notes_related_goal_id_fkey"
+            columns: ["related_goal_id"]
+            isOneToOne: false
+            referencedRelation: "development_goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      one_on_one_templates: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          is_default: boolean | null
+          name: string
+          organization_id: string | null
+          questions: Json
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_default?: boolean | null
+          name: string
+          organization_id?: string | null
+          questions?: Json
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_default?: boolean | null
+          name?: string
+          organization_id?: string | null
+          questions?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "one_on_one_templates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       organization_api_keys: {
         Row: {
