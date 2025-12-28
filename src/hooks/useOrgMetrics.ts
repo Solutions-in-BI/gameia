@@ -70,8 +70,9 @@ export function useOrgMetrics(orgId: string | undefined) {
   const [membersWithMetrics, setMembersWithMetrics] = useState<MemberWithMetrics[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [period, setPeriod] = useState<MetricPeriod>("30d");
+  const [hasFetched, setHasFetched] = useState(false);
 
-  const fetchEngagement = useCallback(async (p: MetricPeriod = period) => {
+  const fetchEngagement = useCallback(async (p: MetricPeriod) => {
     if (!orgId) return;
     
     try {
@@ -87,9 +88,9 @@ export function useOrgMetrics(orgId: string | undefined) {
     } catch (error) {
       console.error("Error fetching engagement metrics:", error);
     }
-  }, [orgId, period]);
+  }, [orgId]);
 
-  const fetchLearning = useCallback(async (p: MetricPeriod = period) => {
+  const fetchLearning = useCallback(async (p: MetricPeriod) => {
     if (!orgId) return;
     
     try {
@@ -105,7 +106,7 @@ export function useOrgMetrics(orgId: string | undefined) {
     } catch (error) {
       console.error("Error fetching learning metrics:", error);
     }
-  }, [orgId, period]);
+  }, [orgId]);
 
   const fetchCompetency = useCallback(async () => {
     if (!orgId) return;
@@ -124,7 +125,7 @@ export function useOrgMetrics(orgId: string | undefined) {
     }
   }, [orgId]);
 
-  const fetchDecision = useCallback(async (p: MetricPeriod = period) => {
+  const fetchDecision = useCallback(async (p: MetricPeriod) => {
     if (!orgId) return;
     
     try {
@@ -140,7 +141,7 @@ export function useOrgMetrics(orgId: string | undefined) {
     } catch (error) {
       console.error("Error fetching decision metrics:", error);
     }
-  }, [orgId, period]);
+  }, [orgId]);
 
   const fetchMembersWithMetrics = useCallback(async () => {
     if (!orgId) return;
@@ -159,22 +160,26 @@ export function useOrgMetrics(orgId: string | undefined) {
     }
   }, [orgId]);
 
-  const fetchAllMetrics = useCallback(async (p: MetricPeriod = period) => {
+  const fetchAllMetrics = useCallback(async (p?: MetricPeriod) => {
+    if (!orgId) return;
+    
+    const targetPeriod = p || period;
     setIsLoading(true);
-    setPeriod(p);
+    if (p) setPeriod(p);
     
     try {
       await Promise.all([
-        fetchEngagement(p),
-        fetchLearning(p),
+        fetchEngagement(targetPeriod),
+        fetchLearning(targetPeriod),
         fetchCompetency(),
-        fetchDecision(p),
+        fetchDecision(targetPeriod),
         fetchMembersWithMetrics(),
       ]);
+      setHasFetched(true);
     } finally {
       setIsLoading(false);
     }
-  }, [fetchEngagement, fetchLearning, fetchCompetency, fetchDecision, fetchMembersWithMetrics, period]);
+  }, [orgId, period, fetchEngagement, fetchLearning, fetchCompetency, fetchDecision, fetchMembersWithMetrics]);
 
   return {
     engagement,
@@ -184,6 +189,7 @@ export function useOrgMetrics(orgId: string | undefined) {
     membersWithMetrics,
     isLoading,
     period,
+    hasFetched,
     setPeriod,
     fetchAllMetrics,
     fetchEngagement,
