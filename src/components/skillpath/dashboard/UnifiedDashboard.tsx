@@ -15,7 +15,7 @@ import { DailyRewards } from "./DailyRewards";
 import { PlayerProfileCard } from "@/components/game/common/PlayerProfileCard";
 import { BadgesCarousel, Badge } from "@/components/game/common/AchievementsBadges";
 import { BettingSection, Bet } from "@/components/game/bets/BettingSection";
-import { SkillTree } from "@/components/game/enterprise/SkillTree";
+import { SkillsPage } from "@/components/game/skills";
 import { InsigniasPage } from "@/components/game/insignias/InsigniasPage";
 import { TrainingsPage } from "@/components/game/trainings/TrainingsPage";
 import { useLevel } from "@/hooks/useLevel";
@@ -24,7 +24,7 @@ import { useStreak } from "@/hooks/useStreak";
 import { useFriends } from "@/hooks/useFriends";
 import { useOrganization } from "@/hooks/useOrganization";
 import { useAuth } from "@/hooks/useAuth";
-import { useSkillTree } from "@/hooks/useSkillTree";
+import { useSkillProgress } from "@/hooks/useSkillProgress";
 import { useTrails } from "@/hooks/useTrails";
 import { SnakeGame } from "@/components/game/snake/SnakeGame";
 import { MemoryGame } from "@/components/game/memory/MemoryGame";
@@ -66,7 +66,7 @@ export function UnifiedDashboard({ activeTab = "dashboard", onTabChange }: Unifi
   const { streak, canClaimToday, isAtRisk, claimDailyReward, getTodayReward } = useStreak();
   const { friends, pendingGifts, sendFriendRequest, acceptFriendRequest, rejectFriendRequest, acceptGift, rejectGift } = useFriends();
   const { currentOrg, members, challenges, isAdmin, completeChallenge, refresh: refreshOrg } = useOrganization();
-  const { skills, unlockSkill } = useSkillTree();
+  const { skills } = useSkillProgress();
   const { trails, isTrailCompleted, getOverallStats } = useTrails();
 
   const pendingRequests = friends.filter(f => f.status === "pending" && !f.isRequester);
@@ -215,14 +215,7 @@ export function UnifiedDashboard({ activeTab = "dashboard", onTabChange }: Unifi
 
         {/* Skills Tab */}
         <TabsContent value="skills" className="mt-6">
-          <SkillTree
-            skills={skills}
-            onSkillClick={(skill) => {
-              if (!skill.isUnlocked) {
-                unlockSkill(skill.id);
-              }
-            }}
-          />
+          <SkillsPage />
         </TabsContent>
 
         {/* Store Tab - Opens Marketplace directly */}

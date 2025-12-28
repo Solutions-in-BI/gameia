@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils";
 import { GameConfigSettings } from "./settings/GameConfigSettings";
 import { BadgeConfigSettings } from "./settings/BadgeConfigSettings";
 import { LevelConfigSettings } from "./settings/LevelConfigSettings";
-import { SkillConfigSettings } from "./settings/SkillConfigSettings";
+import { SkillManagement, SkillMappingMatrix } from "./skills";
 import { OrganizationSettings } from "./settings/OrganizationSettings";
 import { EngagementMetrics } from "./metrics/EngagementMetrics";
 import { LearningMetrics } from "./metrics/LearningMetrics";
@@ -351,8 +351,9 @@ export function AdminCenter() {
 
       case "skills":
         return (
-          <div className="gameia-card p-6">
-            <SkillConfigSettings />
+          <div className="space-y-6">
+            <SkillManagement />
+            <SkillMappingMatrix />
           </div>
         );
 
