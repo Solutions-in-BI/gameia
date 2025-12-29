@@ -13,6 +13,7 @@ import {
   FileText,
   ChevronLeft,
   ChevronRight,
+  GraduationCap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -22,6 +23,7 @@ export type ManageSection =
   | "alerts"
   | "teams"
   | "members"
+  | "trainings"
   | "commitments"
   | "assessments"
   | "reports";
@@ -36,6 +38,7 @@ const NAV_ITEMS: { id: ManageSection; label: string; icon: typeof LayoutDashboar
   { id: "alerts", label: "Alertas & Ações", icon: Bell, description: "Pendências e notificações" },
   { id: "teams", label: "Equipes", icon: UsersRound, description: "Gestão de times" },
   { id: "members", label: "Pessoas", icon: Users, description: "Gestão de colaboradores" },
+  { id: "trainings", label: "Treinamentos", icon: GraduationCap, description: "Progresso de capacitação" },
   { id: "commitments", label: "Compromissos", icon: Target, description: "Metas e desafios" },
   { id: "assessments", label: "Avaliações", icon: ClipboardCheck, description: "360°, PDI e 1:1" },
   { id: "reports", label: "Relatórios", icon: FileText, description: "Análises e exportações" },
