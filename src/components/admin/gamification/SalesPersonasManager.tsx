@@ -2,7 +2,7 @@
  * SalesPersonasManager - Gerenciamento de Personas de Clientes
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus,
@@ -136,24 +136,24 @@ export function SalesPersonasManager() {
   
   const [newPainPoint, setNewPainPoint] = useState("");
   const [newDecisionFactor, setNewDecisionFactor] = useState("");
+  
+  const hasFetched = useRef(false);
+  const lastOrgId = useRef<string | null>(null);
 
-  useEffect(() => {
-    fetchData();
-  }, [currentOrg]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
+      const orgId = currentOrg?.id || '00000000-0000-0000-0000-000000000000';
       const [personasRes, tracksRes] = await Promise.all([
         supabase
           .from("sales_client_personas")
           .select("*")
-          .or(`organization_id.is.null,organization_id.eq.${currentOrg?.id || '00000000-0000-0000-0000-000000000000'}`)
+          .or(`organization_id.is.null,organization_id.eq.${orgId}`)
           .order("name"),
         supabase
           .from("sales_tracks")
           .select("id, track_key, name")
-          .or(`organization_id.is.null,organization_id.eq.${currentOrg?.id || '00000000-0000-0000-0000-000000000000'}`)
+          .or(`organization_id.is.null,organization_id.eq.${orgId}`)
           .eq("is_active", true)
       ]);
 
@@ -168,7 +168,16 @@ export function SalesPersonasManager() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentOrg?.id]);
+
+  useEffect(() => {
+    const orgId = currentOrg?.id || null;
+    if (!hasFetched.current || lastOrgId.current !== orgId) {
+      hasFetched.current = true;
+      lastOrgId.current = orgId;
+      fetchData();
+    }
+  }, [currentOrg?.id, fetchData]);
 
   const handleSave = async () => {
     if (!editingPersona?.name || !editingPersona?.personality) {
