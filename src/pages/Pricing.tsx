@@ -1,322 +1,200 @@
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Link } from "react-router-dom";
-import { Check, X, Zap, Building2, Rocket, Crown, ArrowLeft } from "lucide-react";
-import { Logo } from "@/components/common/Logo";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { useState } from "react";
-import { cn } from "@/lib/utils";
+import { Link, useNavigate } from "react-router-dom";
+import { 
+  ArrowRight, 
+  Sparkles,
+  Shield,
+  Clock,
+  Users,
+  TrendingUp,
+  ChevronRight,
+  Building2
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { SEOHead, SEO_CONFIG, SocialProof, CommercialFAQ, PricingTable } from "@/components/marketing";
+import { useTracking } from "@/hooks/useTracking";
+import { Header, Footer } from "@/components/layout";
 
-const plans = [
+const GUARANTEES = [
   {
-    name: "Free",
-    description: "Para experimentar a plataforma",
-    price: { monthly: 0, yearly: 0 },
-    icon: Zap,
-    color: "text-muted-foreground",
-    bgColor: "bg-muted/50",
-    features: [
-      { text: "Até 5 usuários", included: true },
-      { text: "3 quizzes por mês", included: true },
-      { text: "Jogos básicos", included: true },
-      { text: "Leaderboard simples", included: true },
-      { text: "Relatórios básicos", included: false },
-      { text: "Simulador de vendas", included: false },
-      { text: "Suporte prioritário", included: false },
-      { text: "White-label", included: false },
-    ],
-    cta: "Começar Grátis",
-    popular: false
+    icon: Clock,
+    title: "14 dias grátis",
+    description: "Teste completo sem cartão",
   },
   {
-    name: "Starter",
-    description: "Para pequenas equipes",
-    price: { monthly: 299, yearly: 249 },
-    icon: Rocket,
-    color: "text-secondary",
-    bgColor: "bg-secondary/10",
-    features: [
-      { text: "Até 25 usuários", included: true },
-      { text: "Quizzes ilimitados", included: true },
-      { text: "Todos os jogos", included: true },
-      { text: "Leaderboards por time", included: true },
-      { text: "Relatórios básicos", included: true },
-      { text: "Simulador de vendas", included: true },
-      { text: "Suporte por email", included: true },
-      { text: "White-label", included: false },
-    ],
-    cta: "Começar Trial",
-    popular: false
+    icon: Shield,
+    title: "Garantia de 30 dias",
+    description: "Dinheiro de volta se não gostar",
   },
   {
-    name: "Business",
-    description: "Para empresas em crescimento",
-    price: { monthly: 799, yearly: 649 },
-    icon: Building2,
-    color: "text-primary",
-    bgColor: "bg-primary/10",
-    features: [
-      { text: "Até 100 usuários", included: true },
-      { text: "Quizzes ilimitados", included: true },
-      { text: "Todos os jogos + IA", included: true },
-      { text: "Gestão de times completa", included: true },
-      { text: "Analytics avançados", included: true },
-      { text: "API de integração", included: true },
-      { text: "Suporte prioritário", included: true },
-      { text: "Customização de marca", included: true },
-    ],
-    cta: "Começar Trial",
-    popular: true
+    icon: TrendingUp,
+    title: "ROI garantido",
+    description: "Resultados em 90 dias ou seu dinheiro de volta",
   },
   {
-    name: "Enterprise",
-    description: "Para grandes corporações",
-    price: { monthly: null, yearly: null },
-    icon: Crown,
-    color: "text-accent",
-    bgColor: "bg-accent/10",
-    features: [
-      { text: "Usuários ilimitados", included: true },
-      { text: "Tudo do Business", included: true },
-      { text: "SSO / SAML", included: true },
-      { text: "Conteúdo customizado", included: true },
-      { text: "Relatório executivo C-Level", included: true },
-      { text: "Webhooks e integrações", included: true },
-      { text: "SLA garantido", included: true },
-      { text: "White-label completo", included: true },
-    ],
-    cta: "Falar com Vendas",
-    popular: false
-  }
-];
-
-const faqs = [
-  {
-    question: "O trial é realmente gratuito?",
-    answer: "Sim! Você tem 14 dias para testar todas as funcionalidades do plano Business sem precisar cadastrar cartão de crédito."
+    icon: Users,
+    title: "Suporte incluso",
+    description: "Onboarding e treinamento gratuitos",
   },
-  {
-    question: "Posso mudar de plano depois?",
-    answer: "Claro! Você pode fazer upgrade ou downgrade a qualquer momento. A cobrança será proporcional ao período restante."
-  },
-  {
-    question: "Como funciona o pagamento?",
-    answer: "Aceitamos cartão de crédito, boleto e PIX. Para planos anuais, oferecemos desconto de até 20%."
-  },
-  {
-    question: "Vocês oferecem desconto para ONGs ou startups?",
-    answer: "Sim! Entre em contato conosco para conhecer nossos programas especiais para organizações sem fins lucrativos e startups early-stage."
-  }
 ];
 
 export default function Pricing() {
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('yearly');
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
+  const navigate = useNavigate();
+  const { trackPageView, trackDemoClick, trackCTAClick } = useTracking();
+
+  useEffect(() => {
+    trackPageView("pricing");
+  }, [trackPageView]);
+
+  const handleDemoClick = () => {
+    trackDemoClick("pricing_hero");
+    navigate("/demo");
+  };
+
+  const handleContactClick = () => {
+    trackCTAClick("contact", "pricing_hero");
+    navigate("/contato");
+  };
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="fixed top-0 w-full bg-background/80 backdrop-blur-md border-b border-border z-50">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link to="/landing" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-              <ArrowLeft className="h-4 w-4" />
-              Voltar
-            </Link>
-            <Logo size="md" />
-          </div>
-          <div className="flex items-center gap-3">
-            <Link to="/auth">
-              <Button variant="ghost">Entrar</Button>
-            </Link>
-            <Link to="/demo">
-              <Button className="btn-primary-gameia">
-                Agendar Demo
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </header>
+      <SEOHead {...SEO_CONFIG.pricing} />
+      <Header />
 
-      {/* Hero */}
-      <section className="pt-32 pb-16 px-4 mesh-background">
-        <div className="container mx-auto max-w-4xl text-center">
+      {/* Hero Section */}
+      <section className="pt-24 pb-12 md:pt-32 md:pb-16 px-4">
+        <div className="container mx-auto max-w-6xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+            className="text-center max-w-3xl mx-auto mb-12"
           >
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Planos para todos os{" "}
-              <span className="text-gradient">tamanhos de equipe</span>
+            <Badge variant="secondary" className="mb-4">
+              <Sparkles className="w-3 h-3 mr-1" />
+              14 dias grátis • Sem cartão de crédito
+            </Badge>
+            
+            <h1 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
+              Planos que cabem no seu{" "}
+              <span className="text-primary">orçamento</span>
             </h1>
-            <p className="text-xl text-muted-foreground mb-8">
-              Comece grátis e escale conforme sua empresa cresce
+            
+            <p className="text-lg text-muted-foreground mb-8">
+              Escolha o plano ideal para sua equipe. Comece grátis e escale conforme cresce.
+              <br />
+              <strong className="text-foreground">ROI médio de 340%</strong> nos primeiros 6 meses.
             </p>
 
             {/* Billing Toggle */}
-            <div className="inline-flex items-center gap-3 p-1 rounded-full bg-muted">
-              <button
-                onClick={() => setBillingCycle('monthly')}
-                className={cn(
-                  "px-4 py-2 rounded-full text-sm font-medium transition-colors",
-                  billingCycle === 'monthly' 
-                    ? "bg-card text-foreground shadow-sm" 
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
+            <div className="flex items-center justify-center gap-4 mb-8">
+              <span className={billingCycle === "monthly" ? "text-foreground font-medium" : "text-muted-foreground"}>
                 Mensal
-              </button>
-              <button
-                onClick={() => setBillingCycle('yearly')}
-                className={cn(
-                  "px-4 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2",
-                  billingCycle === 'yearly' 
-                    ? "bg-card text-foreground shadow-sm" 
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
+              </span>
+              <Switch
+                checked={billingCycle === "yearly"}
+                onCheckedChange={(checked) => setBillingCycle(checked ? "yearly" : "monthly")}
+              />
+              <span className={billingCycle === "yearly" ? "text-foreground font-medium" : "text-muted-foreground"}>
                 Anual
-                <span className="px-2 py-0.5 rounded-full bg-gameia-success/20 text-gameia-success text-xs">
-                  -20%
-                </span>
-              </button>
+              </span>
+              {billingCycle === "yearly" && (
+                <Badge variant="default" className="bg-primary">
+                  20% off
+                </Badge>
+              )}
             </div>
+
+            {/* Quick CTAs */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button size="lg" onClick={handleDemoClick} className="gap-2">
+                Ver demo gratuita
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+              <Button size="lg" variant="outline" onClick={handleContactClick}>
+                Falar com especialista
+              </Button>
+            </div>
+          </motion.div>
+
+          {/* Social Proof */}
+          <SocialProof variant="compact" className="mb-12" />
+        </div>
+      </section>
+
+      {/* Pricing Table */}
+      <section className="py-12 px-4 bg-muted/30">
+        <div className="container mx-auto max-w-6xl">
+          <PricingTable billingCycle={billingCycle} showComparison />
+        </div>
+      </section>
+
+      {/* Guarantees */}
+      <section className="py-16 px-4">
+        <div className="container mx-auto max-w-6xl">
+          <h2 className="text-2xl md:text-3xl font-bold text-center text-foreground mb-12">
+            Sem riscos. Garantia total.
+          </h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {GUARANTEES.map((item, index) => (
+              <motion.div
+                key={item.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className="text-center p-6 rounded-xl bg-card border border-border"
+              >
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 text-primary mb-4">
+                  <item.icon className="w-6 h-6" />
+                </div>
+                <h3 className="font-semibold text-foreground mb-2">{item.title}</h3>
+                <p className="text-sm text-muted-foreground">{item.description}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="py-16 px-4 bg-muted/30">
+        <div className="container mx-auto max-w-6xl">
+          <CommercialFAQ 
+            variant="pricing" 
+            title="Perguntas sobre preços e planos"
+          />
+        </div>
+      </section>
+
+      {/* Enterprise CTA */}
+      <section className="py-16 px-4">
+        <div className="container mx-auto max-w-4xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center p-8 md:p-12 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20"
+          >
+            <Building2 className="w-12 h-12 text-primary mx-auto mb-4" />
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
+              Precisa de algo personalizado?
+            </h2>
+            <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
+              Para grandes organizações, oferecemos planos customizados com ambiente dedicado, 
+              SLA garantido, integrações personalizadas e suporte 24/7.
+            </p>
+            <Button size="lg" onClick={handleContactClick} className="gap-2">
+              Falar com vendas
+              <ChevronRight className="w-4 h-4" />
+            </Button>
           </motion.div>
         </div>
       </section>
 
-      {/* Pricing Cards */}
-      <section className="py-12 px-4">
-        <div className="container mx-auto max-w-7xl">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {plans.map((plan, index) => (
-              <motion.div
-                key={plan.name}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
-                className="relative"
-              >
-                {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-medium">
-                    Mais Popular
-                  </div>
-                )}
-                
-                <Card className={cn(
-                  "gameia-card p-6 h-full flex flex-col",
-                  plan.popular && "border-primary ring-2 ring-primary/20"
-                )}>
-                  <div className={cn("inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4", plan.bgColor)}>
-                    <plan.icon className={cn("h-6 w-6", plan.color)} />
-                  </div>
-                  
-                  <h3 className="text-xl font-bold">{plan.name}</h3>
-                  <p className="text-sm text-muted-foreground mb-4">{plan.description}</p>
-                  
-                  <div className="mb-6">
-                    {plan.price.monthly !== null ? (
-                      <>
-                        <span className="text-4xl font-bold">
-                          R${billingCycle === 'yearly' ? plan.price.yearly : plan.price.monthly}
-                        </span>
-                        <span className="text-muted-foreground">/mês</span>
-                        {billingCycle === 'yearly' && plan.price.yearly > 0 && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Cobrado anualmente
-                          </p>
-                        )}
-                      </>
-                    ) : (
-                      <span className="text-2xl font-bold">Sob consulta</span>
-                    )}
-                  </div>
-                  
-                  <ul className="space-y-3 mb-6 flex-grow">
-                    {plan.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-start gap-2">
-                        {feature.included ? (
-                          <Check className="h-5 w-5 text-gameia-success shrink-0 mt-0.5" />
-                        ) : (
-                          <X className="h-5 w-5 text-muted-foreground/50 shrink-0 mt-0.5" />
-                        )}
-                        <span className={cn(
-                          "text-sm",
-                          !feature.included && "text-muted-foreground/50"
-                        )}>
-                          {feature.text}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                  
-                  <Link to={plan.name === 'Enterprise' ? '/demo' : '/demo'}>
-                    <Button 
-                      className={cn(
-                        "w-full",
-                        plan.popular ? "btn-primary-gameia" : ""
-                      )}
-                      variant={plan.popular ? "default" : "outline"}
-                    >
-                      {plan.cta}
-                    </Button>
-                  </Link>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section className="py-20 px-4 bg-card">
-        <div className="container mx-auto max-w-3xl">
-          <h2 className="text-3xl font-bold text-center mb-12">
-            Perguntas Frequentes
-          </h2>
-          
-          <div className="space-y-6">
-            {faqs.map((faq, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
-                viewport={{ once: true }}
-              >
-                <Card className="gameia-card p-6">
-                  <h3 className="font-semibold mb-2">{faq.question}</h3>
-                  <p className="text-muted-foreground">{faq.answer}</p>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-3xl font-bold mb-4">
-            Ainda tem dúvidas?
-          </h2>
-          <p className="text-xl text-muted-foreground mb-8">
-            Agende uma demonstração gratuita e veja o GAMEIA em ação
-          </p>
-          <Link to="/demo">
-            <Button size="lg" className="btn-primary-gameia text-lg px-8">
-              Agendar Demo Gratuita
-            </Button>
-          </Link>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="py-8 px-4 border-t border-border">
-        <div className="container mx-auto text-center text-muted-foreground text-sm">
-          © {new Date().getFullYear()} GAMEIA. Todos os direitos reservados.
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
