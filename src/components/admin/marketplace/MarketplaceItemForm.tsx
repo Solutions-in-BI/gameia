@@ -71,7 +71,7 @@ const formSchema = z.object({
   usage_instructions: z.string().optional().nullable(),
   max_uses: z.number().optional().nullable(),
   expires_after_purchase: z.number().optional().nullable(),
-  expires_after_use: z.number().optional().nullable(),
+  expires_after_use: z.boolean().default(false),
   boost_type: z.string().optional().nullable(),
   boost_value: z.number().optional().nullable(),
   boost_duration_hours: z.number().optional().nullable(),
@@ -108,7 +108,7 @@ export function MarketplaceItemForm({ isOpen, onClose, editItem, categories }: M
       usage_instructions: null,
       max_uses: null,
       expires_after_purchase: null,
-      expires_after_use: null,
+      expires_after_use: false,
       boost_type: null,
       boost_value: null,
       boost_duration_hours: null,
@@ -136,7 +136,7 @@ export function MarketplaceItemForm({ isOpen, onClose, editItem, categories }: M
         usage_instructions: (editItem as any).usage_instructions || null,
         max_uses: (editItem as any).max_uses || null,
         expires_after_purchase: (editItem as any).expires_after_purchase || null,
-        expires_after_use: (editItem as any).expires_after_use || null,
+        expires_after_use: (editItem as any).expires_after_use ?? false,
         boost_type: (editItem as any).boost_type || null,
         boost_value: (editItem as any).boost_value || null,
         boost_duration_hours: (editItem as any).boost_duration_hours || null,
@@ -157,7 +157,7 @@ export function MarketplaceItemForm({ isOpen, onClose, editItem, categories }: M
         usage_instructions: null,
         max_uses: null,
         expires_after_purchase: null,
-        expires_after_use: null,
+        expires_after_use: false,
         boost_type: null,
         boost_value: null,
         boost_duration_hours: null,
@@ -581,15 +581,17 @@ export function MarketplaceItemForm({ isOpen, onClose, editItem, categories }: M
                   control={form.control}
                   name="expires_after_use"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Expira após uso (dias)</FormLabel>
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                      <div className="space-y-0.5">
+                        <FormLabel>Expira após uso</FormLabel>
+                        <FormDescription className="text-xs">
+                          Item expira quando usado
+                        </FormDescription>
+                      </div>
                       <FormControl>
-                        <Input
-                          type="number"
-                          min={1}
-                          placeholder="Sem limite"
-                          value={field.value ?? ""}
-                          onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
+                        <Switch
+                          checked={field.value ?? false}
+                          onCheckedChange={field.onChange}
                         />
                       </FormControl>
                     </FormItem>
