@@ -340,7 +340,7 @@ export function useGameRewards() {
         });
       }
 
-      // Update skills
+      // Update skills and record skill impacts
       for (const [skillKey, xpGained] of Object.entries(rewards.skills)) {
         const { data: skillConfig } = await supabase
           .from('skill_configurations')
@@ -370,6 +370,28 @@ export function useGameRewards() {
             last_practiced: new Date().toISOString(),
             updated_at: new Date().toISOString()
           }, { onConflict: 'user_id,skill_id' });
+
+          // Record skill impact event for analytics timeline
+          try {
+            await supabase.rpc('record_skill_impact', {
+              p_user_id: user.id,
+              p_skill_id: skillConfig.id,
+              p_source_type: 'game',
+              p_source_id: gameType,
+              p_impact_type: 'xp_gain',
+              p_impact_value: xpGained,
+              p_metadata: { 
+                game_type: gameType,
+                previous_xp: existingSkill?.total_xp || 0,
+                new_xp: newTotalXP,
+                previous_level: existingSkill?.current_level || 0,
+                new_level: newSkillLevel
+              }
+            });
+          } catch (impactErr) {
+            // Log but don't fail the whole operation
+            console.warn('[GameRewards] Failed to record skill impact:', impactErr);
+          }
         }
       }
 
