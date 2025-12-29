@@ -27,6 +27,7 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSkillImpact, SourceType } from "@/hooks/useSkillImpact";
 import { useSkillProgress } from "@/hooks/useSkillProgress";
+import { ContextualAssessmentsPanel } from "./ContextualAssessmentsPanel";
 import { format, formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -92,7 +93,8 @@ export function EvolutionDashboard({ onTabChange }: EvolutionDashboardProps) {
         </div>
       </div>
 
-      {/* Quick Actions - Acesso rápido às seções */}
+      {/* Contextual Assessments Panel */}
+      <ContextualAssessmentsPanel />
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <QuickActionCard
           icon={Brain}
