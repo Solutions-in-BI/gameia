@@ -29,8 +29,11 @@ const TIER_BORDER_CLASSES: Record<string, string> = {
   legendary: "ring-orange-500",
 };
 
-export const UserProfileIndicator = forwardRef<HTMLButtonElement, UserProfileIndicatorProps>(
-  ({ displayName, avatarUrl, level, xp, selectedTitle, className }, ref) => {
+export const UserProfileIndicator = forwardRef<
+  HTMLButtonElement, 
+  UserProfileIndicatorProps & React.ButtonHTMLAttributes<HTMLButtonElement>
+>(
+  ({ displayName, avatarUrl, level, xp, selectedTitle, className, ...props }, ref) => {
     const avatarInitial = displayName.charAt(0).toUpperCase() || "G";
     const tier = getLevelTier(level);
     const progress = getLevelProgress(xp, level);
@@ -40,10 +43,12 @@ export const UserProfileIndicator = forwardRef<HTMLButtonElement, UserProfileInd
     return (
       <button
         ref={ref}
+        type="button"
         className={cn(
           "flex items-center gap-2.5 px-2 py-1.5 rounded-xl hover:bg-muted/50 transition-all group",
           className
         )}
+        {...props}
       >
         {/* Avatar with tier border and level badge */}
         <div className="relative">
