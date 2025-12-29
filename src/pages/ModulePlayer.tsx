@@ -1,8 +1,8 @@
 /**
- * ModulePlayer - Player de módulo de treinamento
+ * ModulePlayer - Player de módulo de treinamento com Step Engine
  */
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -19,6 +19,10 @@ import {
   ExternalLink,
   FileText,
   Loader2,
+  Target,
+  Brain,
+  Gamepad2,
+  MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,6 +30,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -35,6 +40,13 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import confetti from "canvas-confetti";
+import type { EnhancedTrainingModule, StepResult } from "@/types/training";
+
+// Step Components
+import { ContentStep } from "@/components/game/trainings/steps/ContentStep";
+import { ArenaGameStep } from "@/components/game/trainings/steps/ArenaGameStep";
+import { ReflectionStep } from "@/components/game/trainings/steps/ReflectionStep";
+import { PracticalChallengeStep } from "@/components/game/trainings/steps/PracticalChallengeStep";
 
 interface Training {
   id: string;
@@ -53,6 +65,8 @@ interface TrainingModule {
   name: string;
   description: string | null;
   content_type: string;
+  step_type: string | null;
+  step_config: Record<string, unknown> | null;
   video_url: string | null;
   content_data: Record<string, unknown> | null;
   order_index: number;
@@ -60,12 +74,45 @@ interface TrainingModule {
   coins_reward: number;
   time_minutes: number;
   requires_completion: boolean;
+  is_optional: boolean | null;
+  is_checkpoint: boolean | null;
+  min_score: number | null;
+  skill_ids: string[] | null;
 }
 
 interface UserModuleProgress {
   module_id: string;
   completed_at: string | null;
+  score: number | null;
 }
+
+const STEP_ICONS: Record<string, React.ElementType> = {
+  content: FileText,
+  quiz: Target,
+  arena_game: Gamepad2,
+  cognitive_test: Brain,
+  practical_challenge: Target,
+  simulation: Gamepad2,
+  reflection: MessageSquare,
+  video: Play,
+  text: FileText,
+  pdf: FileText,
+  link: ExternalLink,
+};
+
+const STEP_LABELS: Record<string, string> = {
+  content: "Conteúdo",
+  quiz: "Quiz",
+  arena_game: "Jogo",
+  cognitive_test: "Teste Cognitivo",
+  practical_challenge: "Desafio Prático",
+  simulation: "Simulação",
+  reflection: "Reflexão",
+  video: "Vídeo",
+  text: "Texto",
+  pdf: "PDF",
+  link: "Link Externo",
+};
 
 export default function ModulePlayer() {
   const { trainingId, moduleId } = useParams<{
@@ -86,6 +133,7 @@ export default function ModulePlayer() {
   const [completionData, setCompletionData] = useState<{
     xp: number;
     coins: number;
+    score?: number;
     isTrainingComplete: boolean;
     trainingXP?: number;
     trainingCoins?: number;
@@ -124,7 +172,7 @@ export default function ModulePlayer() {
         if (user) {
           const { data: progressData } = await supabase
             .from("user_module_progress")
-            .select("module_id, completed_at")
+            .select("module_id, completed_at, score")
             .eq("user_id", user.id);
           if (progressData) setModuleProgress(progressData as UserModuleProgress[]);
 
@@ -157,21 +205,40 @@ export default function ModulePlayer() {
   const hasPrev = currentIndex > 0;
   const isCurrentCompleted = isModuleCompleted(moduleId || "");
 
-  const handleCompleteModule = async () => {
+  // Get step type - prioritize step_type, fallback to content_type
+  const getStepType = (module: TrainingModule) => {
+    return module.step_type || module.content_type || "content";
+  };
+
+  const handleStepComplete = useCallback(async (result: StepResult) => {
     if (!user || !currentModule || !training) return;
     setIsCompleting(true);
 
     try {
+      // Check if checkpoint validation passed
+      if (currentModule.is_checkpoint && currentModule.min_score) {
+        if ((result.score || 0) < currentModule.min_score) {
+          toast.error(`Score mínimo não atingido: ${currentModule.min_score}%`);
+          setIsCompleting(false);
+          return;
+        }
+      }
+
       // Update module progress
-      await supabase.from("user_module_progress").upsert(
+      const { error: progressError } = await supabase.from("user_module_progress").upsert(
         {
           user_id: user.id,
           module_id: currentModule.id,
           completed_at: new Date().toISOString(),
-          video_progress: 100,
-        },
+          score: result.score || null,
+          passed_validation: result.passed || null,
+          time_spent_seconds: result.timeSpent || 0,
+          metadata: result.metadata || null,
+        } as any,
         { onConflict: "user_id,module_id" }
       );
+      
+      if (progressError) console.error("Progress error:", progressError);
 
       // Update profiles with XP and coins
       const { data: profile } = await supabase
@@ -181,7 +248,6 @@ export default function ModulePlayer() {
         .single();
 
       if (profile) {
-        // Log XP gain
         await supabase.from("user_xp_history").insert({
           user_id: user.id,
           xp_earned: currentModule.xp_reward,
@@ -194,7 +260,7 @@ export default function ModulePlayer() {
       // Calculate training progress
       const updatedProgress = [
         ...moduleProgress.filter((p) => p.module_id !== currentModule.id),
-        { module_id: currentModule.id, completed_at: new Date().toISOString() },
+        { module_id: currentModule.id, completed_at: new Date().toISOString(), score: result.score || null },
       ];
       setModuleProgress(updatedProgress);
 
@@ -211,12 +277,23 @@ export default function ModulePlayer() {
           training_id: training.id,
           progress_percent: progressPercent,
           completed_at: isTrainingComplete ? new Date().toISOString() : null,
-          status: isTrainingComplete ? "completed" : "in_progress",
+          average_score: result.score,
         },
         { onConflict: "user_id,training_id" }
       );
 
-      // If training complete, award bonus and create certificate
+      // Log analytics event
+      await supabase.from("training_analytics").insert({
+        training_id: training.id,
+        module_id: currentModule.id,
+        user_id: user.id,
+        event_type: "module_completed",
+        score: result.score || null,
+        time_spent_seconds: result.timeSpent || null,
+        metadata: result.metadata || null,
+      } as any);
+
+      // If training complete, award bonus
       if (isTrainingComplete) {
         await supabase.from("user_xp_history").insert({
           user_id: user.id,
@@ -236,25 +313,27 @@ export default function ModulePlayer() {
               .toUpperCase()}`,
           });
         }
+
+        await supabase.from("training_analytics").insert({
+          training_id: training.id,
+          user_id: user.id,
+          event_type: "training_completed",
+        } as any);
       }
 
       // Show completion modal
       setCompletionData({
         xp: currentModule.xp_reward,
         coins: currentModule.coins_reward,
+        score: result.score,
         isTrainingComplete,
         trainingXP: isTrainingComplete ? training.xp_reward : undefined,
         trainingCoins: isTrainingComplete ? training.coins_reward : undefined,
       });
       setShowCompletionModal(true);
 
-      // Confetti!
       if (isTrainingComplete) {
-        confetti({
-          particleCount: 100,
-          spread: 70,
-          origin: { y: 0.6 },
-        });
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
       }
     } catch (err) {
       console.error("Error completing module:", err);
@@ -262,6 +341,10 @@ export default function ModulePlayer() {
     } finally {
       setIsCompleting(false);
     }
+  }, [user, currentModule, training, modules, moduleProgress]);
+
+  const handleCompleteModule = async () => {
+    await handleStepComplete({ completed: true, passed: true, timeSpent: 0 });
   };
 
   const handleNext = () => {
@@ -282,8 +365,7 @@ export default function ModulePlayer() {
 
   const handleVideoTimeUpdate = () => {
     if (videoRef.current) {
-      const progress =
-        (videoRef.current.currentTime / videoRef.current.duration) * 100;
+      const progress = (videoRef.current.currentTime / videoRef.current.duration) * 100;
       setVideoProgress(progress);
     }
   };
@@ -316,6 +398,23 @@ export default function ModulePlayer() {
     }
   };
 
+  // Convert to EnhancedTrainingModule for step components
+  const getEnhancedModule = (): EnhancedTrainingModule | null => {
+    if (!currentModule) return null;
+    return {
+      ...currentModule,
+      step_type: getStepType(currentModule) as EnhancedTrainingModule["step_type"],
+      step_config: (currentModule.step_config || {}) as any,
+      validation_criteria: null as any,
+      is_optional: currentModule.is_optional || false,
+      is_checkpoint: currentModule.is_checkpoint || false,
+      min_score: currentModule.min_score || null,
+      skill_ids: currentModule.skill_ids || [],
+      thumbnail_url: currentModule.video_url || null,
+      is_preview: false,
+    } as EnhancedTrainingModule;
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background p-6">
@@ -340,6 +439,10 @@ export default function ModulePlayer() {
     );
   }
 
+  const stepType = getStepType(currentModule);
+  const StepIcon = STEP_ICONS[stepType] || FileText;
+  const enhancedModule = getEnhancedModule();
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -355,26 +458,27 @@ export default function ModulePlayer() {
             </Button>
             <div>
               <div className="text-sm text-muted-foreground">{training.name}</div>
-              <div className="font-medium text-foreground">
+              <div className="font-medium text-foreground flex items-center gap-2">
+                <StepIcon className="w-4 h-4" />
                 {currentIndex + 1}. {currentModule.name}
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <Badge variant="outline" className="hidden sm:flex">
+              {STEP_LABELS[stepType] || stepType}
+            </Badge>
             <span className="text-sm text-muted-foreground">
               {currentIndex + 1} / {modules.length}
             </span>
           </div>
         </div>
-        <Progress
-          value={((currentIndex + 1) / modules.length) * 100}
-          className="h-1"
-        />
+        <Progress value={((currentIndex + 1) / modules.length) * 100} className="h-1" />
       </div>
 
       <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
-        {/* Video Content */}
-        {currentModule.content_type === "video" && currentModule.video_url && (
+        {/* Render step based on type */}
+        {stepType === "video" && currentModule.video_url && (
           <div className="relative rounded-2xl overflow-hidden bg-black aspect-video">
             <video
               ref={videoRef}
@@ -388,47 +492,21 @@ export default function ModulePlayer() {
               onPause={() => setIsPlaying(false)}
               onEnded={() => setIsPlaying(false)}
             />
-
-            {/* Video Controls Overlay */}
             <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
               <Progress value={videoProgress} className="h-1 mb-3" />
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-white hover:bg-white/20"
-                    onClick={togglePlay}
-                  >
-                    {isPlaying ? (
-                      <Pause className="w-5 h-5" />
-                    ) : (
-                      <Play className="w-5 h-5" />
-                    )}
+                  <Button variant="ghost" size="icon" className="text-white hover:bg-white/20" onClick={togglePlay}>
+                    {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-white hover:bg-white/20"
-                    onClick={toggleMute}
-                  >
-                    {isMuted ? (
-                      <VolumeX className="w-5 h-5" />
-                    ) : (
-                      <Volume2 className="w-5 h-5" />
-                    )}
+                  <Button variant="ghost" size="icon" className="text-white hover:bg-white/20" onClick={toggleMute}>
+                    {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
                   </Button>
                   <span className="text-sm text-white/80">
-                    {Math.floor((videoProgress / 100) * videoDuration)}s /{" "}
-                    {Math.floor(videoDuration)}s
+                    {Math.floor((videoProgress / 100) * videoDuration)}s / {Math.floor(videoDuration)}s
                   </span>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-white hover:bg-white/20"
-                  onClick={toggleFullscreen}
-                >
+                <Button variant="ghost" size="icon" className="text-white hover:bg-white/20" onClick={toggleFullscreen}>
                   <Maximize className="w-5 h-5" />
                 </Button>
               </div>
@@ -436,60 +514,75 @@ export default function ModulePlayer() {
           </div>
         )}
 
-        {/* Text Content */}
-        {currentModule.content_type === "text" && (
-          <div className="prose prose-lg dark:prose-invert max-w-none p-6 rounded-2xl border border-border bg-card">
-            {(currentModule.content_data?.text_content as string) || (
-              <p className="text-muted-foreground">Sem conteúdo disponível</p>
-            )}
-          </div>
+        {/* Content step types */}
+        {(stepType === "content" || stepType === "text" || stepType === "pdf" || stepType === "link") && enhancedModule && (
+          <ContentStep
+            module={enhancedModule}
+            onComplete={handleStepComplete}
+            onCancel={() => navigate(`/app/trainings/${trainingId}`)}
+          />
         )}
 
-        {/* PDF Content */}
-        {currentModule.content_type === "pdf" &&
-          currentModule.content_data?.pdf_url && (
-            <div className="rounded-2xl overflow-hidden border border-border bg-card">
-              <iframe
-                src={currentModule.content_data.pdf_url as string}
-                className="w-full h-[600px]"
-                title={currentModule.name}
-              />
-            </div>
-          )}
+        {/* Arena game step */}
+        {(stepType === "arena_game" || stepType === "simulation" || stepType === "quiz") && enhancedModule && (
+          <ArenaGameStep
+            module={enhancedModule}
+            onComplete={handleStepComplete}
+            onCancel={() => navigate(`/app/trainings/${trainingId}`)}
+          />
+        )}
 
-        {/* Link Content */}
-        {currentModule.content_type === "link" &&
-          currentModule.content_data?.external_url && (
-            <div className="p-6 rounded-2xl border border-border bg-card text-center">
-              <ExternalLink className="w-12 h-12 text-primary mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Recurso Externo</h3>
-              <p className="text-muted-foreground mb-4">
-                Este módulo contém um link para um recurso externo.
-              </p>
-              <Button asChild>
-                <a
-                  href={currentModule.content_data.external_url as string}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  Abrir Link
-                </a>
-              </Button>
-            </div>
-          )}
+        {/* Reflection step */}
+        {stepType === "reflection" && enhancedModule && (
+          <ReflectionStep
+            module={enhancedModule}
+            onComplete={handleStepComplete}
+            onCancel={() => navigate(`/app/trainings/${trainingId}`)}
+            isSubmitting={isCompleting}
+          />
+        )}
+
+        {/* Practical challenge step */}
+        {stepType === "practical_challenge" && enhancedModule && (
+          <PracticalChallengeStep
+            module={enhancedModule}
+            onComplete={handleStepComplete}
+            onCancel={() => navigate(`/app/trainings/${trainingId}`)}
+            isSubmitting={isCompleting}
+          />
+        )}
 
         {/* Module Info */}
         <div className="p-6 rounded-2xl border border-border bg-card">
-          <h2 className="text-xl font-semibold text-foreground mb-2">
-            {currentModule.name}
-          </h2>
-          {currentModule.description && (
-            <p className="text-muted-foreground mb-4">
-              {currentModule.description}
-            </p>
-          )}
-          <div className="flex flex-wrap gap-4 text-sm">
+          <div className="flex items-start gap-4">
+            <div className={cn(
+              "w-12 h-12 rounded-xl flex items-center justify-center shrink-0",
+              currentModule.is_checkpoint ? "bg-amber-500/10" : "bg-primary/10"
+            )}>
+              <StepIcon className={cn(
+                "w-6 h-6",
+                currentModule.is_checkpoint ? "text-amber-500" : "text-primary"
+              )} />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                {currentModule.is_checkpoint && (
+                  <Badge className="text-xs bg-amber-500/10 text-amber-500 border-amber-500/20">
+                    Checkpoint
+                  </Badge>
+                )}
+                {currentModule.is_optional && (
+                  <Badge variant="secondary" className="text-xs">Opcional</Badge>
+                )}
+              </div>
+              <h2 className="text-xl font-semibold text-foreground mb-2">{currentModule.name}</h2>
+              {currentModule.description && (
+                <p className="text-muted-foreground">{currentModule.description}</p>
+              )}
+            </div>
+          </div>
+          
+          <div className="flex flex-wrap gap-4 mt-4 text-sm">
             <div className="flex items-center gap-1.5 text-muted-foreground">
               <Clock className="w-4 h-4" />
               <span>{currentModule.time_minutes} min</span>
@@ -504,28 +597,25 @@ export default function ModulePlayer() {
                 <span>+{currentModule.coins_reward}</span>
               </div>
             )}
+            {currentModule.min_score && (
+              <div className="flex items-center gap-1.5 text-amber-600">
+                <Target className="w-4 h-4" />
+                <span>Mínimo: {currentModule.min_score}%</span>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Navigation */}
         <div className="flex items-center justify-between gap-4">
-          <Button
-            variant="outline"
-            onClick={handlePrev}
-            disabled={!hasPrev}
-            className="flex-1 sm:flex-none"
-          >
+          <Button variant="outline" onClick={handlePrev} disabled={!hasPrev} className="flex-1 sm:flex-none">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Anterior
           </Button>
 
           <div className="flex-1 flex justify-center">
-            {!isCurrentCompleted && (
-              <Button
-                onClick={handleCompleteModule}
-                disabled={isCompleting}
-                className="w-full sm:w-auto"
-              >
+            {!isCurrentCompleted && stepType === "video" && (
+              <Button onClick={handleCompleteModule} disabled={isCompleting} className="w-full sm:w-auto">
                 {isCompleting ? (
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 ) : (
@@ -583,9 +673,7 @@ export default function ModulePlayer() {
                 transition={{ delay: 0.2 }}
                 className="text-center"
               >
-                <div className="text-3xl font-bold text-primary">
-                  +{completionData?.xp || 0}
-                </div>
+                <div className="text-3xl font-bold text-primary">+{completionData?.xp || 0}</div>
                 <div className="text-sm text-muted-foreground">XP</div>
               </motion.div>
               {(completionData?.coins || 0) > 0 && (
@@ -595,10 +683,19 @@ export default function ModulePlayer() {
                   transition={{ delay: 0.3 }}
                   className="text-center"
                 >
-                  <div className="text-3xl font-bold text-amber-500">
-                    +{completionData?.coins}
-                  </div>
+                  <div className="text-3xl font-bold text-amber-500">+{completionData?.coins}</div>
                   <div className="text-sm text-muted-foreground">Moedas</div>
+                </motion.div>
+              )}
+              {completionData?.score !== undefined && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="text-center"
+                >
+                  <div className="text-3xl font-bold text-emerald-500">{completionData.score}%</div>
+                  <div className="text-sm text-muted-foreground">Score</div>
                 </motion.div>
               )}
             </div>
@@ -610,16 +707,10 @@ export default function ModulePlayer() {
                 transition={{ delay: 0.5 }}
                 className="pt-4 border-t border-border"
               >
-                <div className="text-sm text-muted-foreground mb-2">
-                  Bônus do Treinamento
-                </div>
+                <div className="text-sm text-muted-foreground mb-2">Bônus do Treinamento</div>
                 <div className="flex justify-center gap-4">
-                  <span className="text-primary font-bold">
-                    +{completionData.trainingXP} XP
-                  </span>
-                  <span className="text-amber-500 font-bold">
-                    +{completionData.trainingCoins} 🪙
-                  </span>
+                  <span className="text-primary font-bold">+{completionData.trainingXP} XP</span>
+                  <span className="text-amber-500 font-bold">+{completionData.trainingCoins} 🪙</span>
                 </div>
               </motion.div>
             )}
