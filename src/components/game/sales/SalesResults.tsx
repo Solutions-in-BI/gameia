@@ -1,8 +1,16 @@
 import { motion } from "framer-motion";
-import { Trophy, Target, Star, RotateCcw, ArrowLeft, TrendingUp, TrendingDown, CheckCircle, XCircle } from "lucide-react";
+import { Trophy, Target, Star, RotateCcw, ArrowLeft, TrendingUp, TrendingDown, CheckCircle, XCircle, Zap, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import type { SkillScore, SalesStage } from "@/hooks/useSalesGame";
+import { Badge } from "@/components/ui/badge";
+import type { SkillScore, SalesStage, SalesTrack } from "@/hooks/useSalesGame";
+import { useNavigate } from "react-router-dom";
+
+interface SkillImpact {
+  id: string;
+  name: string;
+  impact: number;
+}
 
 interface SalesResultsProps {
   score: number;
@@ -13,6 +21,9 @@ interface SalesResultsProps {
   saleClosed: boolean;
   onRestart: () => void;
   onBack: () => void;
+  track?: SalesTrack | null;
+  personaMultiplier?: number;
+  skillImpacts?: SkillImpact[];
 }
 
 const SKILL_LABELS: Record<keyof SkillScore, string> = {
@@ -31,10 +42,19 @@ export function SalesResults({
   stages,
   saleClosed, 
   onRestart, 
-  onBack 
+  onBack,
+  track,
+  personaMultiplier = 1.0,
+  skillImpacts = []
 }: SalesResultsProps) {
-  const xpEarned = score * 2 + (saleClosed ? 100 : 0);
-  const coinsEarned = saleClosed ? 50 : Math.round(score / 2);
+  const navigate = useNavigate();
+  
+  // Calculate rewards with multipliers (matching useSalesGame logic)
+  const trackXpReward = track?.xp_reward || 100;
+  const trackCoinsReward = track?.coins_reward || 50;
+  const baseXp = Math.round(score * 0.5);
+  const xpEarned = Math.round((baseXp + trackXpReward) * personaMultiplier * (saleClosed ? 1.5 : 0.8));
+  const coinsEarned = Math.round((score * 0.2 + trackCoinsReward) * (saleClosed ? 1.3 : 0.7));
 
   const getPerformanceText = () => {
     if (saleClosed && rapport >= 80) return { title: 'Vendedor Nato!', emoji: '🏆', subtitle: 'Você fechou a venda com maestria!' };
@@ -74,6 +94,13 @@ export function SalesResults({
         
         <h1 className="text-2xl font-bold mb-1">{performance.title}</h1>
         <p className="text-muted-foreground text-sm">{performance.subtitle}</p>
+        
+        {personaMultiplier > 1 && (
+          <Badge variant="secondary" className="mt-2">
+            <Zap className="w-3 h-3 mr-1" />
+            Multiplicador {personaMultiplier}x
+          </Badge>
+        )}
       </div>
 
       {/* Sale Status */}
@@ -128,6 +155,32 @@ export function SalesResults({
           <div className="text-xs text-muted-foreground">Etapas</div>
         </motion.div>
       </div>
+
+      {/* Skill Impacts (from track configuration) */}
+      {skillImpacts.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.55 }}
+          className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/30 rounded-xl p-4 mb-6"
+        >
+          <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+            <BarChart3 className="w-4 h-4 text-primary" />
+            Impacto nas suas Skills
+          </h3>
+          <div className="grid grid-cols-2 gap-2">
+            {skillImpacts.map((skill) => (
+              <div 
+                key={skill.id}
+                className="flex items-center justify-between bg-background/50 rounded-lg px-3 py-2"
+              >
+                <span className="text-sm text-muted-foreground truncate">{skill.name}</span>
+                <span className="text-sm font-bold text-green-400">+{skill.impact}</span>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
 
       {/* Skills Analysis */}
       <motion.div
@@ -209,6 +262,23 @@ export function SalesResults({
           Jogar Novamente
         </Button>
       </div>
+
+      {/* View Evolution Link */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.9 }}
+        className="mt-4 text-center"
+      >
+        <Button 
+          variant="link" 
+          onClick={() => navigate('/app?tab=evolution')}
+          className="text-muted-foreground hover:text-primary"
+        >
+          <BarChart3 className="w-4 h-4 mr-2" />
+          Ver minha evolução completa
+        </Button>
+      </motion.div>
     </motion.div>
   );
 }

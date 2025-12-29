@@ -29,6 +29,18 @@ export interface SalesPersona {
   avatar: string | null;
   difficulty: string | null;
   track_key?: string | null;
+  xp_multiplier?: number | null;
+  skill_challenge_focus?: string[] | null;
+}
+
+export interface SalesTrack {
+  id: string;
+  track_key: string;
+  name: string;
+  related_skills?: string[] | null;
+  skill_weights?: Record<string, number> | null;
+  xp_reward?: number | null;
+  coins_reward?: number | null;
 }
 
 export interface ResponseOption {
@@ -84,6 +96,7 @@ export function useSalesGame() {
   // Game data
   const [stages, setStages] = useState<SalesStage[]>([]);
   const [personas, setPersonas] = useState<SalesPersona[]>([]);
+  const [tracks, setTracks] = useState<SalesTrack[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
   // Track state
@@ -111,36 +124,36 @@ export function useSalesGame() {
     const fetchGameData = async () => {
       setIsLoading(true);
       try {
-        // Fetch stages - global stages have organization_id = null
-        const { data: stagesData, error: stagesError } = await supabase
-          .from('sales_conversation_stages')
-          .select('*')
-          .order('stage_order');
+        // Fetch stages, personas, and tracks in parallel
+        const [stagesRes, personasRes, tracksRes] = await Promise.all([
+          supabase
+            .from('sales_conversation_stages')
+            .select('*')
+            .order('stage_order'),
+          supabase
+            .from('sales_client_personas')
+            .select('*')
+            .eq('is_active', true),
+          supabase
+            .from('sales_tracks')
+            .select('*')
+            .eq('is_active', true)
+        ]);
         
-        if (stagesError) {
-          console.error('Error fetching stages:', stagesError);
-          throw stagesError;
-        }
+        if (stagesRes.error) throw stagesRes.error;
+        if (personasRes.error) throw personasRes.error;
+        if (tracksRes.error) throw tracksRes.error;
         
-        console.log('Fetched stages:', stagesData?.length || 0);
-        setStages(stagesData || []);
+        console.log('Fetched stages:', stagesRes.data?.length || 0);
+        console.log('Fetched personas:', personasRes.data?.length || 0);
+        console.log('Fetched tracks:', tracksRes.data?.length || 0);
+        
+        setStages(stagesRes.data || []);
+        setPersonas(personasRes.data as SalesPersona[] || []);
+        setTracks(tracksRes.data as SalesTrack[] || []);
 
-        // Fetch personas - global personas have organization_id = null
-        const { data: personasData, error: personasError } = await supabase
-          .from('sales_client_personas')
-          .select('*')
-          .eq('is_active', true);
-        
-        if (personasError) {
-          console.error('Error fetching personas:', personasError);
-          throw personasError;
-        }
-        
-        console.log('Fetched personas:', personasData?.length || 0);
-        setPersonas(personasData || []);
-
-        if (!stagesData?.length || !personasData?.length) {
-          console.warn('No game data found - stages:', stagesData?.length, 'personas:', personasData?.length);
+        if (!stagesRes.data?.length || !personasRes.data?.length) {
+          console.warn('No game data found');
         }
       } catch (error) {
         console.error('Error fetching sales game data:', error);
@@ -424,18 +437,60 @@ export function useSalesGame() {
   const endGame = useCallback(async (saleClosed: boolean) => {
     setGameState('results');
 
-    // Calcula XP e coins baseado no score
-    const xpEarned = Math.round(score * 0.5);
-    const coinsEarned = Math.round(score * 0.2);
+    // Get track configuration for XP multiplier and related skills
+    const currentTrack = tracks.find(t => t.track_key === trackKey);
+    const personaMultiplier = selectedPersona?.xp_multiplier || 1.0;
+    const trackXpReward = currentTrack?.xp_reward || 100;
+    const trackCoinsReward = currentTrack?.coins_reward || 50;
+
+    // Calculate XP and coins with multipliers
+    const baseXp = Math.round(score * 0.5);
+    const xpEarned = Math.round((baseXp + trackXpReward) * personaMultiplier * (saleClosed ? 1.5 : 0.8));
+    const coinsEarned = Math.round((score * 0.2 + trackCoinsReward) * (saleClosed ? 1.3 : 0.7));
 
     // Registra atividade e atualiza streak
     await logActivity("sales_session", "sales", xpEarned, coinsEarned, {
       rapport,
       saleClosed,
       timeSpent: 300 - timeLeft,
-      trackKey
+      trackKey,
+      personaMultiplier
     });
     await updateStreak();
+
+    // Register skill impacts if track has related skills
+    if (currentTrack?.related_skills && currentTrack.related_skills.length > 0 && user && currentOrg?.id) {
+      const skillWeights = currentTrack.skill_weights || {};
+      const normalizedScore = Math.round((rapport + score / 10) / 2); // 0-100 score
+
+      for (const skillId of currentTrack.related_skills) {
+        const weight = skillWeights[skillId] || 1.0;
+        const impactValue = Math.round(normalizedScore * weight * (saleClosed ? 1.5 : 0.8));
+
+        try {
+          await supabase.rpc('record_skill_impact', {
+            p_user_id: user.id,
+            p_organization_id: currentOrg.id,
+            p_skill_id: skillId,
+            p_source_type: 'game',
+            p_source_id: sessionId || 'unknown',
+            p_impact_type: 'sales_performance',
+            p_impact_value: impactValue,
+            p_normalized_score: normalizedScore,
+            p_metadata: { 
+              trackKey, 
+              saleClosed, 
+              rapport, 
+              score,
+              personaId: selectedPersona?.id,
+              personaName: selectedPersona?.name
+            }
+          });
+        } catch (error) {
+          console.error('Error recording skill impact:', error);
+        }
+      }
+    }
 
     // Update session in database
     if (sessionId && user) {
@@ -458,7 +513,7 @@ export function useSalesGame() {
         console.error('Error updating session:', error);
       }
     }
-  }, [sessionId, user, timeLeft, rapport, score, skills, stagePerformance, messages, logActivity, updateStreak, trackKey]);
+  }, [sessionId, user, currentOrg, timeLeft, rapport, score, skills, stagePerformance, messages, logActivity, updateStreak, trackKey, tracks, selectedPersona]);
 
   // Reset game
   const resetGame = useCallback(() => {
@@ -489,6 +544,7 @@ export function useSalesGame() {
     // Data
     stages,
     personas,
+    tracks,
     isLoading,
     isGenerating,
     

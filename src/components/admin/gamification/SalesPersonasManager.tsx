@@ -16,9 +16,11 @@ import {
   AlertTriangle,
   Target,
   X,
+  Zap,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrganization } from "@/hooks/useOrganization";
+import { useSalesSkills } from "@/hooks/useSalesSkills";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -67,6 +69,8 @@ interface SalesPersona {
   channel: string | null;
   is_active: boolean | null;
   organization_id: string | null;
+  xp_multiplier: number | null;
+  skill_challenge_focus: string[] | null;
 }
 
 interface SalesTrack {
@@ -88,6 +92,8 @@ const DEFAULT_PERSONA: Partial<SalesPersona> = {
   track_key: "",
   channel: "call",
   is_active: true,
+  xp_multiplier: 1.0,
+  skill_challenge_focus: [],
 };
 
 const PERSONALITY_OPTIONS = [
@@ -118,6 +124,7 @@ const COMPANY_TYPE_OPTIONS = [
 
 export function SalesPersonasManager() {
   const { currentOrg } = useOrganization();
+  const { skills } = useSalesSkills();
   const [personas, setPersonas] = useState<SalesPersona[]>([]);
   const [tracks, setTracks] = useState<SalesTrack[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -153,7 +160,7 @@ export function SalesPersonasManager() {
       if (personasRes.error) throw personasRes.error;
       if (tracksRes.error) throw tracksRes.error;
 
-      setPersonas(personasRes.data || []);
+      setPersonas((personasRes.data || []) as unknown as SalesPersona[]);
       setTracks(tracksRes.data || []);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -187,7 +194,9 @@ export function SalesPersonasManager() {
             track_key: editingPersona.track_key,
             channel: editingPersona.channel,
             is_active: editingPersona.is_active,
-          })
+            xp_multiplier: editingPersona.xp_multiplier,
+            skill_challenge_focus: editingPersona.skill_challenge_focus,
+          } as any)
           .eq("id", editingPersona.id);
         if (error) throw error;
         toast.success("Persona atualizada!");
@@ -207,8 +216,10 @@ export function SalesPersonasManager() {
             track_key: editingPersona.track_key,
             channel: editingPersona.channel,
             is_active: editingPersona.is_active,
+            xp_multiplier: editingPersona.xp_multiplier,
+            skill_challenge_focus: editingPersona.skill_challenge_focus,
             organization_id: currentOrg?.id || null,
-          }]);
+          } as any]);
         if (error) throw error;
         toast.success("Persona criada!");
       }
@@ -690,6 +701,89 @@ export function SalesPersonasManager() {
                     is_active: checked
                   })}
                 />
+              </div>
+
+              {/* XP Multiplier & Skills Section */}
+              <div className="space-y-4 pt-4 border-t">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2">
+                      <Zap className="w-4 h-4 text-yellow-500" />
+                      Multiplicador de XP
+                    </Label>
+                    <Input
+                      type="number"
+                      value={editingPersona.xp_multiplier || 1.0}
+                      onChange={(e) => setEditingPersona({
+                        ...editingPersona,
+                        xp_multiplier: parseFloat(e.target.value) || 1.0
+                      })}
+                      step={0.1}
+                      min={0.5}
+                      max={3.0}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Dificuldade afeta ganho de XP (ex: 1.5 = +50%)
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <Target className="w-4 h-4 text-primary" />
+                    Skills Desafiadoras
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Skills que este cliente testa mais intensamente
+                  </p>
+                  
+                  <div className="flex flex-wrap gap-2">
+                    {(editingPersona.skill_challenge_focus || []).map((skillId) => {
+                      const skill = skills.find(s => s.id === skillId);
+                      if (!skill) return null;
+                      return (
+                        <Badge key={skillId} variant="secondary" className="gap-1">
+                          {skill.name}
+                          <button
+                            type="button"
+                            onClick={() => setEditingPersona({
+                              ...editingPersona,
+                              skill_challenge_focus: (editingPersona.skill_challenge_focus || []).filter(id => id !== skillId)
+                            })}
+                            className="ml-1 hover:text-destructive"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </Badge>
+                      );
+                    })}
+                  </div>
+
+                  <Select
+                    value=""
+                    onValueChange={(value) => {
+                      if (value && !(editingPersona.skill_challenge_focus || []).includes(value)) {
+                        setEditingPersona({
+                          ...editingPersona,
+                          skill_challenge_focus: [...(editingPersona.skill_challenge_focus || []), value]
+                        });
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Adicionar skill..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {skills
+                        .filter(s => !(editingPersona.skill_challenge_focus || []).includes(s.id))
+                        .map((skill) => (
+                          <SelectItem key={skill.id} value={skill.id}>
+                            {skill.name}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
           )}
