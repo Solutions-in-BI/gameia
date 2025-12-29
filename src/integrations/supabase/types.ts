@@ -6262,6 +6262,19 @@ export type Database = {
         }
         Returns: Json
       }
+      create_pdi_goal_from_suggestion: {
+        Args: {
+          p_description: string
+          p_origin_assessment_id?: string
+          p_plan_id: string
+          p_priority?: string
+          p_skill_id: string
+          p_target_date?: string
+          p_title: string
+          p_xp_reward?: number
+        }
+        Returns: string
+      }
       distribute_challenge_rewards: {
         Args: { p_commitment_id: string }
         Returns: undefined
@@ -6332,6 +6345,20 @@ export type Database = {
       get_org_role: {
         Args: { _org_id: string; _user_id: string }
         Returns: string
+      }
+      get_pdi_suggestions_for_user: {
+        Args: { p_user_id: string }
+        Returns: {
+          priority: string
+          reason: string
+          skill_id: string
+          skill_name: string
+          source_id: string
+          source_type: string
+          suggested_title: string
+          suggestion_type: string
+          xp_reward: number
+        }[]
       }
       get_team_event_stats: {
         Args: { p_days?: number; p_team_id: string }
@@ -6479,6 +6506,10 @@ export type Database = {
           skill_ids: string[]
           suggestion_type: string
         }[]
+      }
+      suggest_pdi_goals_from_assessment: {
+        Args: { p_assessment_cycle_id: string; p_user_id: string }
+        Returns: Json
       }
       update_mission_progress: {
         Args: {
