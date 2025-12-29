@@ -1,0 +1,1 @@
+export { CaminhoTab } from "./CaminhoTab";

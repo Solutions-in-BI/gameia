@@ -1,0 +1,1 @@
+export { EvolutionTab } from "./EvolutionTab";
