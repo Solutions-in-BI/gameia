@@ -668,6 +668,7 @@ export type Database = {
       }
       cognitive_tests: {
         Row: {
+          coins_reward: number | null
           config: Json | null
           created_at: string | null
           description: string | null
@@ -678,12 +679,15 @@ export type Database = {
           organization_id: string | null
           questions_count: number | null
           related_skills: string[] | null
+          reward_rules: Json | null
           skill_impact_config: Json | null
+          target_score: number | null
           test_type: string
           time_limit_minutes: number | null
           xp_reward: number | null
         }
         Insert: {
+          coins_reward?: number | null
           config?: Json | null
           created_at?: string | null
           description?: string | null
@@ -694,12 +698,15 @@ export type Database = {
           organization_id?: string | null
           questions_count?: number | null
           related_skills?: string[] | null
+          reward_rules?: Json | null
           skill_impact_config?: Json | null
+          target_score?: number | null
           test_type: string
           time_limit_minutes?: number | null
           xp_reward?: number | null
         }
         Update: {
+          coins_reward?: number | null
           config?: Json | null
           created_at?: string | null
           description?: string | null
@@ -710,7 +717,9 @@ export type Database = {
           organization_id?: string | null
           questions_count?: number | null
           related_skills?: string[] | null
+          reward_rules?: Json | null
           skill_impact_config?: Json | null
+          target_score?: number | null
           test_type?: string
           time_limit_minutes?: number | null
           xp_reward?: number | null
@@ -3042,6 +3051,59 @@ export type Database = {
           },
         ]
       }
+      reward_history: {
+        Row: {
+          coins_earned: number
+          created_at: string
+          id: string
+          metadata: Json | null
+          organization_id: string | null
+          performance_score: number | null
+          source_id: string
+          source_type: string
+          target_met: boolean | null
+          target_score: number | null
+          user_id: string
+          xp_earned: number
+        }
+        Insert: {
+          coins_earned?: number
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          organization_id?: string | null
+          performance_score?: number | null
+          source_id: string
+          source_type: string
+          target_met?: boolean | null
+          target_score?: number | null
+          user_id: string
+          xp_earned?: number
+        }
+        Update: {
+          coins_earned?: number
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          organization_id?: string | null
+          performance_score?: number | null
+          source_id?: string
+          source_type?: string
+          target_met?: boolean | null
+          target_score?: number | null
+          user_id?: string
+          xp_earned?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reward_history_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reward_transactions: {
         Row: {
           amount: number | null
@@ -4147,6 +4209,7 @@ export type Database = {
           is_onboarding: boolean | null
           name: string
           organization_id: string | null
+          reward_rules: Json | null
           thumbnail_url: string | null
           training_key: string
           xp_reward: number | null
@@ -4168,6 +4231,7 @@ export type Database = {
           is_onboarding?: boolean | null
           name: string
           organization_id?: string | null
+          reward_rules?: Json | null
           thumbnail_url?: string | null
           training_key: string
           xp_reward?: number | null
@@ -4189,6 +4253,7 @@ export type Database = {
           is_onboarding?: boolean | null
           name?: string
           organization_id?: string | null
+          reward_rules?: Json | null
           thumbnail_url?: string | null
           training_key?: string
           xp_reward?: number | null

@@ -1,6 +1,7 @@
 /**
- * ArenaTab - Tab "Arena" do hub
- * Jogos, desafios, quizzes com filtros e jogo recomendado em destaque
+ * ArenaTab - Hub de Experiências
+ * Jogos, Desafios, Treinamentos, Testes Cognitivos e Simulações
+ * "Arena é onde acontecem todas as experiências que geram XP/moedas"
  */
 
 import { useState } from "react";
@@ -13,23 +14,29 @@ import {
   Sparkles,
   Play,
   Star,
-  Trophy,
   Filter,
   Grid3X3,
   Puzzle,
   Car,
   Lightbulb,
   Target,
+  GraduationCap,
+  Clock,
 } from "lucide-react";
-import { HubCard, HubCardHeader, HubEmptyState, HubButton, HubHeader } from "../common";
+import { HubCard, HubEmptyState, HubButton, HubHeader } from "../common";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { useSkillProgress } from "@/hooks/useSkillProgress";
 import { useChallenges, Challenge } from "@/hooks/useChallenges";
 import { useOrganization } from "@/hooks/useOrganization";
+import { useTrainings } from "@/hooks/useTrainings";
+import { useCognitiveTests } from "@/hooks/useCognitiveTests";
 import { ChallengesHighlight, ChallengeDetailModal } from "@/components/challenges";
+import { ExperienceCard } from "@/components/arena/ExperienceCard";
+import { RewardBadge } from "@/components/rewards/RewardBadge";
 
-// Games data
+// Games
 import { SnakeGame } from "@/components/game/snake/SnakeGame";
 import { MemoryGame } from "@/components/game/memory/MemoryGame";
 import { TetrisGame } from "@/components/game/tetris/TetrisGame";
@@ -39,27 +46,31 @@ import { DecisionGame } from "@/components/game/enterprise/DecisionGame";
 import { AIScenarioGame } from "@/components/game/enterprise/AIScenarioGame";
 import { SalesGame } from "@/components/game/sales/SalesGame";
 import { ComingSoonGame } from "@/components/game/enterprise/ComingSoonGame";
+import { CognitiveTestPlayer } from "@/components/game/development/CognitiveTestPlayer";
 
-type GameFilter = "all" | "enterprise" | "casual" | "quizzes" | "scenarios";
-type ActiveGame = string | null;
+// Types
+type ArenaFilter = "all" | "games" | "challenges" | "trainings" | "cognitive" | "simulations";
+type ActiveExperience = { type: string; id: string } | null;
 
-const GAME_FILTERS: { id: GameFilter; label: string }[] = [
-  { id: "all", label: "Todos" },
-  { id: "enterprise", label: "Empresariais" },
-  { id: "quizzes", label: "Quizzes" },
-  { id: "scenarios", label: "Cenários" },
-  { id: "casual", label: "Recreativos" },
+const ARENA_FILTERS: { id: ArenaFilter; label: string; icon: React.ElementType }[] = [
+  { id: "all", label: "Todos", icon: Grid3X3 },
+  { id: "games", label: "Jogos", icon: Gamepad2 },
+  { id: "challenges", label: "Desafios", icon: Target },
+  { id: "trainings", label: "Treinamentos", icon: GraduationCap },
+  { id: "cognitive", label: "Testes", icon: Brain },
+  { id: "simulations", label: "Simulações", icon: MessageSquare },
 ];
 
 interface GameItem {
   id: string;
   name: string;
   description: string;
-  icon: typeof Gamepad2;
-  category: GameFilter;
+  icon: React.ElementType;
+  category: "games" | "simulations";
   skills: string[];
   xpReward: number;
   difficulty: "easy" | "medium" | "hard";
+  duration?: string;
   isNew?: boolean;
   isRecommended?: boolean;
 }
@@ -70,20 +81,22 @@ const GAMES: GameItem[] = [
     name: "Quiz Master",
     description: "Teste seus conhecimentos em diversas categorias",
     icon: Brain,
-    category: "quizzes",
+    category: "games",
     skills: ["Conhecimento Técnico", "Raciocínio Lógico"],
     xpReward: 50,
     difficulty: "medium",
+    duration: "5-10 min",
   },
   {
     id: "decisions",
     name: "Decisões Estratégicas",
     description: "Tome decisões difíceis em cenários realistas",
     icon: Target,
-    category: "scenarios",
+    category: "simulations",
     skills: ["Tomada de Decisão", "Pensamento Crítico"],
     xpReward: 75,
     difficulty: "hard",
+    duration: "15-20 min",
     isRecommended: true,
   },
   {
@@ -91,20 +104,22 @@ const GAMES: GameItem[] = [
     name: "Desafio de Vendas",
     description: "Pratique técnicas de vendas com IA",
     icon: MessageSquare,
-    category: "enterprise",
+    category: "simulations",
     skills: ["Comunicação", "Negociação", "Vendas"],
     xpReward: 100,
     difficulty: "hard",
+    duration: "10-15 min",
   },
   {
     id: "ai-game",
     name: "Cenários com IA",
     description: "Resolva problemas complexos gerados por IA",
     icon: Sparkles,
-    category: "scenarios",
+    category: "simulations",
     skills: ["Resolução de Problemas", "Criatividade"],
     xpReward: 80,
     difficulty: "hard",
+    duration: "15 min",
     isNew: true,
   },
   {
@@ -112,121 +127,174 @@ const GAMES: GameItem[] = [
     name: "Jogo da Memória",
     description: "Treine sua memória encontrando pares",
     icon: Grid3X3,
-    category: "casual",
+    category: "games",
     skills: ["Memória", "Concentração"],
     xpReward: 25,
     difficulty: "easy",
+    duration: "3-5 min",
   },
   {
     id: "snake",
     name: "Snake Game",
     description: "Clássico jogo da cobrinha",
     icon: Gamepad2,
-    category: "casual",
+    category: "games",
     skills: ["Reflexos", "Coordenação"],
     xpReward: 20,
     difficulty: "medium",
+    duration: "5 min",
   },
   {
     id: "tetris",
     name: "Tetris",
     description: "Encaixe as peças e faça linhas",
     icon: Puzzle,
-    category: "casual",
+    category: "games",
     skills: ["Raciocínio Espacial", "Velocidade"],
     xpReward: 30,
     difficulty: "medium",
+    duration: "5-10 min",
   },
   {
     id: "dino",
     name: "Dino Run",
     description: "Pule os obstáculos e sobreviva",
     icon: Zap,
-    category: "casual",
+    category: "games",
     skills: ["Reflexos", "Timing"],
     xpReward: 15,
     difficulty: "easy",
+    duration: "2-5 min",
   },
 ];
 
 const COMING_SOON_GAMES = [
-  {
-    id: "escape",
-    name: "Escape Room Virtual",
-    icon: Puzzle,
-    description: "Resolva enigmas em equipe",
-  },
-  {
-    id: "projects",
-    name: "Corrida de Projetos",
-    icon: Car,
-    description: "Gerencie recursos e complete projetos",
-  },
-  {
-    id: "brainstorm",
-    name: "Brainstorm Battle",
-    icon: Lightbulb,
-    description: "Competição de ideias criativas",
-  },
+  { id: "escape", name: "Escape Room Virtual", icon: Puzzle, description: "Resolva enigmas em equipe" },
+  { id: "projects", name: "Corrida de Projetos", icon: Car, description: "Gerencie recursos e complete projetos" },
+  { id: "brainstorm", name: "Brainstorm Battle", icon: Lightbulb, description: "Competição de ideias criativas" },
 ];
 
 export function ArenaTab() {
-  const [filter, setFilter] = useState<GameFilter>("all");
-  const [activeGame, setActiveGame] = useState<ActiveGame>(null);
+  const [filter, setFilter] = useState<ArenaFilter>("all");
+  const [activeExperience, setActiveExperience] = useState<ActiveExperience>(null);
   const { skills } = useSkillProgress();
   
-  // Challenges (formerly Commitments)
+  // Data hooks
   const { currentOrg } = useOrganization();
   const { activeChallenges, getSupporters } = useChallenges(currentOrg?.id);
+  const { trainings, getTrainingProgress } = useTrainings(currentOrg?.id);
+  const { tests, mySessions } = useCognitiveTests();
+  
   const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
   const [showChallengeDetail, setShowChallengeDetail] = useState(false);
 
-  // Find recommended game based on weak skills
+  // Find recommended experience based on weak skills
   const weakSkills = skills.slice(0, 3).map(s => s.name.toLowerCase());
   const recommendedGame = GAMES.find(g => 
     g.skills.some(s => weakSkills.some(ws => s.toLowerCase().includes(ws)))
   ) || GAMES.find(g => g.isRecommended);
 
-  // Filter games
+  // Filter items
   const filteredGames = GAMES.filter(g => 
-    filter === "all" || g.category === filter
+    filter === "all" || filter === "games" && g.category === "games" || filter === "simulations" && g.category === "simulations"
   );
 
-  // Handle back from game
-  const handleBack = () => setActiveGame(null);
+  const filteredTrainings = trainings.filter(t => 
+    filter === "all" || filter === "trainings"
+  );
 
-  // Render active game
-  if (activeGame) {
-    switch (activeGame) {
-      case "snake": return <SnakeGame onBack={handleBack} />;
-      case "memory": return <MemoryGame onBack={handleBack} />;
-      case "tetris": return <TetrisGame onBack={handleBack} />;
-      case "dino": return <DinoGame onBack={handleBack} />;
-      case "quiz": return <QuizMasterGame onBack={handleBack} />;
-      case "decisions": return <DecisionGame onBack={handleBack} />;
-      case "sales": return <SalesGame onBack={handleBack} />;
-      case "ai-game": return <AIScenarioGame onBack={handleBack} />;
-      case "escape": return <ComingSoonGame onBack={handleBack} gameName="Escape Room Virtual" gameIcon={<Puzzle className="w-12 h-12" />} description="Resolva enigmas em equipe" expectedFeatures={["Puzzles colaborativos", "Chat em tempo real", "Rankings de equipe"]} />;
-      case "projects": return <ComingSoonGame onBack={handleBack} gameName="Corrida de Projetos" gameIcon={<Car className="w-12 h-12" />} description="Gerencie recursos e complete projetos" expectedFeatures={["Gestão de recursos", "Simulação de projetos reais"]} />;
-      case "brainstorm": return <ComingSoonGame onBack={handleBack} gameName="Brainstorm Battle" gameIcon={<Lightbulb className="w-12 h-12" />} description="Competição de ideias criativas" expectedFeatures={["Geração de ideias", "Votação democrática"]} />;
-      default: return null;
+  const filteredTests = tests.filter(t => 
+    filter === "all" || filter === "cognitive"
+  );
+
+  // Check if test was completed recently
+  const getTestLastSession = (testId: string) => {
+    return mySessions.find(s => s.test_id === testId && s.status === "completed");
+  };
+
+  // Handle back from experience
+  const handleBack = () => setActiveExperience(null);
+
+  // Render active experience
+  if (activeExperience) {
+    const { type, id } = activeExperience;
+    
+    if (type === "game") {
+      switch (id) {
+        case "snake": return <SnakeGame onBack={handleBack} />;
+        case "memory": return <MemoryGame onBack={handleBack} />;
+        case "tetris": return <TetrisGame onBack={handleBack} />;
+        case "dino": return <DinoGame onBack={handleBack} />;
+        case "quiz": return <QuizMasterGame onBack={handleBack} />;
+        case "decisions": return <DecisionGame onBack={handleBack} />;
+        case "sales": return <SalesGame onBack={handleBack} />;
+        case "ai-game": return <AIScenarioGame onBack={handleBack} />;
+        case "escape": return <ComingSoonGame onBack={handleBack} gameName="Escape Room Virtual" gameIcon={<Puzzle className="w-12 h-12" />} description="Resolva enigmas em equipe" expectedFeatures={["Puzzles colaborativos", "Chat em tempo real", "Rankings de equipe"]} />;
+        case "projects": return <ComingSoonGame onBack={handleBack} gameName="Corrida de Projetos" gameIcon={<Car className="w-12 h-12" />} description="Gerencie recursos e complete projetos" expectedFeatures={["Gestão de recursos", "Simulação de projetos reais"]} />;
+        case "brainstorm": return <ComingSoonGame onBack={handleBack} gameName="Brainstorm Battle" gameIcon={<Lightbulb className="w-12 h-12" />} description="Competição de ideias criativas" expectedFeatures={["Geração de ideias", "Votação democrática"]} />;
+      }
     }
+    
+    if (type === "cognitive_test") {
+      const test = tests.find(t => t.id === id);
+      if (test) {
+        return (
+          <CognitiveTestPlayer
+            testId={id}
+            testName={test.name}
+            onBack={handleBack}
+            onComplete={() => {
+              handleBack();
+            }}
+          />
+        );
+      }
+    }
+    
+    if (type === "training") {
+      // Navigate to training detail
+      window.location.href = `/app/trainings/${id}`;
+      return null;
+    }
+    
+    return null;
   }
+
+  const showGames = filter === "all" || filter === "games" || filter === "simulations";
+  const showTrainings = filter === "all" || filter === "trainings";
+  const showTests = filter === "all" || filter === "cognitive";
+  const showChallenges = filter === "all" || filter === "challenges";
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <HubHeader
         title="Arena"
-        subtitle="Jogos e desafios que evoluem suas skills"
+        subtitle="Experiências que evoluem suas skills e geram recompensas"
         icon={Gamepad2}
         actionLabel="Jogar Agora"
         actionIcon={Play}
-        onAction={() => recommendedGame && setActiveGame(recommendedGame.id)}
+        onAction={() => recommendedGame && setActiveExperience({ type: "game", id: recommendedGame.id })}
       />
 
+      {/* Filter Tabs */}
+      <Tabs value={filter} onValueChange={(v) => setFilter(v as ArenaFilter)} className="w-full">
+        <TabsList className="w-full justify-start overflow-x-auto bg-muted/40 p-1 h-auto">
+          {ARENA_FILTERS.map(f => (
+            <TabsTrigger
+              key={f.id}
+              value={f.id}
+              className="flex items-center gap-1.5 px-4 py-2 data-[state=active]:bg-background whitespace-nowrap"
+            >
+              <f.icon className="w-4 h-4" />
+              <span>{f.label}</span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
+
       {/* Active Challenges Highlight */}
-      {activeChallenges.length > 0 && (
+      {showChallenges && activeChallenges.length > 0 && (
         <ChallengesHighlight
           challenges={activeChallenges}
           onChallengeClick={(c) => {
@@ -234,7 +302,6 @@ export function ArenaTab() {
             setShowChallengeDetail(true);
           }}
           onViewAllClick={() => {
-            // Navigate to evolution tab with challenges subtab
             window.location.href = "/app?tab=evolution&subtab=commitments";
           }}
         />
@@ -249,151 +316,216 @@ export function ArenaTab() {
       />
 
       {/* Recommended Game - Highlight */}
-      {recommendedGame && (
+      {recommendedGame && (filter === "all" || filter === "games") && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <HubCard 
-            variant="highlight" 
-            className="relative overflow-hidden cursor-pointer"
-            onClick={() => setActiveGame(recommendedGame.id)}
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent pointer-events-none" />
-            <div className="flex flex-col md:flex-row md:items-center gap-4 relative">
-              <div className="p-4 rounded-xl bg-primary/10">
-                <recommendedGame.icon className="w-10 h-10 text-primary" />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <Badge className="bg-primary/20 text-primary text-xs">
-                    <Star className="w-3 h-3 mr-1" />
-                    Recomendado
-                  </Badge>
-                  {recommendedGame.isNew && (
-                    <Badge variant="secondary" className="text-xs">Novo</Badge>
-                  )}
-                </div>
-                <h3 className="text-xl font-bold text-foreground">{recommendedGame.name}</h3>
-                <p className="text-sm text-muted-foreground">{recommendedGame.description}</p>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {recommendedGame.skills.map(skill => (
-                    <Badge key={skill} variant="outline" className="text-xs">{skill}</Badge>
-                  ))}
-                </div>
-              </div>
-              <HubButton 
-                size="lg" 
-                leftIcon={<Play className="w-4 h-4" />}
-              >
-                Jogar
-              </HubButton>
-            </div>
-          </HubCard>
+          <ExperienceCard
+            id={recommendedGame.id}
+            type="game"
+            title={recommendedGame.name}
+            description={recommendedGame.description}
+            icon={<recommendedGame.icon className="w-5 h-5" />}
+            skills={recommendedGame.skills}
+            duration={recommendedGame.duration}
+            difficulty={recommendedGame.difficulty}
+            xpReward={recommendedGame.xpReward}
+            isNew={recommendedGame.isNew}
+            isFeatured
+            variant="featured"
+            onClick={() => setActiveExperience({ type: "game", id: recommendedGame.id })}
+          />
         </motion.div>
       )}
 
-      {/* Filters */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2">
-        <Filter className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-        {GAME_FILTERS.map(f => (
-          <button
-            key={f.id}
-            onClick={() => setFilter(f.id)}
-            className={cn(
-              "px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all",
-              filter === f.id
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted"
-            )}
-          >
-            {f.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Games Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {filteredGames.map((game, index) => (
-          <motion.div
-            key={game.id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05 }}
-          >
-            <GameCard game={game} onClick={() => setActiveGame(game.id)} />
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Coming Soon */}
-      <div className="mt-8">
-        <h3 className="text-lg font-semibold text-foreground mb-4">Em Breve</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {COMING_SOON_GAMES.map((game) => (
-            <HubCard 
-              key={game.id} 
-              className="opacity-60 cursor-pointer hover:opacity-80"
-              onClick={() => setActiveGame(game.id)}
-            >
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-muted">
-                  <game.icon className="w-5 h-5 text-muted-foreground" />
-                </div>
-                <div>
-                  <p className="font-medium text-foreground">{game.name}</p>
-                  <p className="text-xs text-muted-foreground">{game.description}</p>
-                </div>
-              </div>
-            </HubCard>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Game Card Component
-function GameCard({ game, onClick }: { game: GameItem; onClick: () => void }) {
-  const difficultyColors = {
-    easy: "text-gameia-success",
-    medium: "text-gameia-warning",
-    hard: "text-destructive",
-  };
-
-  return (
-    <HubCard 
-      className="cursor-pointer group h-full" 
-      onClick={onClick}
-    >
-      <div className="flex flex-col h-full">
-        <div className="flex items-start justify-between mb-3">
-          <div className="p-2.5 rounded-xl bg-muted group-hover:bg-primary/10 transition-colors">
-            <game.icon className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
-          </div>
-          <div className="flex items-center gap-1.5">
-            {game.isNew && (
-              <Badge variant="secondary" className="text-xs">Novo</Badge>
-            )}
-            <Badge variant="outline" className={cn("text-xs", difficultyColors[game.difficulty])}>
-              {game.difficulty === "easy" ? "Fácil" : game.difficulty === "medium" ? "Médio" : "Difícil"}
+      {/* Cognitive Tests Section */}
+      {showTests && filteredTests.length > 0 && (
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <Brain className="w-5 h-5 text-emerald-500" />
+              Testes Cognitivos
+            </h3>
+            <Badge variant="outline" className="text-xs">
+              {filteredTests.length} disponíveis
             </Badge>
           </div>
-        </div>
-        
-        <h4 className="font-semibold text-foreground mb-1">{game.name}</h4>
-        <p className="text-sm text-muted-foreground mb-3 flex-1">{game.description}</p>
-        
-        <div className="flex items-center justify-between pt-3 border-t border-border/30">
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Trophy className="w-3.5 h-3.5" />
-            <span>+{game.xpReward} XP</span>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredTests.map((test, index) => {
+              const lastSession = getTestLastSession(test.id);
+              const targetScore = 70; // Default target
+              
+              return (
+                <motion.div
+                  key={test.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                >
+                  <ExperienceCard
+                    id={test.id}
+                    type="cognitive_test"
+                    title={test.name}
+                    description={test.description || "Avalie suas habilidades cognitivas"}
+                    skills={[test.test_type]}
+                    duration={test.time_limit_minutes ? `${test.time_limit_minutes} min` : "15 min"}
+                    difficulty={test.difficulty as "easy" | "medium" | "hard"}
+                    xpReward={test.xp_reward || 100}
+                    targetPercent={targetScore}
+                    isCompleted={!!lastSession}
+                    onClick={() => setActiveExperience({ type: "cognitive_test", id: test.id })}
+                  />
+                </motion.div>
+              );
+            })}
           </div>
-          <HubButton size="sm" variant="ghost" rightIcon={<Play className="w-3.5 h-3.5" />}>
-            Jogar
-          </HubButton>
-        </div>
-      </div>
-    </HubCard>
+
+          {/* Info about conditional rewards */}
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 text-sm text-muted-foreground">
+            <Target className="w-4 h-4 text-amber-500 shrink-0" />
+            <span>
+              Testes cognitivos têm <strong>recompensa condicional</strong>: 
+              atinja a meta de acerto para ganhar XP. Você pode refazer os testes!
+            </span>
+          </div>
+        </section>
+      )}
+
+      {/* Trainings Section */}
+      {showTrainings && filteredTrainings.length > 0 && (
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <GraduationCap className="w-5 h-5 text-blue-500" />
+              Treinamentos
+            </h3>
+            <Badge variant="outline" className="text-xs">
+              {filteredTrainings.length} disponíveis
+            </Badge>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredTrainings.slice(0, 6).map((training, index) => {
+              const progress = getTrainingProgress(training.id);
+              
+              return (
+                <motion.div
+                  key={training.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                >
+                  <ExperienceCard
+                    id={training.id}
+                    type="training"
+                    title={training.name}
+                    description={training.description || "Desenvolva novas competências"}
+                    thumbnail={training.thumbnail_url || undefined}
+                    skills={[training.category || "Desenvolvimento"]}
+                    duration={training.estimated_hours ? `${training.estimated_hours}h` : undefined}
+                    difficulty={(training.difficulty as "easy" | "medium" | "hard") || "medium"}
+                    xpReward={training.xp_reward || 100}
+                    coinsReward={training.coins_reward || 50}
+                    progress={progress?.progress_percent}
+                    isCompleted={progress?.progress_percent === 100}
+                    onClick={() => setActiveExperience({ type: "training", id: training.id })}
+                  />
+                </motion.div>
+              );
+            })}
+          </div>
+
+          {filteredTrainings.length > 6 && (
+            <div className="text-center">
+              <HubButton
+                variant="outline"
+                onClick={() => window.location.href = "/app/trainings"}
+              >
+                Ver todos os treinamentos ({filteredTrainings.length})
+              </HubButton>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* Games Grid */}
+      {showGames && (
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <Gamepad2 className="w-5 h-5 text-purple-500" />
+              {filter === "simulations" ? "Simulações" : filter === "games" ? "Jogos" : "Jogos & Simulações"}
+            </h3>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {filteredGames
+              .filter(g => g.id !== recommendedGame?.id) // Exclude featured
+              .map((game, index) => (
+                <motion.div
+                  key={game.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                >
+                  <ExperienceCard
+                    id={game.id}
+                    type="game"
+                    title={game.name}
+                    description={game.description}
+                    icon={<game.icon className="w-5 h-5" />}
+                    skills={game.skills}
+                    duration={game.duration}
+                    difficulty={game.difficulty}
+                    xpReward={game.xpReward}
+                    isNew={game.isNew}
+                    onClick={() => setActiveExperience({ type: "game", id: game.id })}
+                  />
+                </motion.div>
+              ))}
+          </div>
+        </section>
+      )}
+
+      {/* Coming Soon */}
+      {(filter === "all" || filter === "games") && (
+        <section className="mt-8">
+          <h3 className="text-lg font-semibold text-foreground mb-4">Em Breve</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {COMING_SOON_GAMES.map((game) => (
+              <HubCard 
+                key={game.id} 
+                className="opacity-60 cursor-pointer hover:opacity-80"
+                onClick={() => setActiveExperience({ type: "game", id: game.id })}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-muted">
+                    <game.icon className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">{game.name}</p>
+                    <p className="text-xs text-muted-foreground">{game.description}</p>
+                  </div>
+                </div>
+              </HubCard>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Empty State */}
+      {filter !== "all" && 
+       ((filter === "trainings" && filteredTrainings.length === 0) ||
+        (filter === "cognitive" && filteredTests.length === 0) ||
+        (filter === "challenges" && activeChallenges.length === 0)) && (
+        <HubEmptyState
+          icon={Grid3X3}
+          title={`Nenhum item em "${ARENA_FILTERS.find(f => f.id === filter)?.label}"`}
+          description="Novos conteúdos serão adicionados em breve"
+        />
+      )}
+    </div>
   );
 }
