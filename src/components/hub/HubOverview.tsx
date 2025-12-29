@@ -20,7 +20,10 @@ import {
   Users,
   Brain,
   ListChecks,
+  ShoppingBag,
+  GraduationCap,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { HubCard, HubCardHeader, HubStat, HubEmptyState, HubButton, HubHeader } from "./common";
 import { DailyMissionsCard, MonthlyGoalsCard } from "./overview";
 import { useStreak } from "@/hooks/useStreak";
@@ -51,6 +54,7 @@ const SOURCE_CONFIG: Record<SourceType, { label: string; icon: typeof Brain; col
 };
 
 export function HubOverview({ onNavigate }: HubOverviewProps) {
+  const navigate = useNavigate();
   const { streak } = useStreak();
   const { level, progress } = useLevel();
   const { skills } = useSkillProgress();
@@ -118,27 +122,34 @@ export function HubOverview({ onNavigate }: HubOverviewProps) {
       {/* Quick Actions */}
       <HubCard>
         <HubCardHeader title="Ações Rápidas" description="Continue de onde parou" />
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <QuickActionButton
             icon={Play}
-            label="Continuar"
-            description="Retomar último jogo"
+            label="Jogar"
+            description="Arena de jogos"
             gradient="from-primary to-primary-glow"
             onClick={() => onNavigate("arena")}
           />
           <QuickActionButton
-            icon={TrendingUp}
-            label="Ver Evolução"
-            description="Seu progresso de skills"
-            gradient="from-secondary to-gameia-teal"
-            onClick={() => onNavigate("evolution")}
+            icon={GraduationCap}
+            label="Treinamentos"
+            description="Cursos e trilhas"
+            gradient="from-blue-500 to-blue-600"
+            onClick={() => navigate("/app/trainings")}
           />
           <QuickActionButton
-            icon={Target}
-            label="Definir Meta"
-            description="Meta do mês"
-            gradient="from-accent to-gameia-purple"
-            onClick={() => onNavigate("caminho")}
+            icon={ShoppingBag}
+            label="Loja"
+            description="Gastar moedas"
+            gradient="from-purple-500 to-purple-600"
+            onClick={() => navigate("/app/marketplace")}
+          />
+          <QuickActionButton
+            icon={TrendingUp}
+            label="Evolução"
+            description="Seu progresso"
+            gradient="from-secondary to-gameia-teal"
+            onClick={() => onNavigate("evolution")}
           />
         </div>
       </HubCard>
