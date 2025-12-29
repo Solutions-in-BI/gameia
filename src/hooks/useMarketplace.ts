@@ -16,6 +16,16 @@ export interface MarketplaceItem {
   stock: number | null;
   is_limited_edition: boolean;
   is_featured: boolean;
+  // New fields for evolved marketplace
+  item_type: string;
+  expires_after_purchase: number | null;
+  expires_after_use: boolean;
+  requires_approval: boolean;
+  usage_instructions: string | null;
+  max_uses: number | null;
+  boost_type: string | null;
+  boost_value: number | null;
+  boost_duration_hours: number | null;
 }
 
 export interface MarketplaceCategory {
@@ -34,6 +44,13 @@ export interface InventoryItem {
   purchased_at: string;
   is_equipped: boolean;
   item?: MarketplaceItem;
+  // New fields
+  expires_at: string | null;
+  status: string;
+  used_at: string | null;
+  uses_remaining: number | null;
+  boost_active_until: string | null;
+  approval_status: string | null;
 }
 
 export function useMarketplace() {
