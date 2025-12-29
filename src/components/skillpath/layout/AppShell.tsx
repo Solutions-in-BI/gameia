@@ -1,6 +1,7 @@
 /**
  * Shell principal da aplicação Gameia
  * Header com navegação completa: Badges, Jogos, Apostas, Skills, Loja, Ranking
+ * Inclui links para /manage e /console baseado em permissões
  */
 
 import { useState, useEffect } from "react";
@@ -19,7 +20,9 @@ import {
   Store,
   Crown,
   LayoutDashboard,
-  TrendingUp
+  TrendingUp,
+  BarChart3,
+  Settings,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -27,11 +30,13 @@ import { useTheme } from "@/hooks/useTheme";
 import { useStreak } from "@/hooks/useStreak";
 import { useLevel } from "@/hooks/useLevel";
 import { useTitles } from "@/hooks/useTitles";
+import { useAreaPermissions } from "@/hooks/useAreaPermissions";
 import { cn } from "@/lib/utils";
 import { UserSettingsDropdown } from "@/components/game/common/UserSettingsDropdown";
 import { StreakModal } from "@/components/game/common/StreakModal";
 import { NotificationsDropdown } from "@/components/notifications/NotificationsDropdown";
 import { Logo } from "@/components/common/Logo";
+import { Button } from "@/components/ui/button";
 
 export type GameiaSection = "gamification" | "development" | "guidance" | "profile";
 export type DashboardTab = "dashboard" | "badges" | "trainings" | "games" | "bets" | "skills" | "store" | "ranking";
@@ -95,6 +100,7 @@ export function AppShell({
   const { streak, canClaimToday, isAtRisk, claimDailyReward } = useStreak();
   const { level, xp } = useLevel();
   const { selectedTitle } = useTitles();
+  const { canAccessManage, canAccessConsole } = useAreaPermissions();
   
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [streakModalOpen, setStreakModalOpen] = useState(false);
@@ -177,6 +183,34 @@ export function AppShell({
                   </button>
                 ))}
               </div>
+
+              {/* Area links - Gestão e Console */}
+              {(canAccessManage || canAccessConsole) && (
+                <div className="hidden lg:flex items-center gap-1 border-l border-border/50 pl-2 ml-1">
+                  {canAccessManage && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => navigate("/manage")}
+                      className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
+                    >
+                      <BarChart3 className="w-4 h-4" />
+                      <span className="hidden xl:inline">Gestão</span>
+                    </Button>
+                  )}
+                  {canAccessConsole && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => navigate("/console")}
+                      className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
+                    >
+                      <Settings className="w-4 h-4" />
+                      <span className="hidden xl:inline">Console</span>
+                    </Button>
+                  )}
+                </div>
+              )}
 
               {/* Notifications + User dropdown or login */}
               {isAuthenticated ? (
@@ -271,6 +305,45 @@ export function AppShell({
                           <span>{item.label}</span>
                         </button>
                       ))}
+                    </div>
+                  </>
+                )}
+
+                {/* Links para Gestão e Console (mobile) */}
+                {isAuthenticated && (canAccessManage || canAccessConsole) && (
+                  <>
+                    <div className="h-px bg-border/50 my-2" />
+                    <div className="space-y-1">
+                      {canAccessManage && (
+                        <button
+                          onClick={() => {
+                            navigate("/manage");
+                            setMobileMenuOpen(false);
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
+                        >
+                          <BarChart3 className="w-5 h-5" />
+                          <div className="text-left">
+                            <div className="font-medium text-sm">Gestão</div>
+                            <div className="text-xs text-muted-foreground">Painel do gestor</div>
+                          </div>
+                        </button>
+                      )}
+                      {canAccessConsole && (
+                        <button
+                          onClick={() => {
+                            navigate("/console");
+                            setMobileMenuOpen(false);
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
+                        >
+                          <Settings className="w-5 h-5" />
+                          <div className="text-left">
+                            <div className="font-medium text-sm">Console</div>
+                            <div className="text-xs text-muted-foreground">Configurações</div>
+                          </div>
+                        </button>
+                      )}
                     </div>
                   </>
                 )}
