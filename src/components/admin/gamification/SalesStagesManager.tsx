@@ -14,9 +14,11 @@ import {
   MessageSquare,
   Lightbulb,
   ChevronRight,
+  Target,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrganization } from "@/hooks/useOrganization";
+import { useSalesSkills } from "@/hooks/useSalesSkills";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,6 +62,8 @@ interface SalesStage {
   track_key: string | null;
   channel: string | null;
   organization_id: string | null;
+  primary_skill_id: string | null;
+  skill_impact_weight: number | null;
 }
 
 interface SalesTrack {
@@ -77,6 +81,8 @@ const DEFAULT_STAGE: Partial<SalesStage> = {
   icon: "MessageSquare",
   track_key: "",
   channel: "",
+  primary_skill_id: null,
+  skill_impact_weight: 1.0,
 };
 
 const ICON_OPTIONS = [
@@ -94,6 +100,7 @@ const ICON_OPTIONS = [
 
 export function SalesStagesManager() {
   const { currentOrg } = useOrganization();
+  const { skills } = useSalesSkills();
   const [stages, setStages] = useState<SalesStage[]>([]);
   const [tracks, setTracks] = useState<SalesTrack[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -128,7 +135,7 @@ export function SalesStagesManager() {
       if (stagesRes.error) throw stagesRes.error;
       if (tracksRes.error) throw tracksRes.error;
 
-      setStages(stagesRes.data || []);
+      setStages((stagesRes.data || []) as unknown as SalesStage[]);
       setTracks(tracksRes.data || []);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -164,7 +171,9 @@ export function SalesStagesManager() {
             icon: editingStage.icon,
             track_key: editingStage.track_key,
             channel: editingStage.channel,
-          })
+            primary_skill_id: editingStage.primary_skill_id,
+            skill_impact_weight: editingStage.skill_impact_weight,
+          } as any)
           .eq("id", editingStage.id);
         if (error) throw error;
         toast.success("Estágio atualizado!");
@@ -180,8 +189,10 @@ export function SalesStagesManager() {
             icon: editingStage.icon,
             track_key: editingStage.track_key,
             channel: editingStage.channel,
+            primary_skill_id: editingStage.primary_skill_id,
+            skill_impact_weight: editingStage.skill_impact_weight,
             organization_id: currentOrg?.id || null,
-          }]);
+          } as any]);
         if (error) throw error;
         toast.success("Estágio criado!");
       }
@@ -514,6 +525,56 @@ export function SalesStagesManager() {
                   placeholder="Ex: Faça perguntas abertas para entender as necessidades do cliente..."
                   rows={3}
                 />
+              </div>
+
+              {/* Primary Skill Section */}
+              <div className="space-y-3 pt-4 border-t">
+                <Label className="flex items-center gap-2">
+                  <Target className="w-4 h-4 text-primary" />
+                  Skill Primária do Estágio
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Qual skill é mais desenvolvida neste estágio da conversa
+                </p>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs">Skill</Label>
+                    <Select
+                      value={editingStage.primary_skill_id || "none"}
+                      onValueChange={(value) => setEditingStage({
+                        ...editingStage,
+                        primary_skill_id: value === "none" ? null : value
+                      })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecionar skill..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Nenhuma</SelectItem>
+                        {skills.map((skill) => (
+                          <SelectItem key={skill.id} value={skill.id}>
+                            {skill.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Peso do Impacto</Label>
+                    <Input
+                      type="number"
+                      value={editingStage.skill_impact_weight || 1.0}
+                      onChange={(e) => setEditingStage({
+                        ...editingStage,
+                        skill_impact_weight: parseFloat(e.target.value) || 1.0
+                      })}
+                      step={0.1}
+                      min={0.1}
+                      max={3.0}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           )}
