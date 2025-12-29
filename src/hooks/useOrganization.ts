@@ -1,6 +1,8 @@
 /**
  * Hook para gerenciar organizações/empresas
  * Usa localStorage para cache e evitar flash de "Nenhuma organização"
+ * @module useOrganization
+ * @version 1.0.1
  */
 
 import { useState, useEffect, useCallback } from "react";
