@@ -17,9 +17,12 @@ import {
   GripVertical,
   ToggleLeft,
   ToggleRight,
+  Target,
+  X,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrganization } from "@/hooks/useOrganization";
+import { useSalesSkills, SkillOption } from "@/hooks/useSalesSkills";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,6 +47,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 interface SalesTrack {
@@ -58,6 +68,8 @@ interface SalesTrack {
   coins_reward: number | null;
   is_active: boolean | null;
   organization_id: string | null;
+  related_skills: string[] | null;
+  skill_weights: Record<string, number> | null;
 }
 
 const DEFAULT_TRACK: Partial<SalesTrack> = {
@@ -70,6 +82,8 @@ const DEFAULT_TRACK: Partial<SalesTrack> = {
   xp_reward: 100,
   coins_reward: 50,
   is_active: true,
+  related_skills: [],
+  skill_weights: {},
 };
 
 const ICON_OPTIONS = [
@@ -84,6 +98,7 @@ const COLOR_OPTIONS = [
 
 export function SalesTracksManager() {
   const { currentOrg } = useOrganization();
+  const { skills, isLoading: skillsLoading } = useSalesSkills();
   const [tracks, setTracks] = useState<SalesTrack[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -91,6 +106,7 @@ export function SalesTracksManager() {
   const [editingTrack, setEditingTrack] = useState<Partial<SalesTrack> | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [selectedSkillToAdd, setSelectedSkillToAdd] = useState<string>("");
 
   useEffect(() => {
     fetchTracks();
@@ -106,7 +122,8 @@ export function SalesTracksManager() {
         .order("name");
 
       if (error) throw error;
-      setTracks(data || []);
+      // Cast to SalesTrack[] to handle new columns that may not be in generated types yet
+      setTracks((data || []) as unknown as SalesTrack[]);
     } catch (error) {
       console.error("Error fetching tracks:", error);
       toast.error("Erro ao carregar trilhas");
@@ -136,6 +153,8 @@ export function SalesTracksManager() {
             xp_reward: editingTrack.xp_reward,
             coins_reward: editingTrack.coins_reward,
             is_active: editingTrack.is_active,
+            related_skills: editingTrack.related_skills,
+            skill_weights: editingTrack.skill_weights,
           })
           .eq("id", editingTrack.id);
         if (error) throw error;
@@ -153,6 +172,8 @@ export function SalesTracksManager() {
             xp_reward: editingTrack.xp_reward,
             coins_reward: editingTrack.coins_reward,
             is_active: editingTrack.is_active,
+            related_skills: editingTrack.related_skills,
+            skill_weights: editingTrack.skill_weights,
             organization_id: currentOrg?.id || null,
           }]);
         if (error) throw error;
@@ -458,6 +479,123 @@ export function SalesTracksManager() {
                     is_active: checked
                   })}
                 />
+              </div>
+
+              {/* Skills Section */}
+              <div className="space-y-3 pt-4 border-t">
+                <Label className="flex items-center gap-2">
+                  <Target className="w-4 h-4 text-primary" />
+                  Skills Desenvolvidas
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Selecione as skills que serão impactadas ao completar esta trilha
+                </p>
+
+                {/* Selected Skills */}
+                <div className="flex flex-wrap gap-2">
+                  {(editingTrack.related_skills || []).map((skillId) => {
+                    const skill = skills.find(s => s.id === skillId);
+                    if (!skill) return null;
+                    return (
+                      <Badge 
+                        key={skillId} 
+                        variant="secondary"
+                        className="flex items-center gap-1.5 pr-1"
+                      >
+                        {skill.name}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newSkills = (editingTrack.related_skills || []).filter(id => id !== skillId);
+                            const newWeights = { ...(editingTrack.skill_weights || {}) };
+                            delete newWeights[skillId];
+                            setEditingTrack({
+                              ...editingTrack,
+                              related_skills: newSkills,
+                              skill_weights: newWeights
+                            });
+                          }}
+                          className="hover:bg-destructive/20 rounded p-0.5"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </Badge>
+                    );
+                  })}
+                </div>
+
+                {/* Add Skill */}
+                <div className="flex gap-2">
+                  <Select
+                    value={selectedSkillToAdd}
+                    onValueChange={setSelectedSkillToAdd}
+                  >
+                    <SelectTrigger className="flex-1">
+                      <SelectValue placeholder="Adicionar skill..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {skills
+                        .filter(s => !(editingTrack.related_skills || []).includes(s.id))
+                        .map((skill) => (
+                          <SelectItem key={skill.id} value={skill.id}>
+                            {skill.name}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    type="button"
+                    size="sm"
+                    disabled={!selectedSkillToAdd}
+                    onClick={() => {
+                      if (selectedSkillToAdd) {
+                        setEditingTrack({
+                          ...editingTrack,
+                          related_skills: [...(editingTrack.related_skills || []), selectedSkillToAdd],
+                          skill_weights: {
+                            ...(editingTrack.skill_weights || {}),
+                            [selectedSkillToAdd]: 1.0
+                          }
+                        });
+                        setSelectedSkillToAdd("");
+                      }
+                    }}
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+
+                {/* Skill Weights */}
+                {(editingTrack.related_skills || []).length > 0 && (
+                  <div className="space-y-2 mt-3">
+                    <Label className="text-xs text-muted-foreground">Peso de cada skill (multiplicador)</Label>
+                    {(editingTrack.related_skills || []).map((skillId) => {
+                      const skill = skills.find(s => s.id === skillId);
+                      if (!skill) return null;
+                      const weight = (editingTrack.skill_weights || {})[skillId] || 1.0;
+                      return (
+                        <div key={skillId} className="flex items-center gap-3">
+                          <span className="text-sm w-32 truncate">{skill.name}</span>
+                          <Input
+                            type="number"
+                            value={weight}
+                            onChange={(e) => setEditingTrack({
+                              ...editingTrack,
+                              skill_weights: {
+                                ...(editingTrack.skill_weights || {}),
+                                [skillId]: parseFloat(e.target.value) || 1.0
+                              }
+                            })}
+                            step={0.1}
+                            min={0.1}
+                            max={3.0}
+                            className="w-20"
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
           )}

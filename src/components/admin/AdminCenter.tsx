@@ -41,6 +41,7 @@ import { QuizManagement, ScenarioManagement } from "./content";
 import { TrainingManagement } from "./training";
 import { MarketplaceManagement } from "./marketplace";
 import { Assessment360Management, PDIManagement, OneOnOneManagement, CognitiveTestsManagement } from "./hr";
+import { SalesGameConfig } from "./gamification/SalesGameConfig";
 import { useOrgTeams } from "@/hooks/useOrgTeams";
 import { AdminSidebar, AdminSection } from "./layout";
 import { AdminHeader } from "./layout/AdminHeader";
@@ -319,6 +320,13 @@ export function AdminCenter() {
         return (
           <div className="gameia-card p-6">
             <GameConfigSettings />
+          </div>
+        );
+
+      case "sales-config":
+        return (
+          <div className="gameia-card p-6">
+            <SalesGameConfig />
           </div>
         );
 
