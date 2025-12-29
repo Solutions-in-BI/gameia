@@ -22,6 +22,8 @@ import Security from "./pages/Security";
 import Contact from "./pages/Contact";
 import TrainingDetail from "./pages/TrainingDetail";
 import ModulePlayer from "./pages/ModulePlayer";
+import Trainings from "./pages/Trainings";
+import Marketplace from "./pages/Marketplace";
 import { AdminGuard } from "./components/auth/AdminGuard";
 
 const queryClient = new QueryClient();
@@ -47,8 +49,10 @@ const App = () => (
           {/* App Routes */}
           <Route path="/app" element={<Dashboard />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/app/trainings" element={<Trainings />} />
           <Route path="/app/trainings/:id" element={<TrainingDetail />} />
           <Route path="/app/trainings/:trainingId/module/:moduleId" element={<ModulePlayer />} />
+          <Route path="/app/marketplace" element={<Marketplace />} />
           
           {/* Auth & Onboarding */}
           <Route path="/auth" element={<Auth />} />

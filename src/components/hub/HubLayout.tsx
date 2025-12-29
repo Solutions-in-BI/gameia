@@ -13,14 +13,16 @@ import {
   Menu,
   X,
   LogIn,
-  User
+  BookOpen,
+  ShoppingBag
 } from "lucide-react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useStreak } from "@/hooks/useStreak";
 import { useGamificationListener } from "@/hooks/useGamificationListener";
 import { useInsignias } from "@/hooks/useInsignias";
 import { useDailyMissions } from "@/hooks/useDailyMissions";
+import { useMarketplace } from "@/hooks/useMarketplace";
 import { cn } from "@/lib/utils";
 import { UserSettingsDropdown } from "@/components/game/common/UserSettingsDropdown";
 import { StreakModal } from "@/components/game/common/StreakModal";
@@ -30,6 +32,7 @@ import { HubOverview } from "./HubOverview";
 import { ArenaTab } from "./arena/ArenaTab";
 import { EvolutionTab } from "./evolution/EvolutionTab";
 import { CaminhoTab } from "./caminho/CaminhoTab";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export type HubTab = "overview" | "arena" | "evolution" | "caminho";
 
@@ -49,6 +52,7 @@ export function HubLayout() {
   const { streak, canClaimToday, isAtRisk, claimDailyReward } = useStreak();
   const { checkAndUnlockInsignias, refetch: refetchInsignias } = useInsignias();
   const { refetch: refetchMissions } = useDailyMissions();
+  const { coins } = useMarketplace();
   
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [streakModalOpen, setStreakModalOpen] = useState(false);
@@ -137,8 +141,34 @@ export function HubLayout() {
               ))}
             </nav>
 
-            {/* Right side - User */}
-            <div className="flex items-center gap-2 flex-shrink-0">
+            {/* Right side - Quick Actions & User */}
+            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+              {/* Quick Access Buttons */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    to="/app/trainings"
+                    className="hidden sm:flex items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
+                  >
+                    <BookOpen className="w-5 h-5" />
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent>Treinamentos</TooltipContent>
+              </Tooltip>
+              
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    to="/app/marketplace"
+                    className="hidden sm:flex items-center gap-1.5 px-2.5 h-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
+                  >
+                    <ShoppingBag className="w-5 h-5" />
+                    <span className="text-xs font-semibold text-amber-500">{coins}</span>
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent>Loja de Recompensas</TooltipContent>
+              </Tooltip>
+
               {isAuthenticated ? (
                 <>
                   <NotificationsDropdown />
@@ -183,6 +213,27 @@ export function HubLayout() {
               className="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-lg"
             >
               <div className="px-4 py-3 space-y-1">
+                {/* Quick Access in Mobile Menu */}
+                <div className="flex gap-2 pb-3 mb-2 border-b border-border/50">
+                  <Link
+                    to="/app/trainings"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-muted/50 text-foreground hover:bg-muted transition-all"
+                  >
+                    <BookOpen className="w-5 h-5" />
+                    <span className="font-medium text-sm">Treinamentos</span>
+                  </Link>
+                  <Link
+                    to="/app/marketplace"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-muted/50 text-foreground hover:bg-muted transition-all"
+                  >
+                    <ShoppingBag className="w-5 h-5" />
+                    <span className="font-medium text-sm">Loja</span>
+                    <span className="text-xs font-semibold text-amber-500">({coins})</span>
+                  </Link>
+                </div>
+
                 {HUB_TABS.map((tab) => (
                   <button
                     key={tab.id}
