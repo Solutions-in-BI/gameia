@@ -8,7 +8,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   LayoutDashboard, 
-  Gamepad2, 
+  Swords, 
   TrendingUp, 
   Compass,
   Menu,
@@ -43,7 +43,7 @@ export type HubTab = "overview" | "arena" | "evolution" | "caminho";
 
 const HUB_TABS = [
   { id: "overview" as const, label: "Visão Geral", shortLabel: "Início", icon: LayoutDashboard },
-  { id: "arena" as const, label: "Arena", shortLabel: "Arena", icon: Gamepad2 },
+  { id: "arena" as const, label: "Arena", shortLabel: "Arena", icon: Swords },
   { id: "evolution" as const, label: "Evolução", shortLabel: "Evolução", icon: TrendingUp },
   { id: "caminho" as const, label: "Caminho", shortLabel: "Caminho", icon: Compass },
 ];
