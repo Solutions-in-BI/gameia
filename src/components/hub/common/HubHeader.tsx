@@ -1,6 +1,6 @@
 /**
- * HubHeader - Header dinâmico do hub
- * Título + subtítulo + CTA contextual
+ * HubHeader - Premium page header
+ * Clear hierarchy with title, subtitle, and optional action
  */
 
 import { cn } from "@/lib/utils";
@@ -27,16 +27,18 @@ export function HubHeader({
   className,
 }: HubHeaderProps) {
   return (
-    <div className={cn("flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6", className)}>
-      <div className="flex items-center gap-3">
+    <div className={cn("flex flex-col sm:flex-row sm:items-center justify-between gap-4", className)}>
+      <div className="flex items-center gap-4">
         {Icon && (
-          <div className="p-2 rounded-lg bg-primary/10">
+          <div className="hidden sm:flex p-3 rounded-xl bg-primary/10">
             <Icon className="w-6 h-6 text-primary" />
           </div>
         )}
         <div>
-          <h1 className="text-2xl font-bold text-foreground">{title}</h1>
-          {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
+          <h1 className="text-2xl font-bold text-foreground tracking-tight">{title}</h1>
+          {subtitle && (
+            <p className="text-sm text-muted-foreground mt-0.5">{subtitle}</p>
+          )}
         </div>
       </div>
       {actionLabel && onAction && (

@@ -1,6 +1,6 @@
 /**
- * HubEmptyState - Estado vazio elegante com CTA
- * Usado quando não há dados para mostrar
+ * HubEmptyState - Premium empty state
+ * Clean feedback when no data is available
  */
 
 import { cn } from "@/lib/utils";
@@ -25,14 +25,14 @@ export function HubEmptyState({
   className,
 }: HubEmptyStateProps) {
   return (
-    <div className={cn("flex flex-col items-center justify-center py-12 px-4 text-center", className)}>
-      <div className="p-4 rounded-full bg-muted/50 mb-4">
-        <Icon className="w-10 h-10 text-muted-foreground/60" />
+    <div className={cn("flex flex-col items-center justify-center py-12 px-6 text-center", className)}>
+      <div className="p-4 rounded-2xl bg-muted mb-5">
+        <Icon className="w-8 h-8 text-muted-foreground" />
       </div>
-      <h3 className="text-lg font-semibold text-foreground mb-1">{title}</h3>
-      <p className="text-sm text-muted-foreground max-w-sm mb-6">{description}</p>
+      <h3 className="text-base font-semibold text-foreground mb-1">{title}</h3>
+      <p className="text-sm text-muted-foreground max-w-xs mb-6">{description}</p>
       {actionLabel && onAction && (
-        <HubButton onClick={onAction} variant="primary">
+        <HubButton onClick={onAction} variant="primary" size="sm">
           {actionLabel}
         </HubButton>
       )}
