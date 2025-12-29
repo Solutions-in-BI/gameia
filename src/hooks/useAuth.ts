@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
  * ===========================================
  * 
  * Gerencia autenticação com Lovable Cloud.
+ * Usa localStorage para cache de profile e evitar flash de "Jogador".
  */
 
 export interface Profile {
@@ -16,6 +17,29 @@ export interface Profile {
   avatar_url: string | null;
   selected_title: string | null;
   created_at: string;
+}
+
+const PROFILE_CACHE_KEY = "gameia_profile_cache";
+
+function getCachedProfile(): Profile | null {
+  try {
+    const cached = localStorage.getItem(PROFILE_CACHE_KEY);
+    return cached ? JSON.parse(cached) : null;
+  } catch {
+    return null;
+  }
+}
+
+function setCachedProfile(profile: Profile | null) {
+  try {
+    if (profile) {
+      localStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify(profile));
+    } else {
+      localStorage.removeItem(PROFILE_CACHE_KEY);
+    }
+  } catch {
+    // Ignore localStorage errors
+  }
 }
 
 function getDefaultNickname(user: User) {
@@ -29,7 +53,8 @@ function getDefaultNickname(user: User) {
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
+  // Initialize profile from cache to avoid flash
+  const [profile, setProfile] = useState<Profile | null>(getCachedProfile);
   const [isLoading, setIsLoading] = useState(true);
 
   const ensureProfile = useCallback(async (authUser: User) => {
@@ -41,11 +66,13 @@ export function useAuth() {
 
     if (error) {
       setProfile(null);
+      setCachedProfile(null);
       return;
     }
 
     if (data) {
       setProfile(data as Profile);
+      setCachedProfile(data as Profile);
       return;
     }
 
@@ -57,10 +84,12 @@ export function useAuth() {
       .select("*")
       .maybeSingle();
 
-    if (!createError) {
-      setProfile((created as Profile) ?? null);
+    if (!createError && created) {
+      setProfile(created as Profile);
+      setCachedProfile(created as Profile);
     } else {
       setProfile(null);
+      setCachedProfile(null);
     }
   }, []);
 
@@ -119,6 +148,9 @@ export function useAuth() {
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
+    if (!error) {
+      setCachedProfile(null);
+    }
     return { error };
   };
 
@@ -144,6 +176,7 @@ export function useAuth() {
 
     if (!error && data) {
       setProfile(data as Profile);
+      setCachedProfile(data as Profile);
     }
 
     return { error };
