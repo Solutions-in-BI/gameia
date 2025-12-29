@@ -83,7 +83,8 @@ export function useExperiences() {
   const fetchPendingApprovals = useCallback(async () => {
     if (!user || !currentOrg) return;
     
-    const { data } = await supabase
+    // Fetch all statuses for manager view, not just pending
+    const { data, error } = await supabase
       .from("experience_requests")
       .select(`
         *,
@@ -93,8 +94,13 @@ export function useExperiences() {
         )
       `)
       .eq("organization_id", currentOrg.id)
-      .eq("status", "pending")
+      .in("status", ["pending", "approved"])
       .order("requested_at", { ascending: true });
+    
+    if (error) {
+      console.error("Error fetching pending approvals:", error);
+      return;
+    }
     
     if (data) {
       const requests: ExperienceRequest[] = data.map((req: any) => ({
