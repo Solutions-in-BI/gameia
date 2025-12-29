@@ -123,22 +123,38 @@ export function SalesTracksManager() {
 
     setIsSaving(true);
     try {
-      const trackData = {
-        ...editingTrack,
-        organization_id: currentOrg?.id || null,
-      };
-
       if (editingTrack.id) {
         const { error } = await supabase
           .from("sales_tracks")
-          .update(trackData)
+          .update({
+            name: editingTrack.name,
+            track_key: editingTrack.track_key,
+            description: editingTrack.description,
+            icon: editingTrack.icon,
+            color: editingTrack.color,
+            time_limit_seconds: editingTrack.time_limit_seconds,
+            xp_reward: editingTrack.xp_reward,
+            coins_reward: editingTrack.coins_reward,
+            is_active: editingTrack.is_active,
+          })
           .eq("id", editingTrack.id);
         if (error) throw error;
         toast.success("Trilha atualizada!");
       } else {
         const { error } = await supabase
           .from("sales_tracks")
-          .insert([trackData]);
+          .insert([{
+            name: editingTrack.name || "Nova Trilha",
+            track_key: editingTrack.track_key || `track_${Date.now()}`,
+            description: editingTrack.description,
+            icon: editingTrack.icon,
+            color: editingTrack.color,
+            time_limit_seconds: editingTrack.time_limit_seconds,
+            xp_reward: editingTrack.xp_reward,
+            coins_reward: editingTrack.coins_reward,
+            is_active: editingTrack.is_active,
+            organization_id: currentOrg?.id || null,
+          }]);
         if (error) throw error;
         toast.success("Trilha criada!");
       }

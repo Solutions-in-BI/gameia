@@ -150,23 +150,38 @@ export function SalesStagesManager() {
 
     setIsSaving(true);
     try {
-      const stageData = {
-        ...editingStage,
-        organization_id: currentOrg?.id || null,
-        stage_order: editingStage.stage_order || filteredStages.length,
-      };
+      const stageOrder = editingStage.stage_order ?? filteredStages.length;
 
       if (editingStage.id) {
         const { error } = await supabase
           .from("sales_conversation_stages")
-          .update(stageData)
+          .update({
+            stage_key: editingStage.stage_key,
+            stage_label: editingStage.stage_label,
+            stage_order: stageOrder,
+            description: editingStage.description,
+            tips: editingStage.tips,
+            icon: editingStage.icon,
+            track_key: editingStage.track_key,
+            channel: editingStage.channel,
+          })
           .eq("id", editingStage.id);
         if (error) throw error;
         toast.success("Estágio atualizado!");
       } else {
         const { error } = await supabase
           .from("sales_conversation_stages")
-          .insert([stageData]);
+          .insert([{
+            stage_key: editingStage.stage_key || `stage_${Date.now()}`,
+            stage_label: editingStage.stage_label || "Novo Estágio",
+            stage_order: stageOrder,
+            description: editingStage.description,
+            tips: editingStage.tips,
+            icon: editingStage.icon,
+            track_key: editingStage.track_key,
+            channel: editingStage.channel,
+            organization_id: currentOrg?.id || null,
+          }]);
         if (error) throw error;
         toast.success("Estágio criado!");
       }
