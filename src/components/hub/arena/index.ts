@@ -1,0 +1,1 @@
+export { ArenaTab } from "./ArenaTab";
