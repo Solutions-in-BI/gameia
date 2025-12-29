@@ -25,6 +25,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { useStreak } from "@/hooks/useStreak";
+import { useLevel } from "@/hooks/useLevel";
+import { useTitles } from "@/hooks/useTitles";
 import { cn } from "@/lib/utils";
 import { UserSettingsDropdown } from "@/components/game/common/UserSettingsDropdown";
 import { StreakModal } from "@/components/game/common/StreakModal";
@@ -91,11 +93,14 @@ export function AppShell({
   const { user, profile, isAuthenticated, signOut } = useAuth();
   const { isDark } = useTheme();
   const { streak, canClaimToday, isAtRisk, claimDailyReward } = useStreak();
+  const { level, xp } = useLevel();
+  const { selectedTitle } = useTitles();
   
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [streakModalOpen, setStreakModalOpen] = useState(false);
 
   const displayName = profile?.nickname || user?.email?.split("@")[0] || "Conta";
+  const selectedTitleName = selectedTitle?.name || null;
 
   // Check if streak modal should be shown today
   useEffect(() => {
@@ -181,6 +186,9 @@ export function AppShell({
                     displayName={displayName}
                     avatarUrl={profile?.avatar_url}
                     streak={streak.currentStreak}
+                    level={level}
+                    xp={xp}
+                    selectedTitle={selectedTitleName}
                     onViewProfile={() => onSectionChange("profile")}
                     onViewStreak={() => setStreakModalOpen(true)}
                     onLogout={handleLogout}
