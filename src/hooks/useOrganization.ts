@@ -86,7 +86,7 @@ export function useOrganization(): UseOrganization {
   // Busca organização atual do usuário
   const fetchCurrentOrg = useCallback(async () => {
     if (!user || !profile) return;
-    
+
     try {
       // Pega current_organization_id do profile
       const { data: profileData } = await supabase
@@ -94,16 +94,33 @@ export function useOrganization(): UseOrganization {
         .select("current_organization_id")
         .eq("id", user.id)
         .single();
-      
+
       if (profileData?.current_organization_id) {
         const { data: org } = await supabase
           .from("organizations")
           .select("*")
           .eq("id", profileData.current_organization_id)
           .single();
-        
+
         if (org) {
-          setCurrentOrg(org as Organization);
+          const next = org as Organization;
+          // Evita loop de render ao não atualizar estado quando nada mudou
+          setCurrentOrg((prev) => {
+            if (!prev) return next;
+
+            const isSame =
+              prev.id === next.id &&
+              prev.name === next.name &&
+              prev.slug === next.slug &&
+              prev.logo_url === next.logo_url &&
+              prev.description === next.description &&
+              prev.industry === next.industry &&
+              prev.size === next.size &&
+              prev.owner_id === next.owner_id &&
+              prev.created_at === next.created_at;
+
+            return isSame ? prev : next;
+          });
         }
       }
     } catch (err) {
