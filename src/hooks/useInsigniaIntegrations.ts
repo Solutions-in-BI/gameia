@@ -128,27 +128,31 @@ export function useInsigniaIntegrations() {
   /**
    * Check if a title is locked behind an insignia
    */
-  const isTitleLockedByInsignia = useCallback(async (titleId: string) => {
-    const { data } = await supabase
+  const isTitleLockedByInsignia = useCallback(async (titleId: string): Promise<{ id: string; name: string; icon: string } | null> => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const db = supabase as any;
+    const result = await db
       .from("insignias")
       .select("id, name, icon")
       .eq("unlocks_title_id", titleId)
       .maybeSingle();
 
-    return data;
+    return result.data as { id: string; name: string; icon: string } | null;
   }, []);
 
   /**
    * Check if an item is locked behind an insignia
    */
-  const isItemLockedByInsignia = useCallback(async (itemId: string) => {
-    const { data } = await supabase
+  const isItemLockedByInsignia = useCallback(async (itemId: string): Promise<{ id: string; name: string; icon: string } | null> => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const db = supabase as any;
+    const result = await db
       .from("insignias")
       .select("id, name, icon")
       .eq("unlocks_item_id", itemId)
       .maybeSingle();
 
-    return data;
+    return result.data as { id: string; name: string; icon: string } | null;
   }, []);
 
   return {

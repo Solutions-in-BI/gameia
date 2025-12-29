@@ -89,18 +89,27 @@ export function TeamInsigniasPanel() {
       if (!currentOrg?.id) return [];
 
       // Get all members with their insignias
-      const { data: membersRaw } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const db = supabase as any;
+      const membersResult = await db
         .from("profiles")
         .select("id, nickname, avatar_url")
         .eq("organization_id", currentOrg.id);
 
-      const members = membersRaw as { id: string; nickname: string | null; avatar_url: string | null }[] || [];
+      const members = (membersResult.data || []) as { id: string; nickname: string | null; avatar_url: string | null }[];
 
       if (members.length === 0) return [];
 
       // Get insignias for each member
       const memberIds = members.map(m => m.id);
-      const { data: userInsignias } = await supabase
+      
+      type UserInsigniaResult = { 
+        user_id: string; 
+        unlocked_at: string; 
+        insignia: { id: string; icon: string; name: string } | null 
+      };
+      
+      const insigniaResult = await db
         .from("user_insignias")
         .select(`
           user_id,
@@ -109,6 +118,8 @@ export function TeamInsigniasPanel() {
         `)
         .in("user_id", memberIds)
         .order("unlocked_at", { ascending: false });
+      
+      const userInsignias = (insigniaResult.data || []) as UserInsigniaResult[];
 
       // Group by member
       const memberInsigniasMap = (userInsignias || []).reduce((acc, ui) => {
