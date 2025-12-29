@@ -108,7 +108,7 @@ export function ExperienceCard({
   variant = 'default',
   className
 }: ExperienceCardProps) {
-  const typeConfig = TYPE_CONFIG[type];
+  const typeConfig = TYPE_CONFIG[type] || TYPE_CONFIG.game;
 
   // Calcular reward preview
   const totalXp = xpReward || rewardRules?.reduce((sum, r) => 
