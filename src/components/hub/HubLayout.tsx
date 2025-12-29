@@ -156,33 +156,21 @@ export function HubLayout() {
 
             {/* Right Actions */}
             <div className="flex items-center gap-1">
-              {/* Quick Actions */}
-              <div className="hidden sm:flex items-center gap-1 mr-2">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Link
-                      to="/app/trainings"
-                      className="flex items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-                    >
-                      <BookOpen className="w-[18px] h-[18px]" />
-                    </Link>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">Treinamentos</TooltipContent>
-                </Tooltip>
-                
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Link
-                      to="/app/marketplace"
-                      className="flex items-center gap-1.5 h-9 px-3 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-                    >
-                      <Coins className="w-[18px] h-[18px] text-amber-500" />
-                      <span className="text-sm font-semibold tabular-nums">{coins}</span>
-                    </Link>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">Loja de Recompensas</TooltipContent>
-                </Tooltip>
-              </div>
+            {/* Quick Actions */}
+            <div className="hidden sm:flex items-center gap-1 mr-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    to="/app/marketplace"
+                    className="flex items-center gap-1.5 h-9 px-3 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                  >
+                    <Coins className="w-[18px] h-[18px] text-amber-500" />
+                    <span className="text-sm font-semibold tabular-nums">{coins}</span>
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">Loja de Recompensas</TooltipContent>
+              </Tooltip>
+            </div>
 
               <div className="h-6 w-px bg-border hidden sm:block" />
 
@@ -235,19 +223,11 @@ export function HubLayout() {
             >
               <div className="p-4 space-y-3">
                 {/* Quick Access */}
-                <div className="grid grid-cols-2 gap-2">
-                  <Link
-                    to="/app/trainings"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center justify-center gap-2 p-3 rounded-lg bg-muted/50 text-foreground hover:bg-muted transition-colors"
-                  >
-                    <BookOpen className="w-5 h-5 text-primary" />
-                    <span className="font-medium text-sm">Treinamentos</span>
-                  </Link>
+                <div className="flex justify-center">
                   <Link
                     to="/app/marketplace"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center justify-center gap-2 p-3 rounded-lg bg-muted/50 text-foreground hover:bg-muted transition-colors"
+                    className="flex items-center justify-center gap-2 p-3 rounded-lg bg-muted/50 text-foreground hover:bg-muted transition-colors w-full max-w-xs"
                   >
                     <Coins className="w-5 h-5 text-amber-500" />
                     <span className="font-medium text-sm">{coins} moedas</span>
