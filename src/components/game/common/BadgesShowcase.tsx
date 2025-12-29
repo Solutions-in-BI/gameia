@@ -1,19 +1,24 @@
+/**
+ * BadgesShowcase - Exibe insígnias do usuário
+ * Agora usa useInsignias (sistema unificado)
+ */
 import { motion } from "framer-motion";
 import { Lock, Award, Star, Sparkles } from "lucide-react";
-import { useBadges } from "@/hooks/useBadges";
+import { useInsignias } from "@/hooks/useInsignias";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 
+// Categorias de insígnias
+const INSIGNIA_CATEGORIES = [
+  { key: "performance", name: "Performance", icon: "🏆" },
+  { key: "social", name: "Social", icon: "👥" },
+  { key: "learning", name: "Aprendizado", icon: "📚" },
+  { key: "streak", name: "Consistência", icon: "🔥" },
+];
+
 export function BadgesShowcase() {
-  const { 
-    badges, 
-    categories, 
-    userBadges, 
-    isLoading, 
-    isBadgeUnlocked,
-    getRarityColor 
-  } = useBadges();
+  const { insignias, userInsignias, isLoading, getInsigniasByCategory } = useInsignias();
 
   if (isLoading) {
     return (
@@ -28,8 +33,8 @@ export function BadgesShowcase() {
     );
   }
 
-  const unlockedCount = userBadges.length;
-  const totalCount = badges.length;
+  const unlockedCount = userInsignias.length;
+  const totalCount = insignias.length;
 
   return (
     <div className="space-y-4">
@@ -55,13 +60,13 @@ export function BadgesShowcase() {
       </div>
 
       {/* Category Tabs */}
-      <Tabs defaultValue={categories[0]?.category_key || 'all'} className="w-full">
+      <Tabs defaultValue={INSIGNIA_CATEGORIES[0]?.key || 'all'} className="w-full">
         <ScrollArea className="w-full">
           <TabsList className="inline-flex h-auto p-1 bg-muted/50 gap-1 w-max">
-            {categories.map((category) => (
+            {INSIGNIA_CATEGORIES.map((category) => (
               <TabsTrigger
-                key={category.category_key}
-                value={category.category_key}
+                key={category.key}
+                value={category.key}
                 className="px-3 py-1.5 text-xs data-[state=active]:bg-background"
               >
                 <span className="mr-1">{category.icon}</span>
@@ -71,49 +76,41 @@ export function BadgesShowcase() {
           </TabsList>
         </ScrollArea>
 
-        {categories.map((category) => {
-          const categoryBadges = badges.filter(b => b.category_id === category.id);
+        {INSIGNIA_CATEGORIES.map((category) => {
+          const categoryInsignias = getInsigniasByCategory(category.key);
           
           return (
-            <TabsContent key={category.category_key} value={category.category_key} className="mt-4">
+            <TabsContent key={category.key} value={category.key} className="mt-4">
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                {categoryBadges.map((badge) => {
-                  const isUnlocked = isBadgeUnlocked(badge.id);
-                  const userBadge = userBadges.find(ub => ub.badge_id === badge.id);
+                {categoryInsignias.map((insignia) => {
+                  const isUnlocked = insignia.isUnlocked;
                   
                   return (
                     <motion.div
-                      key={badge.id}
+                      key={insignia.id}
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       whileHover={{ scale: isUnlocked ? 1.05 : 1 }}
                       className={`
                         relative p-3 rounded-xl border-2 transition-all cursor-pointer
                         ${isUnlocked 
-                          ? getRarityColor(badge.rarity)
+                          ? getStarRarityColor(insignia.star_level)
                           : 'bg-muted/30 border-muted text-muted-foreground/50'
                         }
                       `}
                     >
-                      {/* Secret badge indicator */}
-                      {badge.is_secret && !isUnlocked && (
-                        <div className="absolute top-1 right-1">
-                          <Sparkles className="w-3 h-3 text-purple-400" />
-                        </div>
-                      )}
-                      
                       {/* Badge Icon */}
                       <div className="text-center">
                         <div className={`text-3xl mb-1 ${!isUnlocked && 'grayscale opacity-50'}`}>
-                          {badge.is_secret && !isUnlocked ? '❓' : badge.icon}
+                          {insignia.icon}
                         </div>
                         <div className={`text-xs font-medium truncate ${!isUnlocked && 'text-muted-foreground/50'}`}>
-                          {badge.is_secret && !isUnlocked ? '???' : badge.name}
+                          {insignia.name}
                         </div>
                         
-                        {/* Rarity indicator */}
+                        {/* Star indicator */}
                         <div className="flex justify-center mt-1 gap-0.5">
-                          {[...Array(getRarityStars(badge.rarity))].map((_, i) => (
+                          {[...Array(insignia.star_level)].map((_, i) => (
                             <Star 
                               key={i} 
                               className={`w-2 h-2 fill-current ${isUnlocked ? 'text-amber-400' : 'text-muted-foreground/30'}`} 
@@ -128,25 +125,12 @@ export function BadgesShowcase() {
                           <Lock className="w-4 h-4 text-muted-foreground/50" />
                         </div>
                       )}
-
-                      {/* Hover tooltip */}
-                      {isUnlocked && userBadge && (
-                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                          <div className="bg-popover text-popover-foreground text-xs p-2 rounded-lg shadow-lg whitespace-nowrap">
-                            <p className="font-medium">{badge.name}</p>
-                            <p className="text-muted-foreground">{badge.description}</p>
-                            <p className="text-cyan-400 mt-1">
-                              Desbloqueado em {new Date(userBadge.unlocked_at).toLocaleDateString('pt-BR')}
-                            </p>
-                          </div>
-                        </div>
-                      )}
                     </motion.div>
                   );
                 })}
               </div>
               
-              {categoryBadges.length === 0 && (
+              {categoryInsignias.length === 0 && (
                 <div className="text-center py-8 text-muted-foreground">
                   <Award className="w-12 h-12 mx-auto mb-2 opacity-50" />
                   <p>Nenhuma insígnia nesta categoria ainda</p>
@@ -160,13 +144,13 @@ export function BadgesShowcase() {
   );
 }
 
-function getRarityStars(rarity: string): number {
-  switch (rarity) {
-    case 'common': return 1;
-    case 'uncommon': return 2;
-    case 'rare': return 3;
-    case 'epic': return 4;
-    case 'legendary': return 5;
-    default: return 1;
+function getStarRarityColor(starLevel: number): string {
+  switch (starLevel) {
+    case 1: return 'text-gray-400 border-gray-400/30 bg-gray-400/10';
+    case 2: return 'text-green-400 border-green-400/30 bg-green-400/10';
+    case 3: return 'text-blue-400 border-blue-400/30 bg-blue-400/10';
+    case 4: return 'text-purple-400 border-purple-400/30 bg-purple-400/10';
+    case 5: return 'text-amber-400 border-amber-400/30 bg-amber-400/10';
+    default: return 'text-gray-400 border-gray-400/30 bg-gray-400/10';
   }
 }
