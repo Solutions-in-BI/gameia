@@ -29,6 +29,7 @@ import {
   MessageCircle,
   ClipboardList,
   Mic,
+  CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -49,6 +50,7 @@ export type AdminSection =
   | "reports" 
   | "metrics"
   | "organization" 
+  | "plan-billing"
   | "badges" 
   | "levels" 
   | "marketplace"
@@ -138,6 +140,7 @@ const ADMIN_NAV: NavEntry[] = [
     icon: Settings,
     children: [
       { id: "organization", label: "Empresa", icon: Building2 },
+      { id: "plan-billing", label: "Plano e Billing", icon: CreditCard },
       { id: "badges", label: "Badges", icon: Award },
       { id: "levels", label: "Níveis", icon: TrendingUp },
       { id: "skills", label: "Skills", icon: Target },
@@ -272,6 +275,7 @@ export function getSectionLabel(section: AdminSection): string {
     reports: "Relatórios",
     metrics: "Métricas",
     organization: "Empresa",
+    "plan-billing": "Plano e Billing",
     badges: "Badges",
     levels: "Níveis",
     marketplace: "Loja Virtual",
@@ -303,6 +307,7 @@ export function getSectionParent(section: AdminSection): { id: string; label: st
     reports: { id: "analytics", label: "Análise" },
     metrics: { id: "analytics", label: "Análise" },
     organization: { id: "settings", label: "Configurações" },
+    "plan-billing": { id: "settings", label: "Configurações" },
     badges: { id: "settings", label: "Configurações" },
     levels: { id: "settings", label: "Configurações" },
     marketplace: { id: "gamification", label: "Gamificação" },
