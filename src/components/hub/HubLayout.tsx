@@ -18,6 +18,9 @@ import {
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useStreak } from "@/hooks/useStreak";
+import { useGamificationListener } from "@/hooks/useGamificationListener";
+import { useInsignias } from "@/hooks/useInsignias";
+import { useDailyMissions } from "@/hooks/useDailyMissions";
 import { cn } from "@/lib/utils";
 import { UserSettingsDropdown } from "@/components/game/common/UserSettingsDropdown";
 import { StreakModal } from "@/components/game/common/StreakModal";
@@ -44,9 +47,23 @@ export function HubLayout() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, profile, isAuthenticated, signOut } = useAuth();
   const { streak, canClaimToday, isAtRisk, claimDailyReward } = useStreak();
+  const { checkAndUnlockInsignias, refetch: refetchInsignias } = useInsignias();
+  const { refetch: refetchMissions } = useDailyMissions();
   
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [streakModalOpen, setStreakModalOpen] = useState(false);
+
+  // Listen for gamification events and update missions/insignias
+  useGamificationListener({
+    onEvent: async () => {
+      console.log("[HubLayout] Gamification event detected, refreshing data");
+      await Promise.all([
+        refetchMissions(),
+        refetchInsignias(),
+        checkAndUnlockInsignias()
+      ]);
+    }
+  });
 
   // Get active tab from URL or default to overview
   const activeTab = (searchParams.get("tab") as HubTab) || "overview";

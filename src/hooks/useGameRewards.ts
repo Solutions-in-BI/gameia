@@ -7,6 +7,7 @@ import { useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 import { useOrganization } from "./useOrganization";
+import { useGamificationEvents } from "./useGamificationEvents";
 import { toast } from "sonner";
 
 interface GameConfig {
@@ -40,6 +41,7 @@ interface GameResult {
 export function useGameRewards() {
   const { user } = useAuth();
   const { currentOrg } = useOrganization();
+  const { trackGameCompleted, trackQuizCompleted } = useGamificationEvents();
 
   /**
    * Calculate rewards based on game config and performance
@@ -377,6 +379,13 @@ export function useGameRewards() {
       // Update streak
       await updateStreak();
 
+      // Track gamification event for missions/insignias
+      if (gameType === 'quiz') {
+        await trackQuizCompleted(rewards.xp, rewards.coins, 0, 0);
+      } else {
+        await trackGameCompleted(gameType, rewards.xp, rewards.coins);
+      }
+
       // Show reward toast
       toast.success(`+${rewards.xp} XP | +${rewards.coins} 🪙`, {
         description: rewards.bonuses.length > 0 
@@ -394,7 +403,7 @@ export function useGameRewards() {
       toast.error('Erro ao aplicar recompensas');
       return false;
     }
-  }, [user, currentOrg?.id, logActivity, updateStreak]);
+  }, [user, currentOrg?.id, logActivity, updateStreak, trackGameCompleted, trackQuizCompleted]);
 
   /**
    * Complete game flow: calculate + apply rewards

@@ -3,7 +3,7 @@
  * Refatorado para evitar dependências circulares com useLevel/useMarketplace
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 import { toast } from "sonner";
@@ -222,6 +222,23 @@ export function useStreak(): UseStreak {
         lastClaimedAt: today.toISOString(),
       }));
       
+      // Track gamification event for streak missions
+      await supabase.from("gamification_events").insert({
+        user_id: user.id,
+        event_type: "streak_claimed",
+        xp_earned: reward.xp,
+        coins_earned: reward.coins,
+        metadata: { streakDay: streak.currentStreak }
+      });
+
+      // Update streak mission progress
+      await supabase.rpc("update_mission_progress_for_event", {
+        p_user_id: user.id,
+        p_event_type: "streak_claimed",
+        p_game_type: null,
+        p_increment: 1
+      });
+      
       toast.success("🎁 Recompensa Resgatada!", {
         description: `+${reward.coins} moedas e +${reward.xp} XP`,
       });
@@ -231,7 +248,7 @@ export function useStreak(): UseStreak {
       console.error("Erro ao resgatar recompensa:", err);
       return false;
     }
-  }, [user, canClaimToday, getTodayReward]);
+  }, [user, canClaimToday, getTodayReward, streak.currentStreak]);
 
   return {
     streak,
