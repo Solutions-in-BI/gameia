@@ -91,8 +91,40 @@ export function EvolutionDashboard({ onTabChange }: EvolutionDashboardProps) {
         </div>
       </div>
 
+      {/* Quick Actions - Acesso rápido às seções */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <QuickActionCard
+          icon={Brain}
+          title="Desafios Mentais"
+          description="Testes cognitivos"
+          gradient="from-purple-500 to-violet-600"
+          onClick={() => onTabChange("cognitive")}
+        />
+        <QuickActionCard
+          icon={Users}
+          title="Feedback"
+          description="Avaliações 360°"
+          gradient="from-blue-500 to-cyan-600"
+          onClick={() => onTabChange("assessments")}
+        />
+        <QuickActionCard
+          icon={Target}
+          title="Trilha PDI"
+          description="Metas de evolução"
+          gradient="from-green-500 to-emerald-600"
+          onClick={() => onTabChange("pdi")}
+        />
+        <QuickActionCard
+          icon={Calendar}
+          title="1:1 Meetings"
+          description="Check-ins com gestor"
+          gradient="from-orange-500 to-amber-600"
+          onClick={() => onTabChange("one-on-one")}
+        />
+      </div>
+
       {/* KPIs Rápidos */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <KPICard
           title="Ações Pendentes"
           value={pendingActions}
@@ -142,6 +174,7 @@ export function EvolutionDashboard({ onTabChange }: EvolutionDashboardProps) {
                 title={test.name}
                 subtitle={`+${test.xp_reward} XP`}
                 type="test"
+                onClick={() => onTabChange("cognitive")}
               />
             ))}
 
@@ -154,6 +187,7 @@ export function EvolutionDashboard({ onTabChange }: EvolutionDashboardProps) {
                 title={`Feedback: ${feedback.cycle_name}`}
                 subtitle={feedback.relationship}
                 type="feedback"
+                onClick={() => onTabChange("assessments")}
               />
             ))}
 
@@ -167,6 +201,7 @@ export function EvolutionDashboard({ onTabChange }: EvolutionDashboardProps) {
                 subtitle={`${goal.progress}% concluído`}
                 type="pdi"
                 progress={goal.progress}
+                onClick={() => onTabChange("pdi")}
               />
             ))}
 
@@ -179,6 +214,7 @@ export function EvolutionDashboard({ onTabChange }: EvolutionDashboardProps) {
                 title="Reunião 1:1"
                 subtitle={format(new Date(meeting.scheduled_at), "dd/MM 'às' HH:mm", { locale: ptBR })}
                 type="1on1"
+                onClick={() => onTabChange("one-on-one")}
               />
             ))}
 
@@ -343,6 +379,7 @@ function NextStepItem({
   subtitle,
   type,
   progress,
+  onClick,
 }: {
   icon: typeof Brain;
   iconColor: string;
@@ -350,10 +387,12 @@ function NextStepItem({
   subtitle: string;
   type: string;
   progress?: number;
+  onClick?: () => void;
 }) {
   return (
     <motion.div
       whileHover={{ x: 4 }}
+      onClick={onClick}
       className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors cursor-pointer"
     >
       <div className={`p-2 rounded-lg bg-muted ${iconColor}`}>
@@ -367,6 +406,45 @@ function NextStepItem({
         )}
       </div>
       <ArrowRight className="w-4 h-4 text-muted-foreground" />
+    </motion.div>
+  );
+}
+
+// Quick action cards for navigation
+function QuickActionCard({
+  icon: Icon,
+  title,
+  description,
+  gradient,
+  onClick,
+}: {
+  icon: typeof Brain;
+  title: string;
+  description: string;
+  gradient: string;
+  onClick: () => void;
+}) {
+  return (
+    <motion.div
+      whileHover={{ scale: 1.02, y: -2 }}
+      whileTap={{ scale: 0.98 }}
+      onClick={onClick}
+      className="cursor-pointer"
+    >
+      <Card className={`overflow-hidden border-0 bg-gradient-to-br ${gradient} text-white`}>
+        <CardContent className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-white/20">
+              <Icon className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="font-semibold">{title}</p>
+              <p className="text-xs opacity-80">{description}</p>
+            </div>
+            <ArrowRight className="w-4 h-4 ml-auto opacity-70" />
+          </div>
+        </CardContent>
+      </Card>
     </motion.div>
   );
 }
