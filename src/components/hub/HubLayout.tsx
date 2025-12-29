@@ -1,9 +1,10 @@
 /**
  * HubLayout - Premium SaaS Layout
  * Clean, enterprise-grade navigation with clear hierarchy
+ * OPTIMIZED: Memoized callbacks, stable refs, optimized animations
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   LayoutDashboard, 
@@ -26,6 +27,7 @@ import { useGamificationListener } from "@/hooks/useGamificationListener";
 import { useInsignias } from "@/hooks/useInsignias";
 import { useDailyMissions } from "@/hooks/useDailyMissions";
 import { useMarketplace } from "@/hooks/useMarketplace";
+import { useRealtimeHub } from "@/hooks/useRealtimeHub";
 import { cn } from "@/lib/utils";
 import { UserSettingsDropdown } from "@/components/game/common/UserSettingsDropdown";
 import { StreakModal } from "@/components/game/common/StreakModal";
@@ -48,6 +50,13 @@ const HUB_TABS = [
 
 const STREAK_MODAL_KEY = "gameia_streak_modal_last_shown";
 
+// Optimized animation variants - reduced duration
+const tabContentVariants = {
+  initial: { opacity: 0, y: 4 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0 },
+};
+
 export function HubLayout() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -62,15 +71,19 @@ export function HubLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [streakModalOpen, setStreakModalOpen] = useState(false);
 
-  useGamificationListener({
-    onEvent: async () => {
-      await Promise.all([
-        refetchMissions(),
-        refetchInsignias(),
-        checkAndUnlockInsignias()
-      ]);
-    }
-  });
+  // Centralized realtime subscriptions
+  useRealtimeHub();
+
+  // Memoized callback for gamification events
+  const handleGamificationEvent = useCallback(async () => {
+    await Promise.all([
+      refetchMissions(),
+      refetchInsignias(),
+      checkAndUnlockInsignias()
+    ]);
+  }, [refetchMissions, refetchInsignias, checkAndUnlockInsignias]);
+
+  useGamificationListener({ onEvent: handleGamificationEvent });
 
   const activeTab = (searchParams.get("tab") as HubTab) || "overview";
   const displayName = profile?.nickname || user?.email?.split("@")[0] || "Conta";
@@ -78,10 +91,10 @@ export function HubLayout() {
   // Get selected title name - selectedTitle is already a GameTitle object
   const selectedTitleName = selectedTitle?.name || null;
 
-  const handleTabChange = (tab: HubTab) => {
+  const handleTabChange = useCallback((tab: HubTab) => {
     setSearchParams({ tab });
     setMobileMenuOpen(false);
-  };
+  }, [setSearchParams]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -93,11 +106,12 @@ export function HubLayout() {
     }
   }, [isAuthenticated, canClaimToday, streak.currentStreak]);
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     await signOut();
-  };
+  }, [signOut]);
 
-  const renderTabContent = () => {
+  // Memoized tab content to avoid re-renders
+  const tabContent = useMemo(() => {
     switch (activeTab) {
       case "overview":
         return <HubOverview onNavigate={handleTabChange} />;
@@ -110,7 +124,7 @@ export function HubLayout() {
       default:
         return <HubOverview onNavigate={handleTabChange} />;
     }
-  };
+  }, [activeTab, handleTabChange]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -262,17 +276,15 @@ export function HubLayout() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 pb-28 md:pb-8">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.15, ease: "easeOut" }}
-          >
-            {renderTabContent()}
-          </motion.div>
-        </AnimatePresence>
+        <motion.div
+          key={activeTab}
+          variants={tabContentVariants}
+          initial="initial"
+          animate="animate"
+          transition={{ duration: 0.12, ease: "easeOut" }}
+        >
+          {tabContent}
+        </motion.div>
       </main>
 
       {/* Bottom Navigation (Mobile) */}
