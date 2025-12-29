@@ -1,6 +1,6 @@
 /**
  * HubOverview - Tab "Visão Geral" do hub
- * Quick actions, summary cards, missions, goals, timeline
+ * Continuar experiência, recomendações com regras de recompensa, ações rápidas
  */
 
 import { useState } from "react";
@@ -22,10 +22,12 @@ import {
   ListChecks,
   ShoppingBag,
   GraduationCap,
+  ChevronRight,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { HubCard, HubCardHeader, HubStat, HubEmptyState, HubButton, HubHeader } from "./common";
 import { DailyMissionsCard, MonthlyGoalsCard } from "./overview";
+import { RewardBadge } from "@/components/rewards/RewardBadge";
 import { useStreak } from "@/hooks/useStreak";
 import { useLevel } from "@/hooks/useLevel";
 import { useSkillProgress } from "@/hooks/useSkillProgress";
@@ -33,6 +35,8 @@ import { useSkillImpact, SourceType } from "@/hooks/useSkillImpact";
 import { useTrails } from "@/hooks/useTrails";
 import { useDailyMissions } from "@/hooks/useDailyMissions";
 import { useInsignias } from "@/hooks/useInsignias";
+import { useTrainings } from "@/hooks/useTrainings";
+import { useCognitiveTests } from "@/hooks/useCognitiveTests";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { formatDistanceToNow } from "date-fns";
@@ -62,6 +66,8 @@ export function HubOverview({ onNavigate }: HubOverviewProps) {
   const { getOverallStats } = useTrails();
   const { completedCount, totalCount } = useDailyMissions();
   const { insignias } = useInsignias();
+  const { trainings, getInProgressTrainings } = useTrainings();
+  const { tests, mySessions } = useCognitiveTests();
 
   const trailStats = getOverallStats();
   
@@ -70,6 +76,15 @@ export function HubOverview({ onNavigate }: HubOverviewProps) {
   
   // Insignias stats
   const unlockedInsignias = insignias.filter(i => i.isUnlocked).length;
+
+  // Get in-progress training
+  const inProgressTrainings = getInProgressTrainings();
+  const continueTraining = inProgressTrainings[0];
+
+  // Get pending cognitive test
+  const pendingTest = tests.find(t => 
+    !mySessions.some(s => s.test_id === t.id && s.status === "completed")
+  );
 
   // Pending actions count
   const pendingActions = suggestions ? (
@@ -125,17 +140,17 @@ export function HubOverview({ onNavigate }: HubOverviewProps) {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <QuickActionButton
             icon={Play}
-            label="Jogar"
-            description="Arena de jogos"
+            label="Arena"
+            description="Jogos e experiências"
             gradient="from-primary to-primary-glow"
             onClick={() => onNavigate("arena")}
           />
           <QuickActionButton
             icon={GraduationCap}
             label="Treinamentos"
-            description="Cursos e trilhas"
+            description="Na Arena"
             gradient="from-blue-500 to-blue-600"
-            onClick={() => navigate("/app/trainings")}
+            onClick={() => onNavigate("arena")}
           />
           <QuickActionButton
             icon={ShoppingBag}
@@ -153,6 +168,75 @@ export function HubOverview({ onNavigate }: HubOverviewProps) {
           />
         </div>
       </HubCard>
+
+      {/* Continuar Experiência + Recomendado */}
+      {(continueTraining || pendingTest) && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Continuar Treinamento */}
+          {continueTraining && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <HubCard 
+                className="cursor-pointer group border-blue-500/30 bg-gradient-to-br from-blue-500/5 to-transparent"
+                onClick={() => navigate(`/app/trainings/${continueTraining.id}`)}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-xl bg-blue-500/10 flex items-center justify-center shrink-0">
+                    <GraduationCap className="w-7 h-7 text-blue-500" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <Badge variant="outline" className="text-xs text-blue-500 mb-1">
+                      Continuar
+                    </Badge>
+                    <h3 className="font-semibold text-foreground truncate">{continueTraining.name}</h3>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Progress value={30} className="h-1.5 flex-1" />
+                      <span className="text-xs text-muted-foreground">30%</span>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                </div>
+              </HubCard>
+            </motion.div>
+          )}
+
+          {/* Teste Recomendado */}
+          {pendingTest && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <HubCard 
+                className="cursor-pointer group border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 to-transparent"
+                onClick={() => onNavigate("arena")}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0">
+                    <Brain className="w-7 h-7 text-emerald-500" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <Badge variant="outline" className="text-xs text-emerald-500 mb-1">
+                      Recomendado
+                    </Badge>
+                    <h3 className="font-semibold text-foreground truncate">{pendingTest.name}</h3>
+                    <div className="flex items-center gap-2 mt-1">
+                      <RewardBadge 
+                        xp={pendingTest.xp_reward || 100} 
+                        condition="70%+ de acerto"
+                        size="sm"
+                      />
+                    </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                </div>
+              </HubCard>
+            </motion.div>
+          )}
+        </div>
+      )}
 
       {/* Missions and Goals Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

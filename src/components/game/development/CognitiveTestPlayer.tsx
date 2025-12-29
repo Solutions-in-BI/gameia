@@ -1,6 +1,6 @@
 /**
  * Player de Teste Cognitivo
- * Interface gamificada para realizar os testes
+ * Interface gamificada com recompensas condicionais
  */
 
 import { useState, useEffect, useCallback } from "react";
@@ -15,7 +15,9 @@ import {
   Trophy,
   Zap,
   Brain,
-  AlertTriangle
+  AlertTriangle,
+  Target,
+  RefreshCw
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,6 +34,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useCognitiveTests, CognitiveTestQuestion } from "@/hooks/useCognitiveTests";
+import { useRewardEngine, RewardConfig } from "@/hooks/useRewardEngine";
+import { RewardResultCard } from "@/components/rewards/RewardBadge";
 import { cn } from "@/lib/utils";
 import confetti from "canvas-confetti";
 
@@ -50,6 +54,7 @@ interface Answer {
 
 export function CognitiveTestPlayer({ testId, onComplete, onCancel }: CognitiveTestPlayerProps) {
   const { tests, getQuestionsForTest, startSession, completeSession } = useCognitiveTests();
+  const { processReward } = useRewardEngine();
   
   const [questions, setQuestions] = useState<CognitiveTestQuestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -165,6 +170,10 @@ export function CognitiveTestPlayer({ testId, onComplete, onCancel }: CognitiveT
     const score = Math.round((correctCount / questions.length) * 100);
     setFinalScore(score);
 
+    // Target score from test config (default 70%)
+    const targetScore = 70;
+    const targetMet = score >= targetScore;
+
     try {
       await completeSession.mutateAsync({
         sessionId,
@@ -172,7 +181,27 @@ export function CognitiveTestPlayer({ testId, onComplete, onCancel }: CognitiveT
         score,
       });
 
-      if (score >= 80) {
+      // Apply rewards using reward engine
+      const rewardConfig: RewardConfig = {
+        sourceType: 'cognitive_test',
+        sourceId: testId,
+        title: test?.name,
+        rules: [{
+          type: 'conditional',
+          metric: 'accuracy',
+          target: targetScore / 100,
+          baseReward: { xp: 0, coins: 0 },
+          bonusReward: { xp: test?.xp_reward || 100, coins: 0 },
+          failReward: { xp: 0, coins: 0 }
+        }]
+      };
+
+      const rewardResult = await processReward(rewardConfig, {
+        accuracy: score / 100,
+        score
+      }, false); // Don't show toast, we have custom UI
+
+      if (targetMet) {
         confetti({
           particleCount: 100,
           spread: 70,
@@ -184,7 +213,7 @@ export function CognitiveTestPlayer({ testId, onComplete, onCancel }: CognitiveT
     }
 
     setShowResults(true);
-  }, [sessionId, answers, questions.length, completeSession]);
+  }, [sessionId, answers, questions.length, completeSession, testId, test, processReward]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -207,57 +236,71 @@ export function CognitiveTestPlayer({ testId, onComplete, onCancel }: CognitiveT
     const correctCount = answers.filter(a => a.is_correct).length;
     const totalTime = answers.reduce((acc, a) => acc + a.time_seconds, 0);
     const avgTime = Math.round(totalTime / answers.length);
+    const targetScore = 70;
+    const targetMet = finalScore >= targetScore;
+    const xpEarned = targetMet ? (test?.xp_reward || 100) : 0;
 
     return (
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="min-h-[60vh] flex items-center justify-center"
+        className="min-h-[60vh] flex items-center justify-center p-4"
       >
-        <Card className="w-full max-w-lg">
-          <CardContent className="p-8 text-center space-y-6">
-            <div className={`w-24 h-24 mx-auto rounded-full flex items-center justify-center ${
-              finalScore >= 80 ? 'bg-emerald-500/20' : finalScore >= 60 ? 'bg-amber-500/20' : 'bg-red-500/20'
-            }`}>
-              <Trophy className={`w-12 h-12 ${
-                finalScore >= 80 ? 'text-emerald-500' : finalScore >= 60 ? 'text-amber-500' : 'text-red-500'
-              }`} />
-            </div>
+        <div className="w-full max-w-lg space-y-6">
+          {/* Resultado com Recompensa */}
+          <RewardResultCard
+            xpEarned={xpEarned}
+            coinsEarned={0}
+            targetMet={targetMet}
+            performanceScore={finalScore}
+            targetScore={targetScore}
+            bonusApplied={targetMet}
+          />
 
-            <div>
-              <h2 className="text-2xl font-bold text-foreground">Teste Concluído!</h2>
-              <p className="text-muted-foreground mt-1">{test?.name}</p>
-            </div>
-
-            <div className="text-5xl font-bold text-foreground">
-              {finalScore}%
-            </div>
-
-            <div className="grid grid-cols-3 gap-4 py-4 border-y border-border">
-              <div>
-                <p className="text-2xl font-bold text-foreground">{correctCount}</p>
-                <p className="text-xs text-muted-foreground">Acertos</p>
+          {/* Stats detalhados */}
+          <Card>
+            <CardContent className="p-6">
+              <h3 className="font-semibold text-foreground mb-4">{test?.name}</h3>
+              
+              <div className="grid grid-cols-3 gap-4 py-4 border-y border-border">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-foreground">{correctCount}</p>
+                  <p className="text-xs text-muted-foreground">Acertos</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-foreground">{questions.length - correctCount}</p>
+                  <p className="text-xs text-muted-foreground">Erros</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-foreground">{avgTime}s</p>
+                  <p className="text-xs text-muted-foreground">Média/Questão</p>
+                </div>
               </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">{questions.length - correctCount}</p>
-                <p className="text-xs text-muted-foreground">Erros</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">{avgTime}s</p>
-                <p className="text-xs text-muted-foreground">Média/Questão</p>
-              </div>
-            </div>
 
-            <div className="flex items-center justify-center gap-2 text-amber-500">
-              <Zap className="w-5 h-5" />
-              <span className="text-lg font-semibold">+{test?.xp_reward || 0} XP</span>
-            </div>
+              {/* CTA baseado no resultado */}
+              <div className="flex gap-3 mt-6">
+                {!targetMet && (
+                  <Button 
+                    variant="outline" 
+                    onClick={() => window.location.reload()} 
+                    className="flex-1 gap-2"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    Tentar Novamente
+                  </Button>
+                )}
+                <Button onClick={onComplete} className="flex-1" size="lg">
+                  {targetMet ? "Continuar" : "Voltar"}
+                </Button>
+              </div>
 
-            <Button onClick={onComplete} className="w-full" size="lg">
-              Voltar aos Testes
-            </Button>
-          </CardContent>
-        </Card>
+              {/* Info sobre reaplicabilidade */}
+              <p className="text-xs text-center text-muted-foreground mt-4">
+                💡 Você pode refazer este teste a qualquer momento para melhorar seu score
+              </p>
+            </CardContent>
+          </Card>
+        </div>
       </motion.div>
     );
   }
