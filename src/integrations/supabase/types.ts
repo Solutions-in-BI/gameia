@@ -68,6 +68,30 @@ export type Database = {
           },
         ]
       }
+      area_permissions: {
+        Row: {
+          area: string
+          can_access: boolean | null
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Insert: {
+          area: string
+          can_access?: boolean | null
+          created_at?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Update: {
+          area?: string
+          can_access?: boolean | null
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Relationships: []
+      }
       assessment_360_results: {
         Row: {
           ai_insights: string | null
@@ -5810,6 +5834,10 @@ export type Database = {
         Args: { p_commitment_id: string }
         Returns: number
       }
+      can_access_area: {
+        Args: { _area: string; _user_id: string }
+        Returns: boolean
+      }
       can_view_user_data: {
         Args: { _org_id: string; _target_user_id: string }
         Returns: boolean
@@ -6083,7 +6111,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "super_admin" | "admin" | "manager" | "user"
+      app_role: "super_admin" | "admin" | "manager" | "user" | "owner"
       commitment_reward_type: "coins" | "xp" | "both" | "insignia"
       commitment_scope: "team" | "global" | "personal"
       commitment_source: "internal" | "external"
@@ -6225,7 +6253,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["super_admin", "admin", "manager", "user"],
+      app_role: ["super_admin", "admin", "manager", "user", "owner"],
       commitment_reward_type: ["coins", "xp", "both", "insignia"],
       commitment_scope: ["team", "global", "personal"],
       commitment_source: ["internal", "external"],

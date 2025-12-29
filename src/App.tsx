@@ -17,7 +17,10 @@ import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Security from "./pages/Security";
 import Admin from "./pages/Admin";
+import Manage from "./pages/Manage";
+import Console from "./pages/Console";
 import { AdminGuard } from "./components/auth/AdminGuard";
+import { AreaGuard } from "./components/auth/AreaGuard";
 import NotFound from "./pages/NotFound";
 import Subscription from "./pages/Subscription";
 import Onboarding from "./pages/Onboarding";
@@ -70,13 +73,33 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/onboarding" element={<Onboarding />} />
           
-          {/* Admin */}
+          {/* Admin (legacy - redirect to console) */}
           <Route
             path="/admin"
             element={
               <AdminGuard>
                 <Admin />
               </AdminGuard>
+            }
+          />
+          
+          {/* Manage - Gestão de Pessoas */}
+          <Route
+            path="/manage"
+            element={
+              <AreaGuard area="manage">
+                <Manage />
+              </AreaGuard>
+            }
+          />
+          
+          {/* Console - Configuração da Plataforma */}
+          <Route
+            path="/console"
+            element={
+              <AreaGuard area="console">
+                <Console />
+              </AreaGuard>
             }
           />
           
