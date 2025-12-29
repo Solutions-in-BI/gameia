@@ -15,6 +15,7 @@ import { FeaturedCarousel } from "./FeaturedCarousel";
 import { CategoryFilters, CategorySection, Category, SortOption } from "./CategoryFilters";
 import { EnhancedItemCard } from "./EnhancedItemCard";
 import { InventoryGrid } from "./InventoryGrid";
+import { ItemExpirationBanner } from "./ItemExpirationBanner";
 
 interface MarketplacePageProps {
   onBack: () => void;
@@ -210,7 +211,11 @@ export function MarketplacePage({ onBack }: MarketplacePageProps) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.15 }}
+              className="space-y-4"
             >
+              {/* Expiration banner */}
+              <ItemExpirationBanner />
+              
               <InventoryGrid
                 inventory={inventory}
                 onToggleEquip={toggleEquip}

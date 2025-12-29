@@ -48,6 +48,16 @@ export interface CreateItemInput {
   is_limited_edition?: boolean;
   is_featured?: boolean;
   sort_order?: number;
+  // New fields
+  item_type?: string;
+  requires_approval?: boolean;
+  usage_instructions?: string | null;
+  max_uses?: number | null;
+  expires_after_purchase?: number | null;
+  expires_after_use?: number | null;
+  boost_type?: string | null;
+  boost_value?: number | null;
+  boost_duration_hours?: number | null;
 }
 
 export interface CreateCategoryInput {
