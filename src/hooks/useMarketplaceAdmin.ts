@@ -54,7 +54,7 @@ export interface CreateItemInput {
   usage_instructions?: string | null;
   max_uses?: number | null;
   expires_after_purchase?: number | null;
-  expires_after_use?: number | null;
+  expires_after_use?: boolean | null;
   boost_type?: string | null;
   boost_value?: number | null;
   boost_duration_hours?: number | null;
@@ -134,8 +134,27 @@ export function useMarketplaceAdmin() {
     const { data, error } = await supabase
       .from("marketplace_items")
       .insert({
-        ...input,
-        organization_id: currentOrg?.id || null,
+        name: input.name,
+        description: input.description ?? null,
+        icon: input.icon,
+        image_url: input.image_url ?? null,
+        category: input.category,
+        price: input.price,
+        rarity: input.rarity,
+        stock: input.stock ?? null,
+        is_limited_edition: input.is_limited_edition ?? false,
+        is_featured: input.is_featured ?? false,
+        sort_order: input.sort_order ?? 0,
+        item_type: input.item_type ?? "cosmetic",
+        requires_approval: input.requires_approval ?? false,
+        usage_instructions: input.usage_instructions ?? null,
+        max_uses: input.max_uses ?? null,
+        expires_after_purchase: input.expires_after_purchase ?? null,
+        expires_after_use: input.expires_after_use ?? false,
+        boost_type: input.boost_type ?? null,
+        boost_value: input.boost_value ?? null,
+        boost_duration_hours: input.boost_duration_hours ?? null,
+        organization_id: currentOrg?.id ?? null,
         created_by: user.id,
         is_active: true,
       })
@@ -154,9 +173,33 @@ export function useMarketplaceAdmin() {
 
   // Atualizar item
   const updateItem = async (id: string, updates: Partial<CreateItemInput & { is_active: boolean }>) => {
+    const updateData: Record<string, unknown> = {};
+    
+    if (updates.name !== undefined) updateData.name = updates.name;
+    if (updates.description !== undefined) updateData.description = updates.description;
+    if (updates.icon !== undefined) updateData.icon = updates.icon;
+    if (updates.image_url !== undefined) updateData.image_url = updates.image_url;
+    if (updates.category !== undefined) updateData.category = updates.category;
+    if (updates.price !== undefined) updateData.price = updates.price;
+    if (updates.rarity !== undefined) updateData.rarity = updates.rarity;
+    if (updates.stock !== undefined) updateData.stock = updates.stock;
+    if (updates.is_limited_edition !== undefined) updateData.is_limited_edition = updates.is_limited_edition;
+    if (updates.is_featured !== undefined) updateData.is_featured = updates.is_featured;
+    if (updates.is_active !== undefined) updateData.is_active = updates.is_active;
+    if (updates.sort_order !== undefined) updateData.sort_order = updates.sort_order;
+    if (updates.item_type !== undefined) updateData.item_type = updates.item_type;
+    if (updates.requires_approval !== undefined) updateData.requires_approval = updates.requires_approval;
+    if (updates.usage_instructions !== undefined) updateData.usage_instructions = updates.usage_instructions;
+    if (updates.max_uses !== undefined) updateData.max_uses = updates.max_uses;
+    if (updates.expires_after_purchase !== undefined) updateData.expires_after_purchase = updates.expires_after_purchase;
+    if (updates.expires_after_use !== undefined) updateData.expires_after_use = updates.expires_after_use;
+    if (updates.boost_type !== undefined) updateData.boost_type = updates.boost_type;
+    if (updates.boost_value !== undefined) updateData.boost_value = updates.boost_value;
+    if (updates.boost_duration_hours !== undefined) updateData.boost_duration_hours = updates.boost_duration_hours;
+
     const { error } = await supabase
       .from("marketplace_items")
-      .update(updates)
+      .update(updateData)
       .eq("id", id);
 
     if (error) {
