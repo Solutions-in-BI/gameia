@@ -25,6 +25,9 @@ import { HubCard, HubCardHeader, HubEmptyState, HubButton, HubHeader } from "../
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useSkillProgress } from "@/hooks/useSkillProgress";
+import { useCommitments, Commitment } from "@/hooks/useCommitments";
+import { useOrganization } from "@/hooks/useOrganization";
+import { CommitmentsHighlight, CommitmentDetailModal } from "@/components/commitments";
 
 // Games data
 import { SnakeGame } from "@/components/game/snake/SnakeGame";
@@ -171,6 +174,12 @@ export function ArenaTab() {
   const [filter, setFilter] = useState<GameFilter>("all");
   const [activeGame, setActiveGame] = useState<ActiveGame>(null);
   const { skills } = useSkillProgress();
+  
+  // Commitments
+  const { currentOrg } = useOrganization();
+  const { activeCommitments } = useCommitments(currentOrg?.id);
+  const [selectedCommitment, setSelectedCommitment] = useState<Commitment | null>(null);
+  const [showCommitmentDetail, setShowCommitmentDetail] = useState(false);
 
   // Find recommended game based on weak skills
   const weakSkills = skills.slice(0, 3).map(s => s.name.toLowerCase());
@@ -214,6 +223,29 @@ export function ArenaTab() {
         actionLabel="Jogar Agora"
         actionIcon={Play}
         onAction={() => recommendedGame && setActiveGame(recommendedGame.id)}
+      />
+
+      {/* Active Commitments Highlight */}
+      {activeCommitments.length > 0 && (
+        <CommitmentsHighlight
+          commitments={activeCommitments}
+          onCommitmentClick={(c) => {
+            setSelectedCommitment(c);
+            setShowCommitmentDetail(true);
+          }}
+          onViewAllClick={() => {
+            // Navigate to evolution tab with commitments subtab
+            window.location.href = "/app?tab=evolution&subtab=commitments";
+          }}
+        />
+      )}
+
+      {/* Commitment Detail Modal */}
+      <CommitmentDetailModal
+        commitment={selectedCommitment}
+        open={showCommitmentDetail}
+        onOpenChange={setShowCommitmentDetail}
+        orgId={currentOrg?.id || ""}
       />
 
       {/* Recommended Game - Highlight */}

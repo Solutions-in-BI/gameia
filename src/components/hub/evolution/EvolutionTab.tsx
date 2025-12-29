@@ -1,6 +1,6 @@
 /**
  * EvolutionTab - Tab "Evolução" do hub
- * Subtabs: Resumo, Skills, PDI, Feedback, 1:1, Perfil Cognitivo
+ * Subtabs: Resumo, Compromissos, Skills, PDI, Feedback, 1:1, Perfil Cognitivo
  */
 
 import { useState } from "react";
@@ -12,7 +12,8 @@ import {
   Calendar, 
   Brain,
   BarChart3,
-  Award
+  Award,
+  Handshake
 } from "lucide-react";
 import { HubHeader } from "../common";
 import { EvolutionDashboard } from "@/components/evolution/EvolutionDashboard";
@@ -22,11 +23,13 @@ import { Assessment360Section } from "@/components/game/development/Assessment36
 import { OneOnOneSection } from "@/components/game/development/OneOnOneSection";
 import { MyCognitiveProfile } from "@/components/game/development/MyCognitiveProfile";
 import { InsigniasSubtab } from "./InsigniasSubtab";
+import { CommitmentsSubtab } from "./CommitmentsSubtab";
 
-type EvolutionSubtab = "summary" | "insignias" | "skills" | "pdi" | "feedback" | "1on1" | "profile";
+type EvolutionSubtab = "summary" | "commitments" | "insignias" | "skills" | "pdi" | "feedback" | "1on1" | "profile";
 
 const SUBTABS = [
   { id: "summary" as const, label: "Resumo", icon: BarChart3 },
+  { id: "commitments" as const, label: "Compromissos", icon: Handshake },
   { id: "insignias" as const, label: "Insígnias", icon: Award },
   { id: "skills" as const, label: "Skills", icon: Target },
   { id: "pdi" as const, label: "PDI", icon: TrendingUp },
@@ -48,9 +51,12 @@ export function EvolutionTab() {
             pdi: "pdi",
             "one-on-one": "1on1",
             profile: "profile",
+            commitments: "commitments",
           };
           if (mapping[tab]) setSubtab(mapping[tab]);
         }} />;
+      case "commitments":
+        return <CommitmentsSubtab />;
       case "insignias":
         return <InsigniasSubtab />;
       case "skills":
