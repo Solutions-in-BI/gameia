@@ -295,16 +295,27 @@ export default function ModulePlayer() {
           source_id: training.id,
         });
 
-        // Generate certificate if enabled
+        // Generate certificate using the new function
         if (training.certificate_enabled) {
-          await supabase.from("training_certificates").insert({
-            user_id: user.id,
-            training_id: training.id,
-            certificate_number: `CERT-${Date.now()}-${Math.random()
-              .toString(36)
-              .substr(2, 6)
-              .toUpperCase()}`,
-          });
+          try {
+            const { data: certResult, error: certError } = await supabase.rpc('issue_certificate', {
+              p_user_id: user.id,
+              p_training_id: training.id
+            });
+            
+            if (certError) {
+              console.error("Certificate error:", certError);
+            } else {
+              const result = certResult as { success?: boolean; verification_code?: string } | null;
+              if (result?.success) {
+                toast.success("🏆 Certificado emitido!", {
+                  description: `Código: ${result.verification_code}`,
+                });
+              }
+            }
+          } catch (certErr) {
+            console.error("Certificate generation error:", certErr);
+          }
         }
 
         await supabase.from("training_analytics").insert({

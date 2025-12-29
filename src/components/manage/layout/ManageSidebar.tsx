@@ -15,6 +15,7 @@ import {
   ChevronRight,
   GraduationCap,
   Gift,
+  Award,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -26,6 +27,7 @@ export type ManageSection =
   | "teams"
   | "members"
   | "trainings"
+  | "certificates"
   | "benefits"
   | "commitments"
   | "assessments"
@@ -43,6 +45,7 @@ const NAV_ITEMS: { id: ManageSection; label: string; icon: typeof LayoutDashboar
   { id: "teams", label: "Equipes", icon: UsersRound, description: "Gestão de times" },
   { id: "members", label: "Pessoas", icon: Users, description: "Gestão de colaboradores" },
   { id: "trainings", label: "Treinamentos", icon: GraduationCap, description: "Progresso de capacitação" },
+  { id: "certificates", label: "Certificados", icon: Award, description: "Competências validadas" },
   { id: "benefits", label: "Benefícios", icon: Gift, description: "Aprovações pendentes" },
   { id: "commitments", label: "Compromissos", icon: Target, description: "Metas e desafios" },
   { id: "assessments", label: "Avaliações", icon: ClipboardCheck, description: "360°, PDI e 1:1" },
