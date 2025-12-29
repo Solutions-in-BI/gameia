@@ -211,6 +211,9 @@ export function useStreak(): UseStreak {
       } catch {
         // ignore if rpc not exists
       }
+
+      return true;
+    },
     onSuccess: (success) => {
       if (success) {
         const reward = getTodayReward();
