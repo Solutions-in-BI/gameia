@@ -2,7 +2,7 @@
  * Hook para gerenciar métricas de organização B2B
  */
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface EngagementMetrics {
@@ -180,6 +180,13 @@ export function useOrgMetrics(orgId: string | undefined) {
       setIsLoading(false);
     }
   }, [orgId, period, fetchEngagement, fetchLearning, fetchCompetency, fetchDecision, fetchMembersWithMetrics]);
+
+  // Auto-fetch when orgId changes
+  useEffect(() => {
+    if (orgId && !hasFetched) {
+      fetchAllMetrics();
+    }
+  }, [orgId, hasFetched, fetchAllMetrics]);
 
   return {
     engagement,
