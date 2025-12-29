@@ -19,6 +19,7 @@ import { ReportsPage } from "@/components/admin/reports/ReportsPage";
 
 // Importar AlertsSection real
 import { AlertsSection } from "./alerts";
+import { TeamAssessmentsPanel } from "./TeamAssessmentsPanel";
 
 function CommitmentsSection() {
   return (
@@ -81,14 +82,17 @@ export function ManageCenter() {
     switch (activeSection) {
       case "dashboard":
         return (
-          <ExecutiveDashboard 
-            engagement={engagement}
-            learning={learning}
-            competency={competency}
-            decision={decision}
-            members={membersWithMetrics}
-            isLoading={isLoading}
-          />
+          <div className="space-y-6">
+            <TeamAssessmentsPanel />
+            <ExecutiveDashboard 
+              engagement={engagement}
+              learning={learning}
+              competency={competency}
+              decision={decision}
+              members={membersWithMetrics}
+              isLoading={isLoading}
+            />
+          </div>
         );
       case "alerts":
         return <AlertsSection />;
