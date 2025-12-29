@@ -17,15 +17,18 @@ import {
   MessageSquare,
   GraduationCap,
   RefreshCw,
-  Filter,
+  Target,
   Bell
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { ScheduleOneOnOneModal } from "./ScheduleOneOnOneModal";
+import { AssignTrainingModal } from "./AssignTrainingModal";
+import { CreateGoalModal } from "./CreateGoalModal";
 
 interface AlertData {
   alert_type: string;
@@ -36,6 +39,7 @@ interface AlertData {
   previous_streak?: number;
   days_inactive?: number;
   drop_percent?: number;
+  skill_id?: string;
   [key: string]: unknown;
 }
 
@@ -51,10 +55,16 @@ interface AlertNotification {
   read_at: string | null;
 }
 
+interface ActionModalState {
+  type: "1on1" | "training" | "goal" | null;
+  alert: AlertNotification | null;
+}
+
 const ALERT_ICONS: Record<string, typeof AlertTriangle> = {
   streak_broken: Flame,
   user_inactive: Clock,
   performance_drop: TrendingDown,
+  goal_failed: Target,
   default: AlertTriangle
 };
 
@@ -68,7 +78,8 @@ const SEVERITY_COLORS: Record<string, string> = {
 const ACTION_LABELS: Record<string, { label: string; icon: typeof Calendar }> = {
   schedule_1on1: { label: "Agendar 1:1", icon: Calendar },
   send_reminder: { label: "Enviar Lembrete", icon: MessageSquare },
-  assign_training: { label: "Sugerir Treinamento", icon: GraduationCap }
+  assign_training: { label: "Sugerir Treinamento", icon: GraduationCap },
+  create_goal: { label: "Criar Meta", icon: Target }
 };
 
 export function AlertsSection() {
@@ -76,6 +87,7 @@ export function AlertsSection() {
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState<"all" | "unread">("unread");
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [actionModal, setActionModal] = useState<ActionModalState>({ type: null, alert: null });
 
   // Buscar alertas do usuário atual
   const { data: alerts, isLoading, refetch } = useQuery({
@@ -153,27 +165,56 @@ export function AlertsSection() {
 
   // Executar ação sugerida
   const executeAction = (alert: AlertNotification, action: string) => {
-    const targetUserId = alert.data.target_user_id;
-    
     switch (action) {
       case "schedule_1on1":
-        // TODO: Abrir modal de agendamento de 1:1
-        toast.info("Funcionalidade de agendamento em desenvolvimento");
-        break;
-      case "send_reminder":
-        // TODO: Enviar lembrete/mensagem
-        toast.info("Funcionalidade de mensagem em desenvolvimento");
+        setActionModal({ type: "1on1", alert });
         break;
       case "assign_training":
-        // TODO: Abrir modal de sugestão de treinamento
-        toast.info("Funcionalidade de treinamento em desenvolvimento");
+        setActionModal({ type: "training", alert });
+        break;
+      case "create_goal":
+        setActionModal({ type: "goal", alert });
+        break;
+      case "send_reminder":
+        sendReminder(alert);
         break;
       default:
         toast.info("Ação não implementada");
     }
-    
-    // Marcar como lido após ação
-    markAsRead.mutate(alert.id);
+  };
+
+  // Enviar lembrete
+  const sendReminder = async (alert: AlertNotification) => {
+    const targetUserId = alert.data.target_user_id;
+    if (!targetUserId) {
+      toast.error("Usuário não encontrado");
+      return;
+    }
+
+    try {
+      await supabase.from("notifications").insert({
+        user_id: targetUserId,
+        type: "reminder",
+        title: "Lembrete do seu gestor",
+        message: "Seu gestor notou uma queda no seu engajamento. Que tal voltar às atividades?",
+        data: { from_alert_id: alert.id },
+        is_read: false,
+      });
+
+      toast.success("Lembrete enviado com sucesso!");
+      markAsRead.mutate(alert.id);
+    } catch (error) {
+      console.error("Error sending reminder:", error);
+      toast.error("Erro ao enviar lembrete");
+    }
+  };
+
+  // Callback após ação bem-sucedida
+  const handleActionSuccess = () => {
+    if (actionModal.alert) {
+      markAsRead.mutate(actionModal.alert.id);
+    }
+    setActionModal({ type: null, alert: null });
   };
 
   const unreadCount = alerts?.filter(a => !a.is_read).length || 0;
@@ -230,7 +271,7 @@ export function AlertsSection() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <Card className="border-yellow-500/20 bg-yellow-500/5">
           <CardContent className="pt-4">
             <div className="flex items-center gap-3">
@@ -273,6 +314,22 @@ export function AlertsSection() {
                 <p className="text-sm text-muted-foreground">Queda de Performance</p>
                 <p className="text-2xl font-bold text-red-600">
                   {alerts?.filter(a => a.data.alert_type === "performance_drop").length || 0}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-purple-500/20 bg-purple-500/5">
+          <CardContent className="pt-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-purple-500/10">
+                <Target className="h-5 w-5 text-purple-600" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Metas Falhas</p>
+                <p className="text-2xl font-bold text-purple-600">
+                  {alerts?.filter(a => a.data.alert_type === "goal_failed").length || 0}
                 </p>
               </div>
             </div>
@@ -353,7 +410,7 @@ export function AlertsSection() {
                               </div>
 
                               {/* Actions */}
-                              <div className="flex items-center gap-2 mt-3">
+                              <div className="flex items-center gap-2 mt-3 flex-wrap">
                                 {actionConfig && (
                                   <Button
                                     size="sm"
@@ -363,6 +420,28 @@ export function AlertsSection() {
                                     <actionConfig.icon className="h-4 w-4 mr-2" />
                                     {actionConfig.label}
                                   </Button>
+                                )}
+
+                                {/* Quick actions */}
+                                {!suggestedAction && alert.data.target_user_id && (
+                                  <>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => executeAction(alert, "schedule_1on1")}
+                                    >
+                                      <Calendar className="h-4 w-4 mr-2" />
+                                      Agendar 1:1
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => executeAction(alert, "assign_training")}
+                                    >
+                                      <GraduationCap className="h-4 w-4 mr-2" />
+                                      Treinamento
+                                    </Button>
+                                  </>
                                 )}
                                 
                                 {!alert.is_read && (
@@ -388,6 +467,42 @@ export function AlertsSection() {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Action Modals */}
+      {actionModal.type === "1on1" && actionModal.alert && (
+        <ScheduleOneOnOneModal
+          open={true}
+          onClose={() => setActionModal({ type: null, alert: null })}
+          targetUserId={actionModal.alert.data.target_user_id || ""}
+          targetUserName={actionModal.alert.data.user_name || "Colaborador"}
+          context={actionModal.alert.message}
+          onSuccess={handleActionSuccess}
+        />
+      )}
+
+      {actionModal.type === "training" && actionModal.alert && (
+        <AssignTrainingModal
+          open={true}
+          onClose={() => setActionModal({ type: null, alert: null })}
+          targetUserId={actionModal.alert.data.target_user_id || ""}
+          targetUserName={actionModal.alert.data.user_name || "Colaborador"}
+          context={actionModal.alert.message}
+          suggestedSkillId={actionModal.alert.data.skill_id}
+          onSuccess={handleActionSuccess}
+        />
+      )}
+
+      {actionModal.type === "goal" && actionModal.alert && (
+        <CreateGoalModal
+          open={true}
+          onClose={() => setActionModal({ type: null, alert: null })}
+          targetUserId={actionModal.alert.data.target_user_id || ""}
+          targetUserName={actionModal.alert.data.user_name || "Colaborador"}
+          context={actionModal.alert.message}
+          suggestedSkillId={actionModal.alert.data.skill_id}
+          onSuccess={handleActionSuccess}
+        />
+      )}
     </div>
   );
 }
