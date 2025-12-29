@@ -14,7 +14,10 @@ import {
   Volume2,
   VolumeX,
   Building2,
-  Sparkles
+  Sparkles,
+  LayoutDashboard,
+  Settings2,
+  Crown
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -29,6 +32,8 @@ import { Switch } from "@/components/ui/switch";
 import { useTheme } from "@/hooks/useTheme";
 import { usePreferences } from "@/hooks/usePreferences";
 import { useOrganization } from "@/hooks/useOrganization";
+import { useAreaPermissions } from "@/hooks/useAreaPermissions";
+import { useRoles } from "@/hooks/useRoles";
 import { UserProfileIndicator } from "./UserProfileIndicator";
 import { getLevelInfo, getLevelProgress } from "@/constants/levels";
 
@@ -58,8 +63,11 @@ export function UserSettingsDropdown({
   const navigate = useNavigate();
   const { isDark, toggleTheme } = useTheme();
   const { preferences, updatePreference } = usePreferences();
-  const { isAdmin, currentOrg } = useOrganization();
+  const { currentOrg } = useOrganization();
+  const { canAccessManage, canAccessConsole } = useAreaPermissions();
+  const { highestRole } = useRoles();
   
+  const isMaster = highestRole === "super_admin" || (highestRole as string) === "owner";
   const avatarInitial = displayName.charAt(0).toUpperCase() || "G";
   const levelInfo = getLevelInfo(level, xp);
   const progress = getLevelProgress(xp, level);
@@ -154,7 +162,7 @@ export function UserSettingsDropdown({
           </div>
         </div>
 
-        <DropdownMenuItem onClick={onViewProfile} className="gap-3 p-3 cursor-pointer">
+        <DropdownMenuItem onClick={() => navigate("/perfil")} className="gap-3 p-3 cursor-pointer">
           <User className="w-4 h-4" />
           <span>Ver Perfil</span>
         </DropdownMenuItem>
@@ -169,20 +177,44 @@ export function UserSettingsDropdown({
           )}
         </DropdownMenuItem>
 
-        {/* Admin Access - Only visible for admins with organization */}
-        {isAdmin && currentOrg && (
+        {/* Admin Access - visible based on area permissions */}
+        {(canAccessManage || canAccessConsole) && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuItem 
-              onClick={() => navigate("/admin")} 
-              className="gap-3 p-3 cursor-pointer bg-primary/5 hover:bg-primary/10"
-            >
-              <Building2 className="w-4 h-4 text-primary" />
-              <div className="flex-1">
-                <span className="font-medium">Admin Center</span>
-                <p className="text-xs text-muted-foreground">{currentOrg.name}</p>
+            {isMaster && (
+              <div className="px-3 py-2">
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/30 w-fit">
+                  <Crown className="h-3.5 w-3.5 text-amber-500" />
+                  <span className="text-xs font-medium text-amber-600 dark:text-amber-400">
+                    MASTER
+                  </span>
+                </div>
               </div>
-            </DropdownMenuItem>
+            )}
+            
+            {canAccessManage && (
+              <DropdownMenuItem 
+                onClick={() => navigate("/manage")} 
+                className="gap-3 p-3 cursor-pointer"
+              >
+                <LayoutDashboard className="w-4 h-4 text-secondary" />
+                <div className="flex-1">
+                  <span>Painel de Gestão</span>
+                </div>
+              </DropdownMenuItem>
+            )}
+            
+            {canAccessConsole && (
+              <DropdownMenuItem 
+                onClick={() => navigate("/console")} 
+                className="gap-3 p-3 cursor-pointer"
+              >
+                <Settings2 className="w-4 h-4 text-accent" />
+                <div className="flex-1">
+                  <span>Console da Plataforma</span>
+                </div>
+              </DropdownMenuItem>
+            )}
           </>
         )}
 

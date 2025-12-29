@@ -12,8 +12,11 @@ export function EvolutionTab() {
   const { level, xp, levelInfo } = useLevel();
   const { skills } = useSkillTree();
   const { unlockedAchievements, stats } = useAchievements();
-  const { activePlan } = usePDI();
-  const { trainings } = useTrainings();
+  const { myPlans } = usePDI();
+  const { userProgress, trainings } = useTrainings();
+
+  // Get active PDI
+  const activePlan = myPlans.find(p => p.status === "active");
 
   // Group achievements by category
   const achievementsByCategory = ACHIEVEMENTS.reduce((acc, achievement) => {
@@ -24,7 +27,7 @@ export function EvolutionTab() {
     return acc;
   }, {} as Record<string, Array<typeof ACHIEVEMENTS[0] & { isUnlocked: boolean }>>);
 
-  const completedTrainings = trainings.filter(t => t.status === "completed").length;
+  const completedTrainings = userProgress.filter(p => p.completed_at).length;
 
   return (
     <div className="space-y-6">
@@ -60,7 +63,7 @@ export function EvolutionTab() {
         </h3>
         
         <div className="grid gap-3 sm:grid-cols-2">
-          {skills.filter(s => s.currentXP > 0).map((skill, index) => (
+          {skills.filter(s => s.xpEarned > 0).map((skill, index) => (
             <motion.div
               key={skill.id}
               initial={{ opacity: 0, x: -10 }}
@@ -71,16 +74,16 @@ export function EvolutionTab() {
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-xl">{skill.icon}</span>
                 <span className="font-medium text-sm flex-1">{skill.name}</span>
-                <span className="text-xs text-muted-foreground">Nv. {skill.level}</span>
+                <span className="text-xs text-muted-foreground">Nv. {skill.masteryLevel}</span>
               </div>
               <Progress value={skill.progress} className="h-1.5" />
               <p className="text-xs text-muted-foreground mt-1">
-                {skill.currentXP} / {skill.xpForNextLevel} XP
+                {skill.xpEarned} / {skill.xp_required} XP
               </p>
             </motion.div>
           ))}
           
-          {skills.filter(s => s.currentXP > 0).length === 0 && (
+          {skills.filter(s => s.xpEarned > 0).length === 0 && (
             <p className="text-sm text-muted-foreground col-span-2 text-center py-4">
               Jogue para desenvolver suas skills!
             </p>

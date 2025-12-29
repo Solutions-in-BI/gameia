@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { 
-  Settings, Moon, Sun, Bell, Volume2, Globe, 
-  Eye, Sparkles, Shield 
+  Moon, Sun, Bell, Volume2, Globe, 
+  Eye, Sparkles, Shield, Settings
 } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { usePreferences } from "@/hooks/usePreferences";
@@ -10,8 +10,11 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 export function SettingsTab() {
-  const { theme, setTheme } = useTheme();
+  const { isDark, toggleTheme } = useTheme();
   const { preferences, updatePreference, isLoading } = usePreferences();
+
+  // Simple theme value for display
+  const themeValue = isDark ? "dark" : "light";
 
   return (
     <div className="space-y-6">
@@ -22,18 +25,14 @@ export function SettingsTab() {
           Aparência
         </h3>
         
-        <RadioGroup
-          value={theme}
-          onValueChange={(value) => setTheme(value as "light" | "dark" | "system")}
-          className="grid grid-cols-3 gap-3"
-        >
+        <div className="grid grid-cols-2 gap-3">
           <Label
             htmlFor="theme-light"
             className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
-              theme === "light" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+              !isDark ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
             }`}
+            onClick={() => isDark && toggleTheme()}
           >
-            <RadioGroupItem value="light" id="theme-light" className="sr-only" />
             <Sun className="h-6 w-6" />
             <span className="text-sm">Claro</span>
           </Label>
@@ -41,25 +40,14 @@ export function SettingsTab() {
           <Label
             htmlFor="theme-dark"
             className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
-              theme === "dark" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+              isDark ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
             }`}
+            onClick={() => !isDark && toggleTheme()}
           >
-            <RadioGroupItem value="dark" id="theme-dark" className="sr-only" />
             <Moon className="h-6 w-6" />
             <span className="text-sm">Escuro</span>
           </Label>
-          
-          <Label
-            htmlFor="theme-system"
-            className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
-              theme === "system" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-            }`}
-          >
-            <RadioGroupItem value="system" id="theme-system" className="sr-only" />
-            <Settings className="h-6 w-6" />
-            <span className="text-sm">Sistema</span>
-          </Label>
-        </RadioGroup>
+        </div>
       </div>
 
       {/* Notificações */}
@@ -72,17 +60,17 @@ export function SettingsTab() {
         <div className="space-y-4">
           <SettingRow
             icon={Bell}
-            label="Notificações Push"
-            description="Receba alertas no navegador"
-            checked={preferences.push_notifications ?? true}
-            onCheckedChange={(checked) => updatePreference("push_notifications", checked)}
+            label="Notificações"
+            description="Receba alertas no app"
+            checked={preferences?.notifications_enabled ?? true}
+            onCheckedChange={(checked) => updatePreference("notifications_enabled", checked)}
           />
           
           <SettingRow
             icon={Bell}
             label="Notificações por Email"
             description="Receba atualizações por email"
-            checked={preferences.email_notifications ?? true}
+            checked={preferences?.email_notifications ?? true}
             onCheckedChange={(checked) => updatePreference("email_notifications", checked)}
           />
           
@@ -90,7 +78,7 @@ export function SettingsTab() {
             icon={Sparkles}
             label="Resumo Semanal"
             description="Receba um resumo da sua semana"
-            checked={preferences.weekly_summary ?? true}
+            checked={preferences?.weekly_summary ?? true}
             onCheckedChange={(checked) => updatePreference("weekly_summary", checked)}
           />
         </div>
@@ -107,7 +95,7 @@ export function SettingsTab() {
           icon={Volume2}
           label="Efeitos Sonoros"
           description="Sons nos jogos e interações"
-          checked={preferences.sound_enabled ?? true}
+          checked={preferences?.sound_enabled ?? true}
           onCheckedChange={(checked) => updatePreference("sound_enabled", checked)}
         />
       </div>
@@ -128,55 +116,18 @@ export function SettingsTab() {
         </div>
       </div>
 
-      {/* Privacidade */}
+      {/* Privacidade - Info only since fields don't exist yet */}
       <div className="surface p-5">
         <h3 className="text-sm font-medium text-muted-foreground mb-4 flex items-center gap-2">
           <Shield className="h-4 w-4" />
           Privacidade
         </h3>
         
-        <div className="space-y-4">
-          <SettingRow
-            icon={Eye}
-            label="Visível para Gestores"
-            description="Gestores podem ver seu progresso"
-            checked={preferences.visible_to_managers ?? true}
-            onCheckedChange={(checked) => updatePreference("visible_to_managers", checked)}
-          />
-          
-          <SettingRow
-            icon={Eye}
-            label="Aparecer no Ranking"
-            description="Seu nome aparece no leaderboard"
-            checked={preferences.show_in_leaderboard ?? true}
-            onCheckedChange={(checked) => updatePreference("show_in_leaderboard", checked)}
-          />
-        </div>
-      </div>
-
-      {/* Experiência */}
-      <div className="surface p-5">
-        <h3 className="text-sm font-medium text-muted-foreground mb-4 flex items-center gap-2">
-          <Sparkles className="h-4 w-4" />
-          Experiência
-        </h3>
-        
-        <div className="space-y-4">
-          <SettingRow
-            icon={Sparkles}
-            label="Sugestões Personalizadas"
-            description="Receba recomendações de jogos e trilhas"
-            checked={preferences.receive_suggestions ?? true}
-            onCheckedChange={(checked) => updatePreference("receive_suggestions", checked)}
-          />
-          
-          <SettingRow
-            icon={Bell}
-            label="Lembretes de Streak"
-            description="Seja lembrado de manter seu streak"
-            checked={preferences.streak_reminders ?? true}
-            onCheckedChange={(checked) => updatePreference("streak_reminders", checked)}
-          />
+        <div className="p-4 rounded-lg bg-muted/30 text-center">
+          <Shield className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+          <p className="text-sm text-muted-foreground">
+            Suas informações são protegidas e gerenciadas de forma segura.
+          </p>
         </div>
       </div>
     </div>

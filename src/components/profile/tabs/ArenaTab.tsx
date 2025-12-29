@@ -6,23 +6,20 @@ import { useAchievements } from "@/hooks/useAchievements";
 import { useTrainings } from "@/hooks/useTrainings";
 import { useCognitiveTests } from "@/hooks/useCognitiveTests";
 import { useCommitments } from "@/hooks/useCommitments";
+import { useOrganization } from "@/hooks/useOrganization";
 
 export function ArenaTab() {
   const navigate = useNavigate();
   const { stats } = useAchievements();
-  const { trainings } = useTrainings();
-  const { testSessions } = useCognitiveTests();
-  const { commitments } = useCommitments();
+  const { userProgress } = useTrainings();
+  const { currentOrg } = useOrganization();
+  const { mySessions } = useCognitiveTests();
+  const { commitments } = useCommitments(currentOrg?.id);
 
   const totalGames = stats.totalGamesPlayed || 0;
-  const completedTrainings = trainings.filter(t => t.status === "completed").length;
-  const completedTests = testSessions.filter(s => s.status === "completed").length;
+  const completedTrainings = userProgress.filter(p => p.completed_at).length;
+  const completedTests = mySessions?.filter(s => s.status === "completed").length || 0;
   const participatedCommitments = commitments.length;
-
-  // Calculate average performance
-  const avgPerformance = totalGames > 0 
-    ? Math.round(((stats.snakeBestScore || 0) + (stats.dinoBestScore || 0) + (stats.tetrisBestScore || 0)) / 3)
-    : 0;
 
   const arenaStats = [
     { 
@@ -86,7 +83,7 @@ export function ArenaTab() {
         })}
       </div>
 
-      {/* Performance Média */}
+      {/* Performance nos Jogos */}
       <div className="surface p-5">
         <h3 className="text-sm font-medium text-muted-foreground mb-4 flex items-center gap-2">
           <TrendingUp className="h-4 w-4" />
