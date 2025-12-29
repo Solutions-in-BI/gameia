@@ -156,6 +156,7 @@ export function useAssessment360() {
 
   const submitAssessment = useMutation({
     mutationFn: async ({ id, responses }: { id: string; responses: Record<string, unknown> }) => {
+      // 1. Atualizar avaliação
       const { data, error } = await supabase
         .from("assessments_360")
         .update({
@@ -168,10 +169,23 @@ export function useAssessment360() {
         .single();
 
       if (error) throw error;
+      
+      // 2. Processar conclusão (propagar para skills/PDI)
+      try {
+        await supabase.rpc("process_assessment_completion", {
+          p_assessment_id: id,
+        });
+      } catch (processError) {
+        console.warn("[Assessment360] Erro ao processar conclusão:", processError);
+      }
+      
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-assessments-360"] });
+      queryClient.invalidateQueries({ queryKey: ["skill-impacts"] });
+      queryClient.invalidateQueries({ queryKey: ["user-skill-levels"] });
+      queryClient.invalidateQueries({ queryKey: ["development-plans"] });
       toast.success("Avaliação enviada com sucesso!");
     },
     onError: () => {
