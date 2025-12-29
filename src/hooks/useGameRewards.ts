@@ -1,6 +1,7 @@
 /**
  * Hook para gerenciar recompensas de jogos
  * Conectado ao backend para persistir XP, coins, atividades e streaks
+ * Integrado com useCoreEvents para registro centralizado
  */
 
 import { useCallback } from "react";
@@ -8,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 import { useOrganization } from "./useOrganization";
 import { useGamificationEvents } from "./useGamificationEvents";
+import { useCoreEvents } from "./useCoreEvents";
 import { toast } from "sonner";
 
 interface GameConfig {
@@ -42,6 +44,7 @@ export function useGameRewards() {
   const { user } = useAuth();
   const { currentOrg } = useOrganization();
   const { trackGameCompleted, trackQuizCompleted } = useGamificationEvents();
+  const { recordGameCompleted } = useCoreEvents();
 
   /**
    * Calculate rewards based on game config and performance
@@ -406,7 +409,7 @@ export function useGameRewards() {
   }, [user, currentOrg?.id, logActivity, updateStreak, trackGameCompleted, trackQuizCompleted]);
 
   /**
-   * Complete game flow: calculate + apply rewards
+   * Complete game flow: calculate + apply rewards + record core event
    */
   const completeGame = useCallback(async (result: GameResult): Promise<RewardResult | null> => {
     if (!user) return null;
@@ -430,12 +433,27 @@ export function useGameRewards() {
 
       if (!success) return null;
 
+      // Record core event for unified analytics
+      await recordGameCompleted(
+        result.gameType,
+        result.score,
+        rewards.xp,
+        rewards.coins,
+        Object.keys(rewards.skills),
+        {
+          difficulty: result.difficulty,
+          time_spent_seconds: result.timeSpentSeconds,
+          bonuses: rewards.bonuses.map(b => `${b.type}:${b.amount}`).join(','),
+          ...result.metadata
+        }
+      );
+
       return rewards;
     } catch (error) {
       console.error('Error completing game:', error);
       return null;
     }
-  }, [user, calculateRewards, applyRewards, getCurrentStreak]);
+  }, [user, calculateRewards, applyRewards, getCurrentStreak, recordGameCompleted]);
 
   return {
     calculateRewards,

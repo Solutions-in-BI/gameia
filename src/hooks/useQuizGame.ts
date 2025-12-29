@@ -71,7 +71,7 @@ export function useQuizGame(): UseQuizGame {
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const { addXP } = useLevel();
-  const { logActivity, updateStreak } = useGameRewards();
+  const { completeGame } = useGameRewards();
 
   const [categories, setCategories] = useState<QuizCategory[]>([]);
   const [currentMatch, setCurrentMatch] = useState<QuizMatch | null>(null);
@@ -312,33 +312,18 @@ export function useQuizGame(): UseQuizGame {
         })
         .eq("id", currentMatch.id);
 
-      // Calcula recompensas
-      const correctAnswers = questions.filter((q, i) => {
-        // Verifica se acertou baseado no score
-        return i <= questionIndex;
-      }).length;
-
-      const xpEarned = questions.reduce((acc, q, i) => {
-        if (i <= questionIndex) {
-          return acc + q.xp_reward;
-        }
-        return acc;
-      }, 0);
-
-      // Calcula moedas ganhas
-      let coinsEarned = Math.floor(score / 10);
-
-      // Se tinha aposta e teve bom desempenho
+      // Calcula bônus de apostas
+      let betBonus = 0;
       if (betAmount > 0) {
         const percentage = (score / (questions.length * 30)) * 100;
         if (percentage >= 70) {
-          coinsEarned += betAmount * 2; // Ganha o dobro
+          betBonus = betAmount * 2; // Ganha o dobro
           await supabase.from("quiz_bets")
             .update({ coins_won: betAmount * 2, is_won: true })
             .eq("match_id", currentMatch.id)
             .eq("user_id", user.id);
         } else if (percentage >= 50) {
-          coinsEarned += betAmount; // Recupera a aposta
+          betBonus = betAmount; // Recupera a aposta
           await supabase.from("quiz_bets")
             .update({ coins_won: betAmount, is_won: true })
             .eq("match_id", currentMatch.id)
@@ -351,40 +336,41 @@ export function useQuizGame(): UseQuizGame {
         }
       }
 
-      // Atualiza stats do usuário
-      const { data: stats } = await supabase
-        .from("user_stats")
-        .select("coins, total_games_played")
-        .eq("user_id", user.id)
-        .single();
-
-      if (stats) {
-        await supabase
+      // Aplica bônus de aposta diretamente se houver
+      if (betBonus > 0) {
+        const { data: stats } = await supabase
           .from("user_stats")
-          .update({
-            coins: stats.coins + coinsEarned,
-            total_games_played: stats.total_games_played + 1,
-          })
-          .eq("user_id", user.id);
+          .select("coins")
+          .eq("user_id", user.id)
+          .single();
+
+        if (stats) {
+          await supabase
+            .from("user_stats")
+            .update({ coins: stats.coins + betBonus })
+            .eq("user_id", user.id);
+        }
       }
 
-      // Adiciona XP
-      if (xpEarned > 0) {
-        await addXP(xpEarned, "Quiz Battle concluído!");
-      }
-
-      // Registra atividade e atualiza streak
-      await logActivity("quiz_completed", "quiz", xpEarned, coinsEarned, {
+      // Usa completeGame para registrar XP, coins, activity e core_events
+      const rewards = await completeGame({
+        gameType: "quiz",
         score,
-        correctAnswers,
-        totalQuestions: questions.length,
-        betAmount
+        metadata: {
+          matchId: currentMatch.id,
+          categoryId: currentMatch.category_id,
+          questionsAnswered: questionIndex + 1,
+          totalQuestions: questions.length,
+          betAmount,
+          betBonus
+        }
       });
-      await updateStreak();
+
+      const totalCoins = (rewards?.coins || 0) + betBonus;
 
       toast({
         title: "🎉 Jogo finalizado!",
-        description: `Pontuação: ${score} | +${coinsEarned} moedas | +${xpEarned} XP`,
+        description: `Pontuação: ${score} | +${totalCoins} moedas | +${rewards?.xp || 0} XP`,
       });
 
       // Reset state
@@ -400,7 +386,7 @@ export function useQuizGame(): UseQuizGame {
     } catch (err) {
       console.error("Erro ao finalizar jogo:", err);
     }
-  }, [currentMatch, user, score, questions, betAmount, addXP, toast, questionIndex]);
+  }, [currentMatch, user, score, questions, betAmount, toast, questionIndex, completeGame]);
 
   const currentQuestion = questions[questionIndex] || null;
 
