@@ -17,7 +17,7 @@ import { TrainingManagement } from "@/components/admin/training/TrainingManageme
 import { IntegrationsSettings } from "@/components/admin/settings/IntegrationsSettings";
 import { SSOSettings } from "@/components/admin/settings/SSOSettings";
 import { GameConfigurationHub } from "@/components/admin/games";
-import { OrgTrainingConfigSection } from "./training";
+import { OrgTrainingConfigSection, TrainingMetricsDashboard } from "./training";
 
 // Placeholder para seções ainda não migradas
 function UsersPermissionsSection() {
@@ -114,7 +114,8 @@ export function ConsoleCenter() {
         return <MarketplaceManagement />;
       case "trainings":
         return (
-          <div className="space-y-6">
+          <div className="space-y-8">
+            <TrainingMetricsDashboard />
             <TrainingManagement />
             <OrgTrainingConfigSection />
           </div>
