@@ -33,7 +33,11 @@ import {
 import { format, isAfter, isBefore, isToday, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
-export function OneOnOneSection() {
+interface OneOnOneSectionProps {
+  onBack?: () => void;
+}
+
+export function OneOnOneSection({ onBack }: OneOnOneSectionProps) {
   const { user } = useAuth();
   const { myMeetings, myMeetingsLoading, templates, addNote, addActionItem, updateMeeting } = useOneOnOne();
   const [selectedMeeting, setSelectedMeeting] = useState<OneOnOneMeeting | null>(null);
@@ -263,8 +267,13 @@ export function OneOnOneSection() {
     >
       <div className="flex items-center justify-between">
         <div>
+          {onBack && (
+            <Button variant="ghost" onClick={onBack} className="mb-2 -ml-2">
+              ← Voltar
+            </Button>
+          )}
           <h2 className="text-2xl font-bold">Reuniões 1:1</h2>
-          <p className="text-muted-foreground">Acompanhe suas reuniões individuais</p>
+          <p className="text-muted-foreground">Check-ins guiados por dados</p>
         </div>
       </div>
 

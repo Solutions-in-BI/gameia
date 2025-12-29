@@ -41,7 +41,11 @@ const SAMPLE_QUESTIONS = [
   { id: "q8", category: "Entregas", question: "Entrega trabalho de alta qualidade" },
 ];
 
-export function Assessment360Section() {
+interface Assessment360SectionProps {
+  onBack?: () => void;
+}
+
+export function Assessment360Section({ onBack }: Assessment360SectionProps) {
   const { myAssessments, assessmentsLoading, cycles, submitAssessment } = useAssessment360();
   const [selectedAssessment, setSelectedAssessment] = useState<Assessment360 | null>(null);
   const [responses, setResponses] = useState<Record<string, number>>({});
@@ -202,8 +206,13 @@ export function Assessment360Section() {
       className="space-y-6"
     >
       <div>
-        <h2 className="text-2xl font-bold">Avaliação 360°</h2>
-        <p className="text-muted-foreground">Avaliações pendentes e resultados</p>
+        {onBack && (
+          <Button variant="ghost" onClick={onBack} className="mb-2 -ml-2">
+            ← Voltar
+          </Button>
+        )}
+        <h2 className="text-2xl font-bold">Feedback Contextual</h2>
+        <p className="text-muted-foreground">Feedbacks vinculados a desafios e jogos</p>
       </div>
 
       <Tabs defaultValue="pending">

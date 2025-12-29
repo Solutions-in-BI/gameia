@@ -42,7 +42,11 @@ const DIFFICULTY_CONFIG: Record<string, { label: string; color: string }> = {
   hard: { label: "Difícil", color: "bg-red-500/20 text-red-500" },
 };
 
-export function CognitiveTestsHub() {
+interface CognitiveTestsHubProps {
+  onBack?: () => void;
+}
+
+export function CognitiveTestsHub({ onBack }: CognitiveTestsHubProps) {
   const { tests, myProfile, mySessions, testsLoading } = useCognitiveTests();
   const [activeTestId, setActiveTestId] = useState<string | null>(null);
   const [showProfile, setShowProfile] = useState(false);
@@ -78,17 +82,30 @@ export function CognitiveTestsHub() {
     );
   }
 
+  const handleBackClick = () => {
+    if (onBack) {
+      onBack();
+    } else {
+      setShowProfile(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
+          {onBack && (
+            <Button variant="ghost" onClick={onBack} className="mb-2 -ml-2">
+              ← Voltar
+            </Button>
+          )}
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <Brain className="w-6 h-6 text-primary" />
-            Testes Cognitivos
+            Desafios Mentais
           </h1>
           <p className="text-muted-foreground mt-1">
-            Avalie e desenvolva suas habilidades mentais
+            Complete testes e evolua suas skills cognitivas
           </p>
         </div>
         
