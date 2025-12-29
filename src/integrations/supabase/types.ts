@@ -4833,29 +4833,57 @@ export type Database = {
       training_certificates: {
         Row: {
           certificate_number: string
+          expires_at: string | null
+          final_score: number | null
           id: string
+          insignia_id: string | null
           issued_at: string | null
+          metadata: Json | null
           pdf_url: string | null
+          skills_validated: string[] | null
+          status: string | null
           training_id: string
           user_id: string
+          verification_code: string | null
         }
         Insert: {
           certificate_number: string
+          expires_at?: string | null
+          final_score?: number | null
           id?: string
+          insignia_id?: string | null
           issued_at?: string | null
+          metadata?: Json | null
           pdf_url?: string | null
+          skills_validated?: string[] | null
+          status?: string | null
           training_id: string
           user_id: string
+          verification_code?: string | null
         }
         Update: {
           certificate_number?: string
+          expires_at?: string | null
+          final_score?: number | null
           id?: string
+          insignia_id?: string | null
           issued_at?: string | null
+          metadata?: Json | null
           pdf_url?: string | null
+          skills_validated?: string[] | null
+          status?: string | null
           training_id?: string
           user_id?: string
+          verification_code?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "training_certificates_insignia_id_fkey"
+            columns: ["insignia_id"]
+            isOneToOne: false
+            referencedRelation: "insignias"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "training_certificates_training_id_fkey"
             columns: ["training_id"]
@@ -4868,6 +4896,45 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_insignia_relation: {
+        Row: {
+          created_at: string
+          id: string
+          insignia_id: string
+          relation_type: string
+          training_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          insignia_id: string
+          relation_type?: string
+          training_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          insignia_id?: string
+          relation_type?: string
+          training_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_insignia_relation_insignia_id_fkey"
+            columns: ["insignia_id"]
+            isOneToOne: false
+            referencedRelation: "insignias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_insignia_relation_training_id_fkey"
+            columns: ["training_id"]
+            isOneToOne: false
+            referencedRelation: "trainings"
             referencedColumns: ["id"]
           },
         ]
@@ -4997,6 +5064,55 @@ export type Database = {
           },
         ]
       }
+      training_skill_impact: {
+        Row: {
+          created_at: string
+          id: string
+          impact_weight: string
+          skill_id: string
+          training_id: string
+          xp_multiplier: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          impact_weight?: string
+          skill_id: string
+          training_id: string
+          xp_multiplier?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          impact_weight?: string
+          skill_id?: string
+          training_id?: string
+          xp_multiplier?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_skill_impact_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skill_configurations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_skill_impact_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "vw_org_skill_metrics"
+            referencedColumns: ["skill_id"]
+          },
+          {
+            foreignKeyName: "training_skill_impact_training_id_fkey"
+            columns: ["training_id"]
+            isOneToOne: false
+            referencedRelation: "trainings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trainings: {
         Row: {
           allow_retry: boolean | null
@@ -5004,6 +5120,11 @@ export type Database = {
           bonus_rules: Json | null
           category: string | null
           certificate_enabled: boolean | null
+          certificate_min_score: number | null
+          certificate_name: string | null
+          certificate_require_checkpoints: boolean | null
+          certificate_type: string | null
+          certificate_validity_months: number | null
           coins_reward: number | null
           color: string | null
           completion_criteria: Json | null
@@ -5034,6 +5155,11 @@ export type Database = {
           bonus_rules?: Json | null
           category?: string | null
           certificate_enabled?: boolean | null
+          certificate_min_score?: number | null
+          certificate_name?: string | null
+          certificate_require_checkpoints?: boolean | null
+          certificate_type?: string | null
+          certificate_validity_months?: number | null
           coins_reward?: number | null
           color?: string | null
           completion_criteria?: Json | null
@@ -5064,6 +5190,11 @@ export type Database = {
           bonus_rules?: Json | null
           category?: string | null
           certificate_enabled?: boolean | null
+          certificate_min_score?: number | null
+          certificate_name?: string | null
+          certificate_require_checkpoints?: boolean | null
+          certificate_type?: string | null
+          certificate_validity_months?: number | null
           coins_reward?: number | null
           color?: string | null
           completion_criteria?: Json | null
@@ -6544,6 +6675,10 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: Json
       }
+      check_certificate_eligibility: {
+        Args: { p_training_id: string; p_user_id: string }
+        Returns: Json
+      }
       check_insignia_criteria: {
         Args: { p_insignia_id: string; p_user_id: string }
         Returns: Json
@@ -6633,6 +6768,7 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      generate_verification_code: { Args: never; Returns: string }
       get_assessment_notifications: {
         Args: { p_user_id: string }
         Returns: {
@@ -6777,6 +6913,10 @@ export type Database = {
         Args: { _team_id: string; _user_id: string }
         Returns: boolean
       }
+      issue_certificate: {
+        Args: { p_training_id: string; p_user_id: string }
+        Returns: Json
+      }
       list_org_invites: {
         Args: { p_organization_id: string }
         Returns: {
@@ -6895,6 +7035,10 @@ export type Database = {
       update_xp_mission_progress: {
         Args: { p_user_id: string; p_xp_earned: number }
         Returns: undefined
+      }
+      validate_certificate: {
+        Args: { p_verification_code: string }
+        Returns: Json
       }
       validate_email_domain: {
         Args: { p_email: string; p_organization_id: string }
