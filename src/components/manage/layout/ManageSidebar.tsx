@@ -14,9 +14,11 @@ import {
   ChevronLeft,
   ChevronRight,
   GraduationCap,
+  Gift,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 
 export type ManageSection =
   | "dashboard"
@@ -24,6 +26,7 @@ export type ManageSection =
   | "teams"
   | "members"
   | "trainings"
+  | "benefits"
   | "commitments"
   | "assessments"
   | "reports";
@@ -31,6 +34,7 @@ export type ManageSection =
 interface ManageSidebarProps {
   activeSection: ManageSection;
   onSectionChange: (section: ManageSection) => void;
+  pendingApprovalsCount?: number;
 }
 
 const NAV_ITEMS: { id: ManageSection; label: string; icon: typeof LayoutDashboard; description?: string }[] = [
@@ -39,12 +43,13 @@ const NAV_ITEMS: { id: ManageSection; label: string; icon: typeof LayoutDashboar
   { id: "teams", label: "Equipes", icon: UsersRound, description: "Gestão de times" },
   { id: "members", label: "Pessoas", icon: Users, description: "Gestão de colaboradores" },
   { id: "trainings", label: "Treinamentos", icon: GraduationCap, description: "Progresso de capacitação" },
+  { id: "benefits", label: "Benefícios", icon: Gift, description: "Aprovações pendentes" },
   { id: "commitments", label: "Compromissos", icon: Target, description: "Metas e desafios" },
   { id: "assessments", label: "Avaliações", icon: ClipboardCheck, description: "360°, PDI e 1:1" },
   { id: "reports", label: "Relatórios", icon: FileText, description: "Análises e exportações" },
 ];
 
-export function ManageSidebar({ activeSection, onSectionChange }: ManageSidebarProps) {
+export function ManageSidebar({ activeSection, onSectionChange, pendingApprovalsCount = 0 }: ManageSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
@@ -94,16 +99,28 @@ export function ManageSidebar({ activeSection, onSectionChange }: ManageSidebarP
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <Icon className={cn("h-5 w-5 shrink-0", isActive && "text-primary")} />
+              <div className="relative">
+                <Icon className={cn("h-5 w-5 shrink-0", isActive && "text-primary")} />
+                {item.id === "benefits" && pendingApprovalsCount > 0 && collapsed && (
+                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-destructive rounded-full" />
+                )}
+              </div>
               {!collapsed && (
-                <div className="min-w-0 flex-1">
-                  <p className={cn("text-sm font-medium truncate", isActive && "text-primary")}>
-                    {item.label}
-                  </p>
-                  {item.description && (
-                    <p className="text-xs text-muted-foreground truncate">
-                      {item.description}
+                <div className="min-w-0 flex-1 flex items-center justify-between">
+                  <div>
+                    <p className={cn("text-sm font-medium truncate", isActive && "text-primary")}>
+                      {item.label}
                     </p>
+                    {item.description && (
+                      <p className="text-xs text-muted-foreground truncate">
+                        {item.description}
+                      </p>
+                    )}
+                  </div>
+                  {item.id === "benefits" && pendingApprovalsCount > 0 && (
+                    <Badge variant="destructive" className="ml-2 text-xs">
+                      {pendingApprovalsCount}
+                    </Badge>
                   )}
                 </div>
               )}
