@@ -2867,6 +2867,66 @@ export type Database = {
           },
         ]
       }
+      org_training_config: {
+        Row: {
+          coins_multiplier: number | null
+          created_at: string | null
+          deadline_days: number | null
+          id: string
+          is_enabled: boolean | null
+          organization_id: string
+          requirement_type: string | null
+          role_ids: string[] | null
+          team_ids: string[] | null
+          training_id: string
+          updated_at: string | null
+          xp_multiplier: number | null
+        }
+        Insert: {
+          coins_multiplier?: number | null
+          created_at?: string | null
+          deadline_days?: number | null
+          id?: string
+          is_enabled?: boolean | null
+          organization_id: string
+          requirement_type?: string | null
+          role_ids?: string[] | null
+          team_ids?: string[] | null
+          training_id: string
+          updated_at?: string | null
+          xp_multiplier?: number | null
+        }
+        Update: {
+          coins_multiplier?: number | null
+          created_at?: string | null
+          deadline_days?: number | null
+          id?: string
+          is_enabled?: boolean | null
+          organization_id?: string
+          requirement_type?: string | null
+          role_ids?: string[] | null
+          team_ids?: string[] | null
+          training_id?: string
+          updated_at?: string | null
+          xp_multiplier?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_training_config_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_training_config_training_id_fkey"
+            columns: ["training_id"]
+            isOneToOne: false
+            referencedRelation: "trainings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_api_keys: {
         Row: {
           created_at: string
@@ -4623,6 +4683,67 @@ export type Database = {
           },
         ]
       }
+      training_analytics: {
+        Row: {
+          created_at: string | null
+          event_type: string
+          id: string
+          metadata: Json | null
+          module_id: string | null
+          organization_id: string | null
+          score: number | null
+          time_spent_seconds: number | null
+          training_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          module_id?: string | null
+          organization_id?: string | null
+          score?: number | null
+          time_spent_seconds?: number | null
+          training_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          module_id?: string | null
+          organization_id?: string | null
+          score?: number | null
+          time_spent_seconds?: number | null
+          training_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_analytics_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "training_modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_analytics_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_analytics_training_id_fkey"
+            columns: ["training_id"]
+            isOneToOne: false
+            referencedRelation: "trainings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       training_certificates: {
         Row: {
           certificate_number: string
@@ -4709,15 +4830,22 @@ export type Database = {
           created_at: string | null
           description: string | null
           id: string
+          is_checkpoint: boolean | null
+          is_optional: boolean | null
           is_preview: boolean | null
           is_required: boolean | null
+          min_score: number | null
           module_key: string
           name: string
           order_index: number | null
           requires_completion: boolean | null
+          skill_ids: string[] | null
+          step_config: Json | null
+          step_type: string | null
           thumbnail_url: string | null
           time_minutes: number | null
           training_id: string
+          validation_criteria: Json | null
           video_url: string | null
           xp_reward: number | null
         }
@@ -4728,15 +4856,22 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          is_checkpoint?: boolean | null
+          is_optional?: boolean | null
           is_preview?: boolean | null
           is_required?: boolean | null
+          min_score?: number | null
           module_key: string
           name: string
           order_index?: number | null
           requires_completion?: boolean | null
+          skill_ids?: string[] | null
+          step_config?: Json | null
+          step_type?: string | null
           thumbnail_url?: string | null
           time_minutes?: number | null
           training_id: string
+          validation_criteria?: Json | null
           video_url?: string | null
           xp_reward?: number | null
         }
@@ -4747,15 +4882,22 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          is_checkpoint?: boolean | null
+          is_optional?: boolean | null
           is_preview?: boolean | null
           is_required?: boolean | null
+          min_score?: number | null
           module_key?: string
           name?: string
           order_index?: number | null
           requires_completion?: boolean | null
+          skill_ids?: string[] | null
+          step_config?: Json | null
+          step_type?: string | null
           thumbnail_url?: string | null
           time_minutes?: number | null
           training_id?: string
+          validation_criteria?: Json | null
           video_url?: string | null
           xp_reward?: number | null
         }
@@ -4771,10 +4913,14 @@ export type Database = {
       }
       trainings: {
         Row: {
+          allow_retry: boolean | null
+          area: string | null
+          bonus_rules: Json | null
           category: string | null
           certificate_enabled: boolean | null
           coins_reward: number | null
           color: string | null
+          completion_criteria: Json | null
           created_at: string | null
           description: string | null
           difficulty: string | null
@@ -4785,18 +4931,26 @@ export type Database = {
           insignia_reward_id: string | null
           is_active: boolean | null
           is_onboarding: boolean | null
+          max_attempts: number | null
           name: string
           organization_id: string | null
+          required_level: string | null
           reward_rules: Json | null
+          skill_ids: string[] | null
           thumbnail_url: string | null
           training_key: string
+          training_status: string | null
           xp_reward: number | null
         }
         Insert: {
+          allow_retry?: boolean | null
+          area?: string | null
+          bonus_rules?: Json | null
           category?: string | null
           certificate_enabled?: boolean | null
           coins_reward?: number | null
           color?: string | null
+          completion_criteria?: Json | null
           created_at?: string | null
           description?: string | null
           difficulty?: string | null
@@ -4807,18 +4961,26 @@ export type Database = {
           insignia_reward_id?: string | null
           is_active?: boolean | null
           is_onboarding?: boolean | null
+          max_attempts?: number | null
           name: string
           organization_id?: string | null
+          required_level?: string | null
           reward_rules?: Json | null
+          skill_ids?: string[] | null
           thumbnail_url?: string | null
           training_key: string
+          training_status?: string | null
           xp_reward?: number | null
         }
         Update: {
+          allow_retry?: boolean | null
+          area?: string | null
+          bonus_rules?: Json | null
           category?: string | null
           certificate_enabled?: boolean | null
           coins_reward?: number | null
           color?: string | null
+          completion_criteria?: Json | null
           created_at?: string | null
           description?: string | null
           difficulty?: string | null
@@ -4829,11 +4991,15 @@ export type Database = {
           insignia_reward_id?: string | null
           is_active?: boolean | null
           is_onboarding?: boolean | null
+          max_attempts?: number | null
           name?: string
           organization_id?: string | null
+          required_level?: string | null
           reward_rules?: Json | null
+          skill_ids?: string[] | null
           thumbnail_url?: string | null
           training_key?: string
+          training_status?: string | null
           xp_reward?: number | null
         }
         Relationships: [
@@ -5375,27 +5541,36 @@ export type Database = {
       }
       user_module_progress: {
         Row: {
+          attempts: number | null
           completed_at: string | null
           id: string
+          metadata: Json | null
           module_id: string
+          passed_validation: boolean | null
           score: number | null
           started_at: string | null
           time_spent_seconds: number | null
           user_id: string
         }
         Insert: {
+          attempts?: number | null
           completed_at?: string | null
           id?: string
+          metadata?: Json | null
           module_id: string
+          passed_validation?: boolean | null
           score?: number | null
           started_at?: string | null
           time_spent_seconds?: number | null
           user_id: string
         }
         Update: {
+          attempts?: number | null
           completed_at?: string | null
           id?: string
+          metadata?: Json | null
           module_id?: string
+          passed_validation?: boolean | null
           score?: number | null
           started_at?: string | null
           time_spent_seconds?: number | null
@@ -5878,29 +6053,50 @@ export type Database = {
       }
       user_training_progress: {
         Row: {
+          assigned_at: string | null
+          assigned_by: string | null
+          attempts: number | null
+          average_score: number | null
+          bonus_xp_earned: number | null
           completed_at: string | null
           current_module_index: number | null
+          deadline_at: string | null
           id: string
           progress_percent: number | null
           started_at: string | null
+          total_time_seconds: number | null
           training_id: string
           user_id: string
         }
         Insert: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          attempts?: number | null
+          average_score?: number | null
+          bonus_xp_earned?: number | null
           completed_at?: string | null
           current_module_index?: number | null
+          deadline_at?: string | null
           id?: string
           progress_percent?: number | null
           started_at?: string | null
+          total_time_seconds?: number | null
           training_id: string
           user_id: string
         }
         Update: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          attempts?: number | null
+          average_score?: number | null
+          bonus_xp_earned?: number | null
           completed_at?: string | null
           current_module_index?: number | null
+          deadline_at?: string | null
           id?: string
           progress_percent?: number | null
           started_at?: string | null
+          total_time_seconds?: number | null
           training_id?: string
           user_id?: string
         }
@@ -6241,6 +6437,10 @@ export type Database = {
       }
       check_skills_health: { Args: never; Returns: Json }
       complete_daily_mission: { Args: { p_mission_id: string }; Returns: Json }
+      complete_training_with_rewards: {
+        Args: { p_training_id: string; p_user_id: string }
+        Returns: Json
+      }
       create_assessment_notification: {
         Args: {
           p_action_url?: string
@@ -6408,6 +6608,15 @@ export type Database = {
         Args: { _granularity?: string; _org_id: string; _period?: string }
         Returns: Json
       }
+      get_training_metrics: {
+        Args: {
+          p_end_date?: string
+          p_org_id?: string
+          p_start_date?: string
+          p_training_id: string
+        }
+        Returns: Json
+      }
       get_trainings_report: {
         Args: { _org_id: string; _period?: string }
         Returns: Json
@@ -6565,6 +6774,10 @@ export type Database = {
       validate_email_domain: {
         Args: { p_email: string; p_organization_id: string }
         Returns: boolean
+      }
+      validate_module_completion: {
+        Args: { p_module_id: string; p_score?: number; p_user_id: string }
+        Returns: Json
       }
     }
     Enums: {
