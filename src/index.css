@@ -5,13 +5,13 @@
 @layer base {
   :root {
     /*
-      GAMEIA THEME (Elegant / balanced)
-      - Neutral, premium base
-      - Deep indigo primary
-      - Subtle teal secondary
-      - Violet accent for highlights
+      GAMEIA PREMIUM THEME
+      - Clean, enterprise-grade aesthetic
+      - Refined blue primary with subtle warmth
+      - Sophisticated neutral palette
+      - Fintech/SaaS inspired
     */
-    --background: 220 25% 98%;
+    --background: 220 20% 98%;
     --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
@@ -21,117 +21,133 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    --primary: 224 78% 58%;
+    /* Primary - Refined blue */
+    --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 224 78% 66%;
+    --primary-glow: 217 91% 70%;
+    --primary-muted: 217 91% 95%;
 
-    --secondary: 174 65% 40%;
+    /* Secondary - Warm teal */
+    --secondary: 172 66% 50%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 220 20% 96%;
-    --muted-foreground: 215 16% 47%;
+    /* Muted - Sophisticated neutrals */
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
 
-    --accent: 262 70% 60%;
+    /* Accent - Vibrant violet */
+    --accent: 258 90% 66%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 72% 55%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 18% 90%;
-    --input: 220 18% 90%;
-    --ring: 224 78% 58%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 217 91% 60%;
 
-    --radius: 1rem;
+    --radius: 0.75rem;
 
-    /* Gameia tokens */
-    --gameia-success: 158 64% 38%;
-    --gameia-warning: 38 92% 52%;
-    --gameia-info: 174 65% 40%;
-    --gameia-purple: 262 70% 60%;
-    --gameia-teal: 174 65% 40%;
+    /* Status colors */
+    --gameia-success: 160 84% 39%;
+    --gameia-warning: 38 92% 50%;
+    --gameia-info: 199 89% 48%;
+    --gameia-purple: 258 90% 66%;
+    --gameia-teal: 172 66% 50%;
 
     /* Pillar Colors */
-    --pillar-curriculum: 224 78% 58%;
-    --pillar-gamification: 174 65% 40%;
-    --pillar-guidance: 262 70% 60%;
+    --pillar-curriculum: 217 91% 60%;
+    --pillar-gamification: 172 66% 50%;
+    --pillar-guidance: 258 90% 66%;
 
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(224 78% 58%), hsl(174 65% 40%));
-    --gradient-secondary: linear-gradient(135deg, hsl(174 65% 40%), hsl(262 70% 60%));
-    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(220 25% 98%));
-    --gradient-hero: linear-gradient(180deg, hsl(224 78% 58% / 0.05) 0%, hsl(220 25% 98%) 100%);
+    /* Premium Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(199 89% 48%));
+    --gradient-secondary: linear-gradient(135deg, hsl(172 66% 50%), hsl(199 89% 48%));
+    --gradient-accent: linear-gradient(135deg, hsl(258 90% 66%), hsl(217 91% 60%));
+    --gradient-surface: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(220 20% 98%) 100%);
+    --gradient-glow: radial-gradient(ellipse at center, hsl(217 91% 60% / 0.15) 0%, transparent 70%);
     --gradient-mesh:
-      radial-gradient(at 40% 20%, hsl(224 78% 58% / 0.08) 0px, transparent 52%),
-      radial-gradient(at 80% 0%, hsl(262 70% 60% / 0.06) 0px, transparent 52%),
-      radial-gradient(at 0% 55%, hsl(174 65% 40% / 0.06) 0px, transparent 52%);
+      radial-gradient(at 40% 20%, hsl(217 91% 60% / 0.04) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, hsl(258 90% 66% / 0.03) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, hsl(172 66% 50% / 0.03) 0px, transparent 50%);
 
-    /* Shadows */
-    --shadow-sm: 0 1px 2px hsl(222 47% 11% / 0.04);
-    --shadow-md: 0 6px 18px hsl(222 47% 11% / 0.08);
-    --shadow-lg: 0 14px 40px hsl(222 47% 11% / 0.12);
-    --shadow-glow-primary: 0 0 26px hsl(224 78% 58% / 0.2);
-    --shadow-glow-secondary: 0 0 26px hsl(174 65% 40% / 0.2);
+    /* Premium Shadows */
+    --shadow-xs: 0 1px 2px hsl(222 47% 11% / 0.03);
+    --shadow-sm: 0 1px 3px hsl(222 47% 11% / 0.04), 0 1px 2px hsl(222 47% 11% / 0.03);
+    --shadow-md: 0 4px 6px -1px hsl(222 47% 11% / 0.05), 0 2px 4px -2px hsl(222 47% 11% / 0.04);
+    --shadow-lg: 0 10px 15px -3px hsl(222 47% 11% / 0.06), 0 4px 6px -4px hsl(222 47% 11% / 0.04);
+    --shadow-xl: 0 20px 25px -5px hsl(222 47% 11% / 0.08), 0 8px 10px -6px hsl(222 47% 11% / 0.04);
+    --shadow-glow: 0 0 20px hsl(217 91% 60% / 0.15);
+    --shadow-glow-strong: 0 0 30px hsl(217 91% 60% / 0.25);
   }
 
   .dark {
-    --background: 222 47% 6%;
-    --foreground: 210 40% 98%;
+    --background: 224 71% 4%;
+    --foreground: 213 31% 91%;
 
-    --card: 222 41% 10%;
-    --card-foreground: 210 40% 98%;
-    --card-hover: 222 41% 14%;
+    --card: 224 71% 7%;
+    --card-foreground: 213 31% 91%;
+    --card-hover: 224 71% 10%;
 
-    --popover: 222 41% 10%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 224 71% 7%;
+    --popover-foreground: 213 31% 91%;
 
-    --primary: 224 78% 60%;
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 224 78% 68%;
+    /* Primary - Vibrant blue */
+    --primary: 217 91% 65%;
+    --primary-foreground: 224 71% 4%;
+    --primary-glow: 217 91% 75%;
+    --primary-muted: 217 91% 15%;
 
-    --secondary: 174 65% 42%;
-    --secondary-foreground: 222 47% 6%;
+    /* Secondary - Bright teal */
+    --secondary: 172 66% 55%;
+    --secondary-foreground: 224 71% 4%;
 
-    --muted: 222 25% 16%;
+    /* Muted - Dark neutrals */
+    --muted: 223 47% 11%;
     --muted-foreground: 215 20% 55%;
 
-    --accent: 262 70% 62%;
-    --accent-foreground: 0 0% 100%;
+    /* Accent - Electric violet */
+    --accent: 258 90% 70%;
+    --accent-foreground: 224 71% 4%;
 
-    --destructive: 0 72% 55%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 222 22% 18%;
-    --input: 222 25% 16%;
-    --ring: 224 78% 60%;
+    --border: 216 34% 17%;
+    --input: 216 34% 17%;
+    --ring: 217 91% 65%;
 
-    /* Gameia tokens */
-    --gameia-success: 158 64% 46%;
-    --gameia-warning: 38 92% 60%;
-    --gameia-info: 174 65% 46%;
-    --gameia-purple: 262 70% 66%;
-    --gameia-teal: 174 65% 46%;
+    /* Status colors */
+    --gameia-success: 160 84% 50%;
+    --gameia-warning: 38 92% 58%;
+    --gameia-info: 199 89% 58%;
+    --gameia-purple: 258 90% 70%;
+    --gameia-teal: 172 66% 55%;
 
     /* Pillar Colors */
-    --pillar-curriculum: 224 78% 60%;
-    --pillar-gamification: 174 65% 46%;
-    --pillar-guidance: 262 70% 66%;
+    --pillar-curriculum: 217 91% 65%;
+    --pillar-gamification: 172 66% 55%;
+    --pillar-guidance: 258 90% 70%;
 
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(224 78% 60%), hsl(174 65% 42%));
-    --gradient-secondary: linear-gradient(135deg, hsl(174 65% 42%), hsl(262 70% 62%));
-    --gradient-card: linear-gradient(145deg, hsl(222 41% 12%), hsl(222 47% 8%));
-    --gradient-hero: linear-gradient(180deg, hsl(222 47% 8%) 0%, hsl(222 41% 12%) 100%);
+    /* Premium Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(217 91% 65%), hsl(199 89% 58%));
+    --gradient-secondary: linear-gradient(135deg, hsl(172 66% 55%), hsl(199 89% 58%));
+    --gradient-accent: linear-gradient(135deg, hsl(258 90% 70%), hsl(217 91% 65%));
+    --gradient-surface: linear-gradient(180deg, hsl(224 71% 9%) 0%, hsl(224 71% 4%) 100%);
+    --gradient-glow: radial-gradient(ellipse at center, hsl(217 91% 65% / 0.15) 0%, transparent 70%);
     --gradient-mesh:
-      radial-gradient(at 40% 20%, hsl(224 78% 60% / 0.14) 0px, transparent 52%),
-      radial-gradient(at 80% 0%, hsl(262 70% 62% / 0.1) 0px, transparent 52%),
-      radial-gradient(at 0% 55%, hsl(174 65% 42% / 0.1) 0px, transparent 52%);
+      radial-gradient(at 40% 20%, hsl(217 91% 65% / 0.08) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, hsl(258 90% 70% / 0.06) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, hsl(172 66% 55% / 0.06) 0px, transparent 50%);
 
-    /* Shadows */
-    --shadow-sm: 0 1px 2px hsl(0 0% 0% / 0.22);
-    --shadow-md: 0 10px 24px hsl(0 0% 0% / 0.3);
-    --shadow-lg: 0 18px 48px hsl(0 0% 0% / 0.42);
-    --shadow-glow-primary: 0 0 32px hsl(224 78% 60% / 0.26);
-    --shadow-glow-secondary: 0 0 32px hsl(174 65% 42% / 0.22);
+    /* Premium Shadows */
+    --shadow-xs: 0 1px 2px hsl(0 0% 0% / 0.2);
+    --shadow-sm: 0 1px 3px hsl(0 0% 0% / 0.25), 0 1px 2px hsl(0 0% 0% / 0.2);
+    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.3), 0 2px 4px -2px hsl(0 0% 0% / 0.2);
+    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.35), 0 4px 6px -4px hsl(0 0% 0% / 0.2);
+    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.4), 0 8px 10px -6px hsl(0 0% 0% / 0.25);
+    --shadow-glow: 0 0 20px hsl(217 91% 65% / 0.2);
+    --shadow-glow-strong: 0 0 30px hsl(217 91% 65% / 0.35);
   }
 }
 
@@ -142,95 +158,91 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-family: "Outfit", sans-serif;
-    background-image: var(--gradient-mesh);
-    background-attachment: fixed;
-    background-size: cover;
+    font-family: "Inter", "Outfit", system-ui, sans-serif;
   }
 
-  h1,
-  h2,
-  h3,
-  .display-text {
-    font-family: "Outfit", sans-serif;
+  h1, h2, h3, h4, .display-text {
+    font-family: "Outfit", "Inter", system-ui, sans-serif;
     font-weight: 600;
+    letter-spacing: -0.02em;
   }
 
   ::selection {
-    background: hsl(var(--primary) / 0.2);
+    background: hsl(var(--primary) / 0.15);
+    color: hsl(var(--primary));
   }
 }
 
 @layer components {
-  .gameia-card {
-    @apply relative bg-card/90 backdrop-blur-sm border border-border rounded-2xl transition-all duration-300;
+  /* Premium Surface - Base card style */
+  .surface {
+    @apply relative bg-card border border-border/60 rounded-xl;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .surface:hover {
+    @apply border-border;
     box-shadow: var(--shadow-md);
   }
 
-  .gameia-card:hover {
-    @apply border-primary/25;
+  .surface-elevated {
+    @apply surface;
+    box-shadow: var(--shadow-md);
+  }
+
+  .surface-elevated:hover {
     box-shadow: var(--shadow-lg);
-    transform: translateY(-2px);
-  }
-
-  .pillar-card {
-    @apply relative overflow-hidden rounded-2xl p-6 transition-all duration-300;
-  }
-
-  .pillar-card::before {
-    content: "";
-    @apply absolute inset-0 opacity-10;
-  }
-
-  .pillar-curriculum::before {
-    background: linear-gradient(135deg, hsl(var(--pillar-curriculum)), transparent);
-  }
-
-  .pillar-gamification::before {
-    background: linear-gradient(135deg, hsl(var(--pillar-gamification)), transparent);
-  }
-
-  .pillar-guidance::before {
-    background: linear-gradient(135deg, hsl(var(--pillar-guidance)), transparent);
-  }
-
-  .btn-gameia {
-    @apply px-6 py-3 rounded-xl font-semibold transition-all duration-300;
-    font-family: "Outfit", sans-serif;
-  }
-
-  .btn-primary-gameia {
-    @apply btn-gameia bg-primary text-primary-foreground hover:opacity-90;
-    box-shadow: var(--shadow-glow-primary);
-  }
-
-  .btn-primary-gameia:hover {
     transform: translateY(-1px);
-    box-shadow: 0 0 30px hsl(var(--primary) / 0.4);
   }
 
-  .stat-card-gameia {
-    @apply bg-card/80 backdrop-blur-sm border border-border rounded-xl p-5;
+  /* Glass effect */
+  .glass {
+    @apply bg-card/80 backdrop-blur-xl border border-border/40;
     box-shadow: var(--shadow-sm);
   }
 
-  .surface {
-    @apply bg-card/70 backdrop-blur-md border border-border rounded-2xl;
-    box-shadow: var(--shadow-md);
+  /* Premium button styles */
+  .btn-premium {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 
+           rounded-lg font-medium text-sm
+           transition-all duration-200 ease-out;
   }
 
-  .surface-hover {
-    @apply transition-all duration-300;
+  .btn-primary {
+    @apply btn-premium bg-primary text-primary-foreground;
+    box-shadow: 0 1px 2px hsl(var(--primary) / 0.2), 0 0 0 0 hsl(var(--primary) / 0);
   }
 
-  .surface-hover:hover {
-    @apply border-primary/25;
-    box-shadow: var(--shadow-lg);
+  .btn-primary:hover {
+    box-shadow: 0 4px 12px hsl(var(--primary) / 0.3), 0 0 0 0 hsl(var(--primary) / 0);
     transform: translateY(-1px);
   }
 
-  .progress-bar {
-    @apply h-2 bg-muted rounded-full overflow-hidden;
+  .btn-primary:active {
+    transform: translateY(0);
+  }
+
+  .btn-secondary {
+    @apply btn-premium bg-muted text-foreground hover:bg-muted/80;
+  }
+
+  .btn-ghost {
+    @apply btn-premium bg-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50;
+  }
+
+  /* Stat cards */
+  .stat-card {
+    @apply surface p-4 flex items-center gap-4;
+  }
+
+  .stat-card-icon {
+    @apply p-2.5 rounded-xl bg-muted;
+  }
+
+  /* Progress bar */
+  .progress-track {
+    @apply h-1.5 bg-muted rounded-full overflow-hidden;
   }
 
   .progress-fill {
@@ -238,110 +250,126 @@
     background: var(--gradient-primary);
   }
 
+  /* Badge styles */
+  .badge-primary {
+    @apply inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium
+           bg-primary/10 text-primary border border-primary/20;
+  }
+
+  .badge-success {
+    @apply inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium
+           bg-gameia-success/10 text-gameia-success border border-gameia-success/20;
+  }
+
+  .badge-warning {
+    @apply inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium
+           bg-gameia-warning/10 text-gameia-warning border border-gameia-warning/20;
+  }
+
+  .badge-muted {
+    @apply inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium
+           bg-muted text-muted-foreground;
+  }
+
+  /* Mesh background */
   .mesh-background {
     background-image: var(--gradient-mesh);
+    background-attachment: fixed;
+  }
+
+  /* Nav item active state */
+  .nav-item {
+    @apply flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium
+           text-muted-foreground transition-all duration-150;
+  }
+
+  .nav-item:hover {
+    @apply text-foreground bg-muted/50;
+  }
+
+  .nav-item-active {
+    @apply nav-item text-primary bg-primary/8;
   }
 }
 
 @layer utilities {
-  .animate-float {
-    animation: float 3s ease-in-out infinite;
-  }
-
-  .animate-pulse-soft {
-    animation: pulse-soft 2s ease-in-out infinite;
-  }
-
-  .animate-gradient {
-    animation: gradient 8s ease infinite;
-    background-size: 200% 200%;
-  }
-
-  .animate-shimmer {
-    animation: shimmer 2s linear infinite;
-    background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.1), transparent);
-    background-size: 200% 100%;
-  }
-
+  /* Text utilities */
   .text-gradient {
     @apply bg-clip-text text-transparent;
     background-image: var(--gradient-primary);
   }
 
-  .glass-effect {
-    @apply bg-background/80 backdrop-blur-xl border border-border/50;
+  /* Glow effects */
+  .glow-sm {
+    box-shadow: var(--shadow-glow);
   }
 
+  .glow-md {
+    box-shadow: var(--shadow-glow-strong);
+  }
+
+  /* Hover animations */
   .hover-lift {
-    @apply transition-all duration-300;
+    @apply transition-all duration-200 ease-out;
   }
 
   .hover-lift:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 40px hsl(var(--primary) / 0.15);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
   }
 
-  .glow-primary {
-    box-shadow: 0 0 40px hsl(var(--primary) / 0.3);
+  /* Focus ring */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 
+           focus-visible:ring-primary focus-visible:ring-offset-2 
+           focus-visible:ring-offset-background;
   }
 
-  .glow-secondary {
-    box-shadow: 0 0 40px hsl(var(--secondary) / 0.3);
+  /* Animation utilities */
+  .animate-fade-in {
+    animation: fade-in 0.3s ease-out forwards;
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.3s ease-out forwards;
+  }
+
+  .animate-scale-in {
+    animation: scale-in 0.2s ease-out forwards;
+  }
+
+  .animate-pulse-soft {
+    animation: pulse-soft 2s ease-in-out infinite;
   }
 }
 
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
+/* Keyframes */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 @keyframes pulse-soft {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
-}
-
-@keyframes gradient {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
 }
 
 @keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
-@keyframes bounce-subtle {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-5px);
-  }
-}
-
-/* Skill Tree Styles */
+/* Skill tree legacy styles */
 .skill-node {
   @apply relative transition-all duration-300;
 }
@@ -355,20 +383,20 @@
 }
 
 .skill-node.mastered {
-  box-shadow: 0 0 20px hsl(var(--secondary) / 0.5);
+  box-shadow: var(--shadow-glow);
 }
 
-/* Level Ring Animation */
+/* Level ring animation */
 @keyframes level-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4);
-  }
-  50% {
-    box-shadow: 0 0 0 8px hsl(var(--primary) / 0);
-  }
+  0%, 100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.3); }
+  50% { box-shadow: 0 0 0 6px hsl(var(--primary) / 0); }
 }
 
 .level-ring {
   animation: level-pulse 2s ease-in-out infinite;
+}
+
+/* Safe area for mobile */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0);
 }
