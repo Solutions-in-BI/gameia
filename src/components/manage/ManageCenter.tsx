@@ -20,6 +20,7 @@ import { ReportsPage } from "@/components/admin/reports/ReportsPage";
 // Importar AlertsSection real
 import { AlertsSection } from "./alerts";
 import { TeamAssessmentsPanel } from "./TeamAssessmentsPanel";
+import { TrainingAssignments } from "./trainings";
 
 function CommitmentsSection() {
   return (
@@ -106,6 +107,8 @@ export function ManageCenter() {
             isLoading={isLoading}
           />
         );
+      case "trainings":
+        return <TrainingAssignments />;
       case "commitments":
         return <CommitmentsSection />;
       case "assessments":

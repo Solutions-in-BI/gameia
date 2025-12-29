@@ -1,0 +1,1 @@
+export { OrgTrainingConfigSection } from "./OrgTrainingConfig";
