@@ -123,7 +123,12 @@ export function useMonthlyGoals(): UseMonthlyGoals {
   const [goals, setGoals] = useState<MonthlyGoal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const currentMonth = startOfMonth(new Date());
+  // Memoize month dates to prevent infinite re-renders
+  const [currentMonthStr] = useState(() => {
+    const now = new Date();
+    return startOfMonth(now).toISOString().split("T")[0];
+  });
+  
   const monthEnd = endOfMonth(new Date());
   const daysRemaining = differenceInDays(monthEnd, new Date()) + 1;
 
@@ -134,15 +139,12 @@ export function useMonthlyGoals(): UseMonthlyGoals {
       return;
     }
 
-    setIsLoading(true);
     try {
-      const monthStr = currentMonth.toISOString().split("T")[0];
-      
       const { data, error } = await supabase
         .from("monthly_goals")
         .select("*")
         .eq("user_id", user.id)
-        .eq("goal_month", monthStr)
+        .eq("goal_month", currentMonthStr)
         .order("created_at", { ascending: true });
 
       if (error) throw error;
@@ -153,7 +155,7 @@ export function useMonthlyGoals(): UseMonthlyGoals {
     } finally {
       setIsLoading(false);
     }
-  }, [user, currentMonth]);
+  }, [user, currentMonthStr]);
 
   useEffect(() => {
     fetchGoals();
@@ -182,7 +184,7 @@ export function useMonthlyGoals(): UseMonthlyGoals {
       try {
         const { error } = await supabase.from("monthly_goals").insert({
           user_id: user.id,
-          goal_month: currentMonth.toISOString().split("T")[0],
+          goal_month: currentMonthStr,
           goal_type: template.goal_type,
           title: template.title,
           description: template.description,
@@ -206,7 +208,7 @@ export function useMonthlyGoals(): UseMonthlyGoals {
         return false;
       }
     },
-    [user, goals, currentMonth, fetchGoals]
+    [user, goals, currentMonthStr, fetchGoals]
   );
 
   const updateGoalProgress = useCallback(
