@@ -110,6 +110,12 @@ export function ExperienceCard({
 }: ExperienceCardProps) {
   const typeConfig = TYPE_CONFIG[type] || TYPE_CONFIG.game;
 
+  const difficultyKey =
+    difficulty && Object.prototype.hasOwnProperty.call(DIFFICULTY_CONFIG, difficulty)
+      ? (difficulty as keyof typeof DIFFICULTY_CONFIG)
+      : undefined;
+  const difficultyConfig = difficultyKey ? DIFFICULTY_CONFIG[difficultyKey] : undefined;
+
   // Calcular reward preview
   const totalXp = xpReward || rewardRules?.reduce((sum, r) => 
     sum + r.baseReward.xp + (r.bonusReward?.xp || 0), 0
@@ -248,9 +254,9 @@ export function ExperienceCard({
                 {duration}
               </span>
             )}
-            {difficulty && (
-              <Badge variant="outline" className={DIFFICULTY_CONFIG[difficulty].color}>
-                {DIFFICULTY_CONFIG[difficulty].label}
+            {difficultyConfig && (
+              <Badge variant="outline" className={difficultyConfig.color}>
+                {difficultyConfig.label}
               </Badge>
             )}
             {skills.slice(0, 2).map(skill => (
@@ -367,9 +373,14 @@ export function ExperienceCard({
                 {duration}
               </span>
             )}
-            {difficulty && (
-              <span className={cn("px-1.5 py-0.5 rounded text-[10px]", DIFFICULTY_CONFIG[difficulty].color)}>
-                {DIFFICULTY_CONFIG[difficulty].label}
+            {difficultyConfig && (
+              <span
+                className={cn(
+                  "px-1.5 py-0.5 rounded text-[10px]",
+                  difficultyConfig.color
+                )}
+              >
+                {difficultyConfig.label}
               </span>
             )}
           </div>
