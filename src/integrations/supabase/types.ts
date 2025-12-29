@@ -1019,6 +1019,63 @@ export type Database = {
           },
         ]
       }
+      core_events: {
+        Row: {
+          coins_earned: number | null
+          created_at: string
+          event_type: string
+          id: string
+          metadata: Json | null
+          organization_id: string | null
+          score: number | null
+          skill_ids: string[] | null
+          team_id: string | null
+          user_id: string
+          xp_earned: number | null
+        }
+        Insert: {
+          coins_earned?: number | null
+          created_at?: string
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          organization_id?: string | null
+          score?: number | null
+          skill_ids?: string[] | null
+          team_id?: string | null
+          user_id: string
+          xp_earned?: number | null
+        }
+        Update: {
+          coins_earned?: number | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          organization_id?: string | null
+          score?: number | null
+          skill_ids?: string[] | null
+          team_id?: string | null
+          user_id?: string
+          xp_earned?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "core_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "core_events_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "organization_teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       daily_missions: {
         Row: {
           coins_reward: number
@@ -5650,6 +5707,16 @@ export type Database = {
         Args: { _org_id: string; _user_id: string }
         Returns: string
       }
+      get_team_event_stats: {
+        Args: { p_days?: number; p_team_id: string }
+        Returns: {
+          event_count: number
+          event_type: string
+          total_coins: number
+          total_xp: number
+          unique_users: number
+        }[]
+      }
       get_team_report: {
         Args: { _org_id: string; _period?: string; _team_id: string }
         Returns: Json
@@ -5665,6 +5732,16 @@ export type Database = {
       get_trainings_report: {
         Args: { _org_id: string; _period?: string }
         Returns: Json
+      }
+      get_user_event_stats: {
+        Args: { p_days?: number; p_user_id: string }
+        Returns: {
+          avg_score: number
+          event_count: number
+          event_type: string
+          total_coins: number
+          total_xp: number
+        }[]
       }
       get_user_role: {
         Args: { _org_id?: string; _user_id: string }
@@ -5735,6 +5812,20 @@ export type Database = {
         Returns: string
       }
       purchase_marketplace_item: { Args: { p_item_id: string }; Returns: Json }
+      record_core_event: {
+        Args: {
+          p_coins_earned?: number
+          p_event_type: string
+          p_metadata?: Json
+          p_organization_id?: string
+          p_score?: number
+          p_skill_ids?: string[]
+          p_team_id?: string
+          p_user_id: string
+          p_xp_earned?: number
+        }
+        Returns: string
+      }
       record_skill_impact: {
         Args: {
           p_impact_type: string
