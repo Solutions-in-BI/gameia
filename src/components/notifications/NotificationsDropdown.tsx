@@ -15,6 +15,12 @@ import {
   Trophy,
   Target,
   X,
+  Brain,
+  Users,
+  Calendar,
+  ClipboardCheck,
+  AlertCircle,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -24,7 +30,9 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 import { useNotifications, type Notification } from "@/hooks/useNotifications";
+import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -35,42 +43,75 @@ const typeIcons: Record<string, React.ReactNode> = {
   invite_used: <Building2 className="w-4 h-4 text-primary" />,
   achievement: <Trophy className="w-4 h-4 text-yellow-500" />,
   challenge: <Target className="w-4 h-4 text-orange-500" />,
+  // Novos tipos de avaliação
+  assessment_suggestion: <Sparkles className="w-4 h-4 text-purple-500" />,
+  assessment_completed: <ClipboardCheck className="w-4 h-4 text-green-500" />,
+  pdi_goal_due: <AlertCircle className="w-4 h-4 text-orange-500" />,
+  team_assessment: <Users className="w-4 h-4 text-blue-500" />,
+  feedback_request: <Brain className="w-4 h-4 text-indigo-500" />,
 };
 
 function NotificationItem({
   notification,
   onMarkAsRead,
   onDelete,
+  onNavigate,
 }: {
   notification: Notification;
   onMarkAsRead: () => void;
   onDelete: () => void;
+  onNavigate?: () => void;
 }) {
   const icon = typeIcons[notification.type] || <Bell className="w-4 h-4 text-muted-foreground" />;
+  const priority = notification.priority || 'normal';
+  
+  const handleClick = () => {
+    if (!notification.is_read) {
+      onMarkAsRead();
+    }
+    if (notification.action_url && onNavigate) {
+      onNavigate();
+    }
+  };
   
   return (
     <motion.div
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -20 }}
+      onClick={handleClick}
       className={cn(
-        "flex items-start gap-3 p-3 rounded-lg transition-colors",
+        "flex items-start gap-3 p-3 rounded-lg transition-colors cursor-pointer",
         notification.is_read 
-          ? "bg-background/50" 
-          : "bg-primary/5 border-l-2 border-primary"
+          ? "bg-background/50 hover:bg-muted/30" 
+          : "bg-primary/5 border-l-2 border-primary hover:bg-primary/10",
+        priority === 'urgent' && "border-l-destructive bg-destructive/5",
+        priority === 'high' && "border-l-orange-500 bg-orange-500/5"
       )}
     >
-      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
+      <div className={cn(
+        "w-8 h-8 rounded-full flex items-center justify-center shrink-0",
+        priority === 'urgent' ? "bg-destructive/10" :
+        priority === 'high' ? "bg-orange-500/10" : "bg-muted"
+      )}>
         {icon}
       </div>
       
       <div className="flex-1 min-w-0">
-        <p className={cn(
-          "text-sm",
-          notification.is_read ? "text-muted-foreground" : "text-foreground font-medium"
-        )}>
-          {notification.title}
-        </p>
+        <div className="flex items-center gap-2">
+          <p className={cn(
+            "text-sm",
+            notification.is_read ? "text-muted-foreground" : "text-foreground font-medium"
+          )}>
+            {notification.title}
+          </p>
+          {priority === 'urgent' && (
+            <Badge variant="destructive" className="text-[10px] h-4 px-1">Urgente</Badge>
+          )}
+          {priority === 'high' && (
+            <Badge variant="outline" className="text-[10px] h-4 px-1 border-orange-500 text-orange-500">Alta</Badge>
+          )}
+        </div>
         {notification.message && (
           <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
             {notification.message}
@@ -116,6 +157,7 @@ function NotificationItem({
 
 export function NotificationsDropdown() {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
   const {
     notifications,
     unreadCount,
@@ -125,6 +167,13 @@ export function NotificationsDropdown() {
     deleteNotification,
     clearAll,
   } = useNotifications();
+
+  const handleNavigate = (notification: Notification) => {
+    if (notification.action_url) {
+      setOpen(false);
+      navigate(notification.action_url);
+    }
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -206,6 +255,7 @@ export function NotificationsDropdown() {
                     notification={notification}
                     onMarkAsRead={() => markAsRead(notification.id)}
                     onDelete={() => deleteNotification(notification.id)}
+                    onNavigate={() => handleNavigate(notification)}
                   />
                 ))}
               </AnimatePresence>
