@@ -235,6 +235,102 @@ export function usePDI() {
     },
   });
 
+  // Buscar sugestões de metas PDI baseadas em eventos
+  const { data: pdiSuggestions = [], isLoading: suggestionsLoading, refetch: refetchSuggestions } = useQuery({
+    queryKey: ["pdi-suggestions", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase.rpc("get_pdi_suggestions_for_user", {
+        p_user_id: user.id,
+      });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user?.id,
+    staleTime: 5 * 60 * 1000, // 5 minutos
+  });
+
+  // Sugerir metas a partir de uma avaliação
+  const suggestGoalsFromAssessment = useMutation({
+    mutationFn: async (assessmentCycleId: string) => {
+      if (!user?.id) throw new Error("Usuário não autenticado");
+      const { data, error } = await supabase.rpc("suggest_pdi_goals_from_assessment", {
+        p_user_id: user.id,
+        p_assessment_cycle_id: assessmentCycleId,
+      });
+      if (error) throw error;
+      return data as {
+        success: boolean;
+        plan_id: string;
+        suggestions: Array<{
+          skill_id: string;
+          skill_name: string;
+          category: string;
+          current_score: number;
+          suggested_goal: string;
+          suggested_description: string;
+          priority: string;
+          xp_reward: number;
+        }>;
+        suggestions_count: number;
+      };
+    },
+    onSuccess: (result) => {
+      if (result.success && result.suggestions_count > 0) {
+        toast.success(`${result.suggestions_count} sugestão(ões) de meta encontrada(s)!`);
+        queryClient.invalidateQueries({ queryKey: ["pdi-suggestions"] });
+      }
+    },
+    onError: () => {
+      toast.error("Erro ao gerar sugestões de metas");
+    },
+  });
+
+  // Criar meta PDI a partir de uma sugestão
+  const createGoalFromSuggestion = useMutation({
+    mutationFn: async ({
+      planId,
+      skillId,
+      title,
+      description,
+      priority = "medium",
+      xpReward = 100,
+      targetDate,
+      originAssessmentId,
+    }: {
+      planId: string;
+      skillId: string;
+      title: string;
+      description: string;
+      priority?: string;
+      xpReward?: number;
+      targetDate?: string;
+      originAssessmentId?: string;
+    }) => {
+      const { data, error } = await supabase.rpc("create_pdi_goal_from_suggestion", {
+        p_plan_id: planId,
+        p_skill_id: skillId,
+        p_title: title,
+        p_description: description,
+        p_priority: priority,
+        p_xp_reward: xpReward,
+        p_target_date: targetDate || null,
+        p_origin_assessment_id: originAssessmentId || null,
+      });
+      if (error) throw error;
+      return data as string; // goal_id
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["development-goals"] });
+      queryClient.invalidateQueries({ queryKey: ["development-plans"] });
+      queryClient.invalidateQueries({ queryKey: ["pdi-suggestions"] });
+      toast.success("Meta criada a partir da sugestão!");
+    },
+    onError: () => {
+      toast.error("Erro ao criar meta");
+    },
+  });
+
   return {
     plans,
     plansLoading,
@@ -246,5 +342,12 @@ export function usePDI() {
     createGoal,
     updateGoal,
     addCheckIn,
+    // Novas funcionalidades de sugestões
+    pdiSuggestions,
+    suggestionsLoading,
+    refetchSuggestions,
+    suggestGoalsFromAssessment,
+    createGoalFromSuggestion,
+    hasPendingSuggestions: pdiSuggestions.length > 0,
   };
 }

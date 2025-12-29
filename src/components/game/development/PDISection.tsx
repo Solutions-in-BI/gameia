@@ -7,6 +7,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { usePDI, DevelopmentPlan, DevelopmentGoal } from "@/hooks/usePDI";
 import { useAuth } from "@/hooks/useAuth";
+import { PDISuggestionsPanel } from "./PDISuggestionsPanel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -313,6 +314,9 @@ export function PDISection({ onBack }: PDISectionProps) {
       animate={{ opacity: 1 }}
       className="space-y-6"
     >
+      {/* Painel de sugestões */}
+      <PDISuggestionsPanel />
+
       <div className="flex items-center justify-between">
         <div>
           {onBack && (
