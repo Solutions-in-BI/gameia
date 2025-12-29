@@ -171,22 +171,44 @@ export function SalesPersonasManager() {
 
     setIsSaving(true);
     try {
-      const personaData = {
-        ...editingPersona,
-        organization_id: currentOrg?.id || null,
-      };
-
       if (editingPersona.id) {
         const { error } = await supabase
           .from("sales_client_personas")
-          .update(personaData)
+          .update({
+            name: editingPersona.name,
+            personality: editingPersona.personality,
+            role: editingPersona.role,
+            company_name: editingPersona.company_name,
+            company_type: editingPersona.company_type,
+            pain_points: editingPersona.pain_points,
+            decision_factors: editingPersona.decision_factors,
+            avatar: editingPersona.avatar,
+            difficulty: editingPersona.difficulty,
+            track_key: editingPersona.track_key,
+            channel: editingPersona.channel,
+            is_active: editingPersona.is_active,
+          })
           .eq("id", editingPersona.id);
         if (error) throw error;
         toast.success("Persona atualizada!");
       } else {
         const { error } = await supabase
           .from("sales_client_personas")
-          .insert([personaData]);
+          .insert([{
+            name: editingPersona.name || "Nova Persona",
+            personality: editingPersona.personality || "friendly",
+            role: editingPersona.role,
+            company_name: editingPersona.company_name,
+            company_type: editingPersona.company_type,
+            pain_points: editingPersona.pain_points,
+            decision_factors: editingPersona.decision_factors,
+            avatar: editingPersona.avatar,
+            difficulty: editingPersona.difficulty,
+            track_key: editingPersona.track_key,
+            channel: editingPersona.channel,
+            is_active: editingPersona.is_active,
+            organization_id: currentOrg?.id || null,
+          }]);
         if (error) throw error;
         toast.success("Persona criada!");
       }
