@@ -1,0 +1,168 @@
+/**
+ * ManageCenter - Centro de Gestão de Pessoas
+ * Área exclusiva para gestores
+ */
+
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { ManageSidebar, ManageSection, ManageHeader } from "./layout";
+import { useOrganization } from "@/hooks/useOrganization";
+import { useOrgMetrics } from "@/hooks/useOrgMetrics";
+import { useOrgTeams } from "@/hooks/useOrgTeams";
+import { Loader2 } from "lucide-react";
+
+// Importar componentes existentes do admin que serão reutilizados
+import { ExecutiveDashboard } from "@/components/admin/dashboard/ExecutiveDashboard";
+import { TeamManagement } from "@/components/admin/teams/TeamManagement";
+import { MembersManagement } from "@/components/admin/members/MembersManagement";
+import { ReportsPage } from "@/components/admin/reports/ReportsPage";
+
+// Placeholder para seções ainda não migradas
+function AlertsSection() {
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">Alertas & Ações</h1>
+        <p className="text-muted-foreground">Pendências e notificações importantes</p>
+      </div>
+      <div className="bg-card border border-border rounded-xl p-8 text-center">
+        <p className="text-muted-foreground">Em breve: alertas de inatividade, metas em risco, e ações recomendadas.</p>
+      </div>
+    </div>
+  );
+}
+
+function CommitmentsSection() {
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">Compromissos</h1>
+        <p className="text-muted-foreground">Gestão de metas e desafios da equipe</p>
+      </div>
+      <div className="bg-card border border-border rounded-xl p-8 text-center">
+        <p className="text-muted-foreground">Em breve: visão consolidada dos compromissos das equipes.</p>
+      </div>
+    </div>
+  );
+}
+
+function AssessmentsSection() {
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">Avaliações & Feedback</h1>
+        <p className="text-muted-foreground">360°, PDI e One-on-One</p>
+      </div>
+      <div className="bg-card border border-border rounded-xl p-8 text-center">
+        <p className="text-muted-foreground">Em breve: gestão completa de avaliações.</p>
+      </div>
+    </div>
+  );
+}
+
+export function ManageCenter() {
+  const [activeSection, setActiveSection] = useState<ManageSection>("dashboard");
+  const { currentOrg, isLoading: orgLoading } = useOrganization();
+  
+  const orgId = currentOrg?.id || "";
+  
+  // Buscar métricas para o dashboard
+  const { 
+    engagement, 
+    learning, 
+    competency, 
+    decision, 
+    membersWithMetrics, 
+    isLoading: metricsLoading 
+  } = useOrgMetrics(orgId);
+  
+  // Buscar times
+  const { teams, isLoading: teamsLoading } = useOrgTeams(orgId);
+
+  const isLoading = orgLoading || metricsLoading || teamsLoading;
+
+  const renderSection = () => {
+    if (!currentOrg) {
+      return (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <p className="text-muted-foreground">Selecione uma organização para continuar.</p>
+        </div>
+      );
+    }
+
+    switch (activeSection) {
+      case "dashboard":
+        return (
+          <ExecutiveDashboard 
+            engagement={engagement}
+            learning={learning}
+            competency={competency}
+            decision={decision}
+            members={membersWithMetrics}
+            isLoading={isLoading}
+          />
+        );
+      case "alerts":
+        return <AlertsSection />;
+      case "teams":
+        return <TeamManagement orgId={orgId} />;
+      case "members":
+        return (
+          <MembersManagement 
+            members={membersWithMetrics} 
+            teams={teams} 
+            isLoading={isLoading}
+          />
+        );
+      case "commitments":
+        return <CommitmentsSection />;
+      case "assessments":
+        return <AssessmentsSection />;
+      case "reports":
+        return <ReportsPage />;
+      default:
+        return (
+          <ExecutiveDashboard 
+            engagement={engagement}
+            learning={learning}
+            competency={competency}
+            decision={decision}
+            members={membersWithMetrics}
+            isLoading={isLoading}
+          />
+        );
+    }
+  };
+
+  if (orgLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <ManageHeader />
+      
+      <div className="flex">
+        <ManageSidebar
+          activeSection={activeSection}
+          onSectionChange={setActiveSection}
+        />
+        
+        <main className="flex-1 p-6 overflow-auto">
+          <motion.div
+            key={activeSection}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.15 }}
+          >
+            {renderSection()}
+          </motion.div>
+        </main>
+      </div>
+    </div>
+  );
+}
