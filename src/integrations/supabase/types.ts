@@ -2126,6 +2126,68 @@ export type Database = {
           },
         ]
       }
+      insignia_criteria: {
+        Row: {
+          avg_value: number | null
+          context_config: Json | null
+          created_at: string | null
+          criterion_type: string
+          description: string
+          event_type: string | null
+          id: string
+          insignia_id: string
+          is_required: boolean | null
+          min_count: number | null
+          min_value: number | null
+          sort_order: number | null
+          time_window_days: number | null
+          updated_at: string | null
+          weight: number | null
+        }
+        Insert: {
+          avg_value?: number | null
+          context_config?: Json | null
+          created_at?: string | null
+          criterion_type: string
+          description: string
+          event_type?: string | null
+          id?: string
+          insignia_id: string
+          is_required?: boolean | null
+          min_count?: number | null
+          min_value?: number | null
+          sort_order?: number | null
+          time_window_days?: number | null
+          updated_at?: string | null
+          weight?: number | null
+        }
+        Update: {
+          avg_value?: number | null
+          context_config?: Json | null
+          created_at?: string | null
+          criterion_type?: string
+          description?: string
+          event_type?: string | null
+          id?: string
+          insignia_id?: string
+          is_required?: boolean | null
+          min_count?: number | null
+          min_value?: number | null
+          sort_order?: number | null
+          time_window_days?: number | null
+          updated_at?: string | null
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "insignia_criteria_insignia_id_fkey"
+            columns: ["insignia_id"]
+            isOneToOne: false
+            referencedRelation: "insignias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       insignias: {
         Row: {
           category: string
@@ -2136,10 +2198,14 @@ export type Database = {
           display_order: number | null
           icon: string
           id: string
-          insignia_key: string
+          insignia_key: string | null
+          insignia_type: string
           is_active: boolean | null
+          level: number | null
           name: string
           organization_id: string | null
+          prerequisites: string[] | null
+          related_skill_ids: string[] | null
           required_game_score_min: number | null
           required_game_type: string | null
           required_missions_completed: number | null
@@ -2151,6 +2217,9 @@ export type Database = {
           star_level: number
           unlock_animation: string | null
           unlock_message: string | null
+          unlock_rules: Json | null
+          unlocks: Json | null
+          version: number | null
           xp_reward: number | null
         }
         Insert: {
@@ -2162,10 +2231,14 @@ export type Database = {
           display_order?: number | null
           icon?: string
           id?: string
-          insignia_key: string
+          insignia_key?: string | null
+          insignia_type?: string
           is_active?: boolean | null
+          level?: number | null
           name: string
           organization_id?: string | null
+          prerequisites?: string[] | null
+          related_skill_ids?: string[] | null
           required_game_score_min?: number | null
           required_game_type?: string | null
           required_missions_completed?: number | null
@@ -2177,6 +2250,9 @@ export type Database = {
           star_level?: number
           unlock_animation?: string | null
           unlock_message?: string | null
+          unlock_rules?: Json | null
+          unlocks?: Json | null
+          version?: number | null
           xp_reward?: number | null
         }
         Update: {
@@ -2188,10 +2264,14 @@ export type Database = {
           display_order?: number | null
           icon?: string
           id?: string
-          insignia_key?: string
+          insignia_key?: string | null
+          insignia_type?: string
           is_active?: boolean | null
+          level?: number | null
           name?: string
           organization_id?: string | null
+          prerequisites?: string[] | null
+          related_skill_ids?: string[] | null
           required_game_score_min?: number | null
           required_game_type?: string | null
           required_missions_completed?: number | null
@@ -2203,6 +2283,9 @@ export type Database = {
           star_level?: number
           unlock_animation?: string | null
           unlock_message?: string | null
+          unlock_rules?: Json | null
+          unlocks?: Json | null
+          version?: number | null
           xp_reward?: number | null
         }
         Relationships: [
@@ -5412,28 +5495,43 @@ export type Database = {
       }
       user_insignias: {
         Row: {
+          awarded_by: string | null
+          coins_awarded: number | null
           id: string
           insignia_id: string
           is_displayed: boolean | null
           progress_data: Json | null
+          progress_snapshot: Json | null
+          source_events: string[] | null
           unlocked_at: string | null
           user_id: string
+          xp_awarded: number | null
         }
         Insert: {
+          awarded_by?: string | null
+          coins_awarded?: number | null
           id?: string
           insignia_id: string
           is_displayed?: boolean | null
           progress_data?: Json | null
+          progress_snapshot?: Json | null
+          source_events?: string[] | null
           unlocked_at?: string | null
           user_id: string
+          xp_awarded?: number | null
         }
         Update: {
+          awarded_by?: string | null
+          coins_awarded?: number | null
           id?: string
           insignia_id?: string
           is_displayed?: boolean | null
           progress_data?: Json | null
+          progress_snapshot?: Json | null
+          source_events?: string[] | null
           unlocked_at?: string | null
           user_id?: string
+          xp_awarded?: number | null
         }
         Relationships: [
           {
@@ -6426,6 +6524,10 @@ export type Database = {
         }
         Returns: Json
       }
+      calculate_criterion_progress: {
+        Args: { p_criterion_id: string; p_user_id: string }
+        Returns: Json
+      }
       calculate_supporter_multiplier: {
         Args: { p_commitment_id: string }
         Returns: number
@@ -6437,6 +6539,14 @@ export type Database = {
       can_view_user_data: {
         Args: { _org_id: string; _target_user_id: string }
         Returns: boolean
+      }
+      check_and_unlock_eligible_insignias: {
+        Args: { p_user_id: string }
+        Returns: Json
+      }
+      check_insignia_criteria: {
+        Args: { p_insignia_id: string; p_user_id: string }
+        Returns: Json
       }
       check_skills_health: { Args: never; Returns: Json }
       complete_daily_mission: { Args: { p_mission_id: string }; Returns: Json }
@@ -6634,6 +6744,10 @@ export type Database = {
           total_xp: number
         }[]
       }
+      get_user_insignias_progress: {
+        Args: { p_user_id: string }
+        Returns: Json
+      }
       get_user_role: {
         Args: { _org_id?: string; _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
@@ -6752,6 +6866,14 @@ export type Database = {
       suggest_pdi_goals_from_assessment: {
         Args: { p_assessment_cycle_id: string; p_user_id: string }
         Returns: Json
+      }
+      unlock_insignia: {
+        Args: {
+          p_insignia_id: string
+          p_source_events?: string[]
+          p_user_id: string
+        }
+        Returns: string
       }
       update_mission_progress: {
         Args: {
