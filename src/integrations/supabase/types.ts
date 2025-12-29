@@ -1788,59 +1788,95 @@ export type Database = {
       }
       game_configurations: {
         Row: {
+          advanced_config: Json | null
+          allow_in_commitments: boolean | null
           coins_base_reward: number | null
           coins_multiplier: number | null
+          config_version: number | null
           created_at: string | null
+          default_difficulty: string | null
           description: string | null
           difficulty_multipliers: Json | null
           display_name: string
+          duration_minutes: number | null
           game_type: string
           icon: string | null
           id: string
           is_active: boolean | null
+          is_repeatable: boolean | null
+          max_attempts_per_day: number | null
           organization_id: string | null
+          participation_coins: number | null
+          participation_xp: number | null
+          primary_metric: string | null
           skill_categories: string[] | null
           streak_bonus_config: Json | null
+          target_score: number | null
           time_bonus_config: Json | null
           updated_at: string | null
+          visibility: string | null
           xp_base_reward: number | null
           xp_multiplier: number | null
         }
         Insert: {
+          advanced_config?: Json | null
+          allow_in_commitments?: boolean | null
           coins_base_reward?: number | null
           coins_multiplier?: number | null
+          config_version?: number | null
           created_at?: string | null
+          default_difficulty?: string | null
           description?: string | null
           difficulty_multipliers?: Json | null
           display_name: string
+          duration_minutes?: number | null
           game_type: string
           icon?: string | null
           id?: string
           is_active?: boolean | null
+          is_repeatable?: boolean | null
+          max_attempts_per_day?: number | null
           organization_id?: string | null
+          participation_coins?: number | null
+          participation_xp?: number | null
+          primary_metric?: string | null
           skill_categories?: string[] | null
           streak_bonus_config?: Json | null
+          target_score?: number | null
           time_bonus_config?: Json | null
           updated_at?: string | null
+          visibility?: string | null
           xp_base_reward?: number | null
           xp_multiplier?: number | null
         }
         Update: {
+          advanced_config?: Json | null
+          allow_in_commitments?: boolean | null
           coins_base_reward?: number | null
           coins_multiplier?: number | null
+          config_version?: number | null
           created_at?: string | null
+          default_difficulty?: string | null
           description?: string | null
           difficulty_multipliers?: Json | null
           display_name?: string
+          duration_minutes?: number | null
           game_type?: string
           icon?: string | null
           id?: string
           is_active?: boolean | null
+          is_repeatable?: boolean | null
+          max_attempts_per_day?: number | null
           organization_id?: string | null
+          participation_coins?: number | null
+          participation_xp?: number | null
+          primary_metric?: string | null
           skill_categories?: string[] | null
           streak_bonus_config?: Json | null
+          target_score?: number | null
           time_bonus_config?: Json | null
           updated_at?: string | null
+          visibility?: string | null
           xp_base_reward?: number | null
           xp_multiplier?: number | null
         }
@@ -2762,6 +2798,65 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "organization_challenges_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_game_overrides: {
+        Row: {
+          advanced_config_override: Json | null
+          allow_in_commitments: boolean | null
+          coins_base_override: number | null
+          coins_multiplier_override: number | null
+          created_at: string | null
+          game_type: string
+          id: string
+          is_active: boolean | null
+          organization_id: string
+          target_score_override: number | null
+          updated_at: string | null
+          visibility_override: string | null
+          xp_base_override: number | null
+          xp_multiplier_override: number | null
+        }
+        Insert: {
+          advanced_config_override?: Json | null
+          allow_in_commitments?: boolean | null
+          coins_base_override?: number | null
+          coins_multiplier_override?: number | null
+          created_at?: string | null
+          game_type: string
+          id?: string
+          is_active?: boolean | null
+          organization_id: string
+          target_score_override?: number | null
+          updated_at?: string | null
+          visibility_override?: string | null
+          xp_base_override?: number | null
+          xp_multiplier_override?: number | null
+        }
+        Update: {
+          advanced_config_override?: Json | null
+          allow_in_commitments?: boolean | null
+          coins_base_override?: number | null
+          coins_multiplier_override?: number | null
+          created_at?: string | null
+          game_type?: string
+          id?: string
+          is_active?: boolean | null
+          organization_id?: string
+          target_score_override?: number | null
+          updated_at?: string | null
+          visibility_override?: string | null
+          xp_base_override?: number | null
+          xp_multiplier_override?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_game_overrides_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
