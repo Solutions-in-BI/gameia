@@ -36,7 +36,7 @@ export function TetrisGame({ onBack }: TetrisGameProps) {
   const { profile, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const { recordPlay } = useStreak();
-  const { logActivity, updateStreak } = useGameRewards();
+  const { completeGame } = useGameRewards();
 
   const [hasSavedScore, setHasSavedScore] = useState(false);
 
@@ -46,10 +46,13 @@ export function TetrisGame({ onBack }: TetrisGameProps) {
       
       // Registra play para streak
       recordPlay();
-      updateStreak();
       
-      // Registra atividade no log (para métricas)
-      logActivity("game_played", "tetris", 0, 0, { score, level, linesCleared, recreational: true });
+      // Aplica recompensas via useGameRewards (agora também registra core_events)
+      completeGame({
+        gameType: "tetris",
+        score,
+        metadata: { level, linesCleared, recreational: false }
+      });
 
       if (isAuthenticated && profile && score >= 500) {
         addScore({
@@ -64,7 +67,7 @@ export function TetrisGame({ onBack }: TetrisGameProps) {
         });
       }
     }
-  }, [isGameOver, score, hasSavedScore, isAuthenticated, profile, addScore, toast, recordPlay, logActivity, updateStreak, level, linesCleared]);
+  }, [isGameOver, score, hasSavedScore, isAuthenticated, profile, addScore, toast, recordPlay, completeGame, level, linesCleared]);
 
   const handleReset = () => {
     resetGame();

@@ -30,7 +30,7 @@ export function DinoGame({ onBack }: DinoGameProps) {
   const { profile, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const { recordPlay } = useStreak();
-  const { logActivity, updateStreak } = useGameRewards();
+  const { completeGame } = useGameRewards();
 
   const [hasSavedScore, setHasSavedScore] = useState(false);
 
@@ -40,10 +40,13 @@ export function DinoGame({ onBack }: DinoGameProps) {
       
       // Registra play para streak
       recordPlay();
-      updateStreak();
       
-      // Registra atividade no log (para métricas)
-      logActivity("game_played", "dino", 0, 0, { score, recreational: true });
+      // Aplica recompensas via useGameRewards (agora também registra core_events)
+      completeGame({
+        gameType: "dino",
+        score,
+        metadata: { recreational: false }
+      });
 
       if (isAuthenticated && profile && score >= 50) {
         addScore({
@@ -58,7 +61,7 @@ export function DinoGame({ onBack }: DinoGameProps) {
         });
       }
     }
-  }, [isGameOver, score, hasSavedScore, isAuthenticated, profile, addScore, toast, recordPlay, logActivity, updateStreak]);
+  }, [isGameOver, score, hasSavedScore, isAuthenticated, profile, addScore, toast, recordPlay, completeGame]);
 
   const handleReset = () => {
     setHasSavedScore(false);
