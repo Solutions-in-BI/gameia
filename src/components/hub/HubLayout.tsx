@@ -20,6 +20,8 @@ import {
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useStreak } from "@/hooks/useStreak";
+import { useLevel } from "@/hooks/useLevel";
+import { useTitles } from "@/hooks/useTitles";
 import { useGamificationListener } from "@/hooks/useGamificationListener";
 import { useInsignias } from "@/hooks/useInsignias";
 import { useDailyMissions } from "@/hooks/useDailyMissions";
@@ -51,6 +53,8 @@ export function HubLayout() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, profile, isAuthenticated, signOut } = useAuth();
   const { streak, canClaimToday, isAtRisk, claimDailyReward } = useStreak();
+  const { level, xp } = useLevel();
+  const { selectedTitle } = useTitles();
   const { checkAndUnlockInsignias, refetch: refetchInsignias } = useInsignias();
   const { refetch: refetchMissions } = useDailyMissions();
   const { coins } = useMarketplace();
@@ -70,6 +74,9 @@ export function HubLayout() {
 
   const activeTab = (searchParams.get("tab") as HubTab) || "overview";
   const displayName = profile?.nickname || user?.email?.split("@")[0] || "Conta";
+  
+  // Get selected title name - selectedTitle is already a GameTitle object
+  const selectedTitleName = selectedTitle?.name || null;
 
   const handleTabChange = (tab: HubTab) => {
     setSearchParams({ tab });
@@ -186,6 +193,9 @@ export function HubLayout() {
                     displayName={displayName}
                     avatarUrl={profile?.avatar_url}
                     streak={streak.currentStreak}
+                    level={level}
+                    xp={xp}
+                    selectedTitle={selectedTitleName}
                     onViewProfile={() => handleTabChange("evolution")}
                     onViewStreak={() => setStreakModalOpen(true)}
                     onLogout={handleLogout}
