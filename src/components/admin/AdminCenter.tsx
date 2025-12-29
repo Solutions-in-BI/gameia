@@ -27,6 +27,7 @@ import { BadgeConfigSettings } from "./settings/BadgeConfigSettings";
 import { LevelConfigSettings } from "./settings/LevelConfigSettings";
 import { SkillManagement, SkillMappingMatrix } from "./skills";
 import { OrganizationSettings } from "./settings/OrganizationSettings";
+import { PlanBillingSettings } from "./settings/PlanBillingSettings";
 import { SSOSettings } from "./settings/SSOSettings";
 import { IntegrationsSettings } from "./settings/IntegrationsSettings";
 import { EngagementMetrics } from "./metrics/EngagementMetrics";
@@ -352,6 +353,13 @@ export function AdminCenter() {
         return (
           <div className="gameia-card p-6">
             <OrganizationSettings />
+          </div>
+        );
+
+      case "plan-billing":
+        return (
+          <div className="gameia-card p-6">
+            <PlanBillingSettings />
           </div>
         );
 
