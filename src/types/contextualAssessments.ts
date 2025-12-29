@@ -9,16 +9,31 @@ export type AssessmentOriginType =
   | 'challenge' 
   | 'goal' 
   | 'cognitive_test' 
-  | 'manual';
+  | 'manual'
+  | 'game'
+  | 'feedback_360'
+  | 'pdi_goal'
+  | 'one_on_one'
+  | 'streak_break'
+  | 'low_score';
 
 // Tipos de sugestão
-export type SuggestionType = 'auto' | 'manual' | 'scheduled';
+export type SuggestionType = 
+  | 'auto' 
+  | 'manual' 
+  | 'scheduled'
+  | 'low_score_assessment'
+  | 'streak_recovery'
+  | 'goal_failed'
+  | 'peer_feedback'
+  | 'manager_request'
+  | 'self_assessment';
 
 // Status de sugestão
 export type SuggestionStatus = 'pending' | 'accepted' | 'dismissed' | 'expired';
 
 // Status do loop
-export type LoopStatus = 'open' | 'pending_action' | 'closed';
+export type LoopStatus = 'open' | 'pending_action' | 'closed' | 'expired';
 
 // Tipos de gatilho
 export type TriggerType = 'event' | 'schedule' | 'threshold';
@@ -105,6 +120,7 @@ export interface SuggestedAssessment {
   suggestion_type: string;
   reason: string;
   skill_ids: string[] | null;
+  skills_to_evaluate?: string[] | null;
   priority: number;
   context_type: string;
   context_id: string | null;
