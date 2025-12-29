@@ -19,6 +19,7 @@ import Security from "./pages/Security";
 import Admin from "./pages/Admin";
 import Manage from "./pages/Manage";
 import Console from "./pages/Console";
+import Profile from "./pages/Profile";
 import { AdminGuard } from "./components/auth/AdminGuard";
 import { AreaGuard } from "./components/auth/AreaGuard";
 import NotFound from "./pages/NotFound";
@@ -64,6 +65,7 @@ const App = () => (
           {/* App Routes */}
           <Route path="/app" element={<Dashboard />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/perfil" element={<Profile />} />
           <Route path="/app/trainings" element={<Trainings />} />
           <Route path="/app/trainings/:id" element={<TrainingDetail />} />
           <Route path="/app/trainings/:trainingId/module/:moduleId" element={<ModulePlayer />} />

@@ -6,7 +6,6 @@ import { useAchievements } from "@/hooks/useAchievements";
 import { useSkillTree } from "@/hooks/useSkillTree";
 import { useOrganization } from "@/hooks/useOrganization";
 import { useRoles } from "@/hooks/useRoles";
-import { useTitles } from "@/hooks/useTitles";
 import { AdminQuickLinks } from "../common/AdminQuickLinks";
 import { Flame, Target, Star, Zap, Building2 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -20,14 +19,13 @@ export function OverviewTab() {
   const { skills } = useSkillTree();
   const { currentOrg } = useOrganization();
   const { highestRole } = useRoles();
-  const { unlockedTitles } = useTitles();
 
   const hasAdminAccess = highestRole === "super_admin" || highestRole === "admin" || (highestRole as string) === "owner";
 
-  // Top skills (sorted by XP)
+  // Top skills (sorted by XP) - using xpEarned from SkillWithProgress
   const topSkills = skills
-    .filter(s => s.currentXP > 0)
-    .sort((a, b) => b.currentXP - a.currentXP)
+    .filter(s => s.xpEarned > 0)
+    .sort((a, b) => b.xpEarned - a.xpEarned)
     .slice(0, 3);
 
   // Top achievements (most recent 5)
@@ -61,7 +59,7 @@ export function OverviewTab() {
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm truncate">{skill.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    Nível {skill.level} • {skill.currentXP} XP
+                    Nível {skill.masteryLevel} • {skill.xpEarned} XP
                   </p>
                 </div>
               </motion.div>
@@ -132,7 +130,7 @@ export function OverviewTab() {
         <StatusCard 
           icon={<Target className="h-5 w-5 text-secondary" />}
           label="Skills"
-          value={skills.filter(s => s.currentXP > 0).length.toString()}
+          value={skills.filter(s => s.xpEarned > 0).length.toString()}
           sublabel="Em desenvolvimento"
         />
       </div>

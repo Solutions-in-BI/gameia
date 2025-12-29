@@ -2,29 +2,23 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { ShoppingBag, Coins, Package, History, Check, Sparkles } from "lucide-react";
 import { useMarketplace, InventoryItem } from "@/hooks/useMarketplace";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export function ShopTab() {
-  const { coins, inventory, items, equipItem, unequipItem, isLoading } = useMarketplace();
+  const navigate = useNavigate();
+  const { coins, inventory, items, isLoading } = useMarketplace();
   const [activeTab, setActiveTab] = useState("inventory");
 
-  const equippedItems = inventory.filter(i => i.is_equipped);
-  
   // Get item details for inventory items
   const inventoryWithDetails = inventory.map(invItem => ({
     ...invItem,
     item: items.find(i => i.id === invItem.item_id)
   }));
 
-  const handleToggleEquip = async (inventoryItem: InventoryItem) => {
-    if (inventoryItem.is_equipped) {
-      await unequipItem(inventoryItem.item_id);
-    } else {
-      await equipItem(inventoryItem.item_id);
-    }
-  };
+  const equippedItems = inventoryWithDetails.filter(i => i.is_equipped);
 
   return (
     <div className="space-y-6">
@@ -39,7 +33,7 @@ export function ShopTab() {
             <p className="text-sm text-muted-foreground">Moedas disponíveis</p>
           </div>
         </div>
-        <Button variant="outline" onClick={() => window.location.href = "/app/marketplace"}>
+        <Button variant="outline" onClick={() => navigate("/app/marketplace")}>
           <ShoppingBag className="h-4 w-4 mr-2" />
           Ir para Loja
         </Button>
@@ -93,14 +87,6 @@ export function ShopTab() {
                       </div>
                     </div>
                   </div>
-                  <Button
-                    variant={invItem.is_equipped ? "outline" : "default"}
-                    size="sm"
-                    className="w-full mt-3"
-                    onClick={() => handleToggleEquip(invItem)}
-                  >
-                    {invItem.is_equipped ? "Desequipar" : "Equipar"}
-                  </Button>
                 </motion.div>
               ))}
             </div>
@@ -118,29 +104,26 @@ export function ShopTab() {
         <TabsContent value="equipped" className="mt-4">
           {equippedItems.length > 0 ? (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {equippedItems.map((invItem, index) => {
-                const item = items.find(i => i.id === invItem.item_id);
-                return (
-                  <motion.div
-                    key={invItem.id}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: index * 0.05 }}
-                    className="surface-elevated p-4 ring-2 ring-primary/50"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="text-3xl">{item?.icon || "📦"}</div>
-                      <div className="flex-1">
-                        <p className="font-medium">{item?.name || "Item"}</p>
-                        <p className="text-xs text-muted-foreground capitalize">
-                          {item?.category}
-                        </p>
-                      </div>
-                      <Sparkles className="h-5 w-5 text-primary" />
+              {equippedItems.map((invItem, index) => (
+                <motion.div
+                  key={invItem.id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="surface-elevated p-4 ring-2 ring-primary/50"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="text-3xl">{invItem.item?.icon || "📦"}</div>
+                    <div className="flex-1">
+                      <p className="font-medium">{invItem.item?.name || "Item"}</p>
+                      <p className="text-xs text-muted-foreground capitalize">
+                        {invItem.item?.category}
+                      </p>
                     </div>
-                  </motion.div>
-                );
-              })}
+                    <Sparkles className="h-5 w-5 text-primary" />
+                  </div>
+                </motion.div>
+              ))}
             </div>
           ) : (
             <div className="surface p-8 text-center">

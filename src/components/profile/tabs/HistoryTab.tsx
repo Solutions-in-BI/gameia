@@ -4,8 +4,7 @@ import {
   History, Filter, Gamepad2, BookOpen, Brain, 
   Target, Award, MessageSquare, Star 
 } from "lucide-react";
-import { useActivities, Activity } from "@/hooks/useActivities";
-import { Button } from "@/components/ui/button";
+import { useActivities } from "@/hooks/useActivities";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -28,6 +27,7 @@ const getActivityIcon = (type: string) => {
   switch (type) {
     case "game_completed":
     case "game_started":
+    case "game_played":
       return <Gamepad2 className="h-4 w-4" />;
     case "training_completed":
     case "training_started":
@@ -65,18 +65,19 @@ export function HistoryTab() {
   const filteredActivities = useMemo(() => {
     if (filter === "all") return activities;
     return activities.filter(a => {
-      if (filter === "game") return a.type.includes("game");
-      if (filter === "training") return a.type.includes("training");
-      if (filter === "test") return a.type.includes("test") || a.type.includes("cognitive");
-      if (filter === "achievement") return a.type.includes("achievement") || a.type.includes("badge");
-      if (filter === "commitment") return a.type.includes("commitment");
+      const actType = a.activity_type;
+      if (filter === "game") return actType.includes("game");
+      if (filter === "training") return actType.includes("training");
+      if (filter === "test") return actType.includes("test") || actType.includes("cognitive");
+      if (filter === "achievement") return actType.includes("achievement") || actType.includes("badge");
+      if (filter === "commitment") return actType.includes("commitment");
       return true;
     });
   }, [activities, filter]);
 
   // Group by date
   const groupedActivities = useMemo(() => {
-    const groups: Record<string, Activity[]> = {};
+    const groups: Record<string, typeof activities> = {};
     
     filteredActivities.forEach(activity => {
       const date = new Date(activity.created_at).toLocaleDateString("pt-BR", {
@@ -140,15 +141,15 @@ export function HistoryTab() {
                     transition={{ delay: index * 0.03 }}
                     className="p-4 flex items-start gap-4"
                   >
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${getActivityColor(activity.type)}`}>
-                      {getActivityIcon(activity.type)}
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${getActivityColor(activity.activity_type)}`}>
+                      {getActivityIcon(activity.activity_type)}
                     </div>
                     
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium">{getActivityLabel(activity.type)}</p>
-                      {activity.data && Object.keys(activity.data).length > 0 && (
+                      <p className="font-medium">{getActivityLabel(activity.activity_type)}</p>
+                      {activity.activity_data && Object.keys(activity.activity_data).length > 0 && (
                         <p className="text-sm text-muted-foreground mt-0.5">
-                          {activity.data.game || activity.data.training || activity.data.test || ""}
+                          {activity.activity_data.game || activity.activity_data.training || activity.activity_data.test || ""}
                         </p>
                       )}
                       <p className="text-xs text-muted-foreground mt-1">
@@ -160,12 +161,12 @@ export function HistoryTab() {
                     </div>
                     
                     <div className="flex flex-col items-end gap-1">
-                      {activity.xp_earned && activity.xp_earned > 0 && (
+                      {activity.xp_earned > 0 && (
                         <Badge variant="outline" className="text-xs text-primary">
                           +{activity.xp_earned} XP
                         </Badge>
                       )}
-                      {activity.coins_earned && activity.coins_earned > 0 && (
+                      {activity.coins_earned > 0 && (
                         <Badge variant="outline" className="text-xs text-yellow-500">
                           +{activity.coins_earned} 🪙
                         </Badge>
