@@ -757,6 +757,91 @@ export type Database = {
           },
         ]
       }
+      daily_missions: {
+        Row: {
+          coins_reward: number
+          completed_at: string | null
+          created_at: string
+          current_value: number
+          description: string | null
+          icon: string | null
+          id: string
+          is_bonus: boolean
+          is_completed: boolean
+          mission_date: string
+          mission_type: string
+          organization_id: string | null
+          target_game_type: string | null
+          target_skill_id: string | null
+          target_value: number
+          title: string
+          user_id: string
+          xp_reward: number
+        }
+        Insert: {
+          coins_reward?: number
+          completed_at?: string | null
+          created_at?: string
+          current_value?: number
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_bonus?: boolean
+          is_completed?: boolean
+          mission_date?: string
+          mission_type: string
+          organization_id?: string | null
+          target_game_type?: string | null
+          target_skill_id?: string | null
+          target_value?: number
+          title: string
+          user_id: string
+          xp_reward?: number
+        }
+        Update: {
+          coins_reward?: number
+          completed_at?: string | null
+          created_at?: string
+          current_value?: number
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_bonus?: boolean
+          is_completed?: boolean
+          mission_date?: string
+          mission_type?: string
+          organization_id?: string | null
+          target_game_type?: string | null
+          target_skill_id?: string | null
+          target_value?: number
+          title?: string
+          user_id?: string
+          xp_reward?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_missions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_missions_target_skill_id_fkey"
+            columns: ["target_skill_id"]
+            isOneToOne: false
+            referencedRelation: "skill_configurations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_missions_target_skill_id_fkey"
+            columns: ["target_skill_id"]
+            isOneToOne: false
+            referencedRelation: "vw_org_skill_metrics"
+            referencedColumns: ["skill_id"]
+          },
+        ]
+      }
       decision_analytics: {
         Row: {
           category_id: string | null
@@ -1272,6 +1357,42 @@ export type Database = {
           },
         ]
       }
+      gamification_events: {
+        Row: {
+          coins_earned: number
+          created_at: string
+          event_type: string
+          id: string
+          metadata: Json | null
+          source_id: string | null
+          source_type: string | null
+          user_id: string
+          xp_earned: number
+        }
+        Insert: {
+          coins_earned?: number
+          created_at?: string
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          source_id?: string | null
+          source_type?: string | null
+          user_id: string
+          xp_earned?: number
+        }
+        Update: {
+          coins_earned?: number
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          source_id?: string | null
+          source_type?: string | null
+          user_id?: string
+          xp_earned?: number
+        }
+        Relationships: []
+      }
       gifts: {
         Row: {
           coins_spent: number
@@ -1380,6 +1501,8 @@ export type Database = {
           required_xp: number | null
           shape: string
           star_level: number
+          unlock_animation: string | null
+          unlock_message: string | null
           xp_reward: number | null
         }
         Insert: {
@@ -1404,6 +1527,8 @@ export type Database = {
           required_xp?: number | null
           shape?: string
           star_level?: number
+          unlock_animation?: string | null
+          unlock_message?: string | null
           xp_reward?: number | null
         }
         Update: {
@@ -1428,6 +1553,8 @@ export type Database = {
           required_xp?: number | null
           shape?: string
           star_level?: number
+          unlock_animation?: string | null
+          unlock_message?: string | null
           xp_reward?: number | null
         }
         Relationships: [
@@ -1699,6 +1826,78 @@ export type Database = {
             columns: ["item_id"]
             isOneToOne: false
             referencedRelation: "marketplace_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      monthly_goals: {
+        Row: {
+          coins_reward: number
+          completed_at: string | null
+          created_at: string
+          current_value: number
+          description: string | null
+          goal_month: string
+          goal_type: string
+          icon: string | null
+          id: string
+          insignia_reward_id: string | null
+          organization_id: string | null
+          status: string
+          target_value: number
+          title: string
+          user_id: string
+          xp_reward: number
+        }
+        Insert: {
+          coins_reward?: number
+          completed_at?: string | null
+          created_at?: string
+          current_value?: number
+          description?: string | null
+          goal_month: string
+          goal_type: string
+          icon?: string | null
+          id?: string
+          insignia_reward_id?: string | null
+          organization_id?: string | null
+          status?: string
+          target_value: number
+          title: string
+          user_id: string
+          xp_reward?: number
+        }
+        Update: {
+          coins_reward?: number
+          completed_at?: string | null
+          created_at?: string
+          current_value?: number
+          description?: string | null
+          goal_month?: string
+          goal_type?: string
+          icon?: string | null
+          id?: string
+          insignia_reward_id?: string | null
+          organization_id?: string | null
+          status?: string
+          target_value?: number
+          title?: string
+          user_id?: string
+          xp_reward?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monthly_goals_insignia_reward_id_fkey"
+            columns: ["insignia_reward_id"]
+            isOneToOne: false
+            referencedRelation: "insignias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "monthly_goals_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -4988,6 +5187,7 @@ export type Database = {
         Returns: boolean
       }
       check_skills_health: { Args: never; Returns: Json }
+      complete_daily_mission: { Args: { p_mission_id: string }; Returns: Json }
       create_org_invite: {
         Args: {
           p_email?: string
@@ -4996,6 +5196,35 @@ export type Database = {
           p_role?: string
         }
         Returns: Json
+      }
+      generate_daily_missions: {
+        Args: { p_user_id: string }
+        Returns: {
+          coins_reward: number
+          completed_at: string | null
+          created_at: string
+          current_value: number
+          description: string | null
+          icon: string | null
+          id: string
+          is_bonus: boolean
+          is_completed: boolean
+          mission_date: string
+          mission_type: string
+          organization_id: string | null
+          target_game_type: string | null
+          target_skill_id: string | null
+          target_value: number
+          title: string
+          user_id: string
+          xp_reward: number
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "daily_missions"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       get_consolidated_skill_score: {
         Args: { p_period_days?: number; p_skill_id: string; p_user_id: string }
@@ -5125,6 +5354,14 @@ export type Database = {
         Returns: string
       }
       revoke_org_invite: { Args: { p_invite_id: string }; Returns: Json }
+      update_mission_progress: {
+        Args: {
+          p_game_type?: string
+          p_increment?: number
+          p_mission_type: string
+        }
+        Returns: Json
+      }
       validate_email_domain: {
         Args: { p_email: string; p_organization_id: string }
         Returns: boolean

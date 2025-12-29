@@ -11,7 +11,8 @@ import {
   Users, 
   Calendar, 
   Brain,
-  BarChart3
+  BarChart3,
+  Award
 } from "lucide-react";
 import { HubHeader } from "../common";
 import { EvolutionDashboard } from "@/components/evolution/EvolutionDashboard";
@@ -20,11 +21,13 @@ import { PDISection } from "@/components/game/development/PDISection";
 import { Assessment360Section } from "@/components/game/development/Assessment360Section";
 import { OneOnOneSection } from "@/components/game/development/OneOnOneSection";
 import { MyCognitiveProfile } from "@/components/game/development/MyCognitiveProfile";
+import { InsigniasSubtab } from "./InsigniasSubtab";
 
-type EvolutionSubtab = "summary" | "skills" | "pdi" | "feedback" | "1on1" | "profile";
+type EvolutionSubtab = "summary" | "insignias" | "skills" | "pdi" | "feedback" | "1on1" | "profile";
 
 const SUBTABS = [
   { id: "summary" as const, label: "Resumo", icon: BarChart3 },
+  { id: "insignias" as const, label: "Insígnias", icon: Award },
   { id: "skills" as const, label: "Skills", icon: Target },
   { id: "pdi" as const, label: "PDI", icon: TrendingUp },
   { id: "feedback" as const, label: "Feedback 360", icon: Users },
@@ -48,6 +51,8 @@ export function EvolutionTab() {
           };
           if (mapping[tab]) setSubtab(mapping[tab]);
         }} />;
+      case "insignias":
+        return <InsigniasSubtab />;
       case "skills":
         return <SkillsPage />;
       case "pdi":
