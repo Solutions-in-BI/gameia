@@ -1,9 +1,10 @@
 /**
  * Hook para gerenciar streak diário
- * Refatorado para evitar dependências circulares com useLevel/useMarketplace
+ * OTIMIZADO: Usa React Query para cache e evita refetches desnecessários
  */
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useCallback, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 import { toast } from "sonner";
@@ -36,133 +37,113 @@ interface UseStreak {
   getTodayReward: () => { coins: number; xp: number };
 }
 
+const DEFAULT_STREAK: StreakData = {
+  currentStreak: 0,
+  longestStreak: 0,
+  lastPlayedAt: null,
+  lastClaimedAt: null,
+};
+
+// Helpers
+const isSameDay = (date1: Date, date2: Date): boolean => {
+  return date1.toDateString() === date2.toDateString();
+};
+
+const isYesterday = (date: Date): boolean => {
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  return isSameDay(date, yesterday);
+};
+
 export function useStreak(): UseStreak {
-  // All useState hooks MUST come first, before any other hooks
-  const [streak, setStreak] = useState<StreakData>({
-    currentStreak: 0,
-    longestStreak: 0,
-    lastPlayedAt: null,
-    lastClaimedAt: null,
-  });
-  const [isLoading, setIsLoading] = useState(true);
-  
-  // Now call other hooks
   const { user, isAuthenticated } = useAuth();
+  const queryClient = useQueryClient();
 
-  // Verifica se é o mesmo dia
-  const isSameDay = (date1: Date, date2: Date): boolean => {
-    return date1.toDateString() === date2.toDateString();
-  };
+  // Query principal
+  const { data: streak = DEFAULT_STREAK, isLoading } = useQuery({
+    queryKey: ['streak', user?.id],
+    queryFn: async (): Promise<StreakData> => {
+      if (!user?.id) return DEFAULT_STREAK;
 
-  // Verifica se é o dia anterior
-  const isYesterday = (date: Date): boolean => {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    return isSameDay(date, yesterday);
-  };
-
-  // Busca streak do usuário
-  const fetchStreak = useCallback(async () => {
-    if (!user) {
-      setIsLoading(false);
-      return;
-    }
-    
-    try {
       const { data, error } = await supabase
         .from("user_streaks")
         .select("*")
         .eq("user_id", user.id)
         .maybeSingle();
-      
+
       if (error) throw error;
-      
-      if (data) {
-        const lastPlayed = data.last_played_at ? new Date(data.last_played_at) : null;
-        const today = new Date();
-        
-        // Verifica se perdeu o streak (não jogou ontem)
-        let currentStreak = data.current_streak;
-        if (lastPlayed && !isSameDay(lastPlayed, today) && !isYesterday(lastPlayed)) {
-          // Perdeu o streak
-          currentStreak = 0;
-          await supabase
-            .from("user_streaks")
-            .update({ current_streak: 0 })
-            .eq("user_id", user.id);
-        }
-        
-        setStreak({
-          currentStreak,
-          longestStreak: data.longest_streak,
-          lastPlayedAt: data.last_played_at,
-          lastClaimedAt: data.last_claimed_at,
-        });
-      } else {
+
+      if (!data) {
         // Cria registro inicial
+        await supabase.from("user_streaks").insert({ user_id: user.id });
+        return DEFAULT_STREAK;
+      }
+
+      const lastPlayed = data.last_played_at ? new Date(data.last_played_at) : null;
+      const today = new Date();
+
+      // Verifica se perdeu o streak
+      let currentStreak = data.current_streak;
+      if (lastPlayed && !isSameDay(lastPlayed, today) && !isYesterday(lastPlayed)) {
+        currentStreak = 0;
         await supabase
           .from("user_streaks")
-          .insert({ user_id: user.id });
+          .update({ current_streak: 0 })
+          .eq("user_id", user.id);
       }
-    } catch (err) {
-      console.error("Erro ao buscar streak:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user]);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchStreak();
-    } else {
-      setIsLoading(false);
-    }
-  }, [isAuthenticated, fetchStreak]);
+      return {
+        currentStreak,
+        longestStreak: data.longest_streak,
+        lastPlayedAt: data.last_played_at,
+        lastClaimedAt: data.last_claimed_at,
+      };
+    },
+    enabled: !!user?.id && isAuthenticated,
+    staleTime: 60000, // 1 min
+    gcTime: 300000,
+  });
 
-  // Verifica se pode resgatar hoje
-  const canClaimToday = useCallback((): boolean => {
+  // Computed values
+  const canClaimToday = useMemo(() => {
     if (!streak.lastClaimedAt) return true;
     const lastClaimed = new Date(streak.lastClaimedAt);
     return !isSameDay(lastClaimed, new Date());
   }, [streak.lastClaimedAt]);
 
-  // Verifica se streak está em risco
-  const isAtRisk = useCallback((): boolean => {
+  const isAtRisk = useMemo(() => {
     if (!streak.lastPlayedAt || streak.currentStreak === 0) return false;
     const lastPlayed = new Date(streak.lastPlayedAt);
     const today = new Date();
     return !isSameDay(lastPlayed, today);
   }, [streak.lastPlayedAt, streak.currentStreak]);
 
-  // Pega recompensa do dia
   const getTodayReward = useCallback(() => {
     const dayIndex = Math.min(streak.currentStreak, 6);
     return STREAK_REWARDS[dayIndex];
   }, [streak.currentStreak]);
 
-  // Registra que jogou
-  const recordPlay = useCallback(async () => {
-    if (!user) return;
-    
-    try {
+  // Mutation para registrar que jogou
+  const recordPlayMutation = useMutation({
+    mutationFn: async () => {
+      if (!user?.id) throw new Error("No user");
+
       const today = new Date();
       const lastPlayed = streak.lastPlayedAt ? new Date(streak.lastPlayedAt) : null;
-      
+
       // Já jogou hoje
       if (lastPlayed && isSameDay(lastPlayed, today)) return;
-      
+
       let newStreak = streak.currentStreak;
-      
-      // Se jogou ontem, incrementa streak
+
       if (lastPlayed && isYesterday(lastPlayed)) {
         newStreak++;
       } else if (!lastPlayed || !isSameDay(lastPlayed, today)) {
-        // Primeira vez ou perdeu streak
-        newStreak = lastPlayed ? 1 : 1;
+        newStreak = 1;
       }
-      
+
       const longestStreak = Math.max(newStreak, streak.longestStreak);
-      
+
       await supabase
         .from("user_streaks")
         .update({
@@ -171,44 +152,37 @@ export function useStreak(): UseStreak {
           last_played_at: today.toISOString(),
         })
         .eq("user_id", user.id);
-      
-      setStreak(prev => ({
-        ...prev,
-        currentStreak: newStreak,
-        longestStreak,
-        lastPlayedAt: today.toISOString(),
-      }));
-    } catch (err) {
-      console.error("Erro ao registrar play:", err);
-    }
-  }, [user, streak]);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['streak', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['user-data', user?.id] });
+    },
+  });
 
-  // Resgata recompensa diária - aplica diretamente via supabase
-  const claimDailyReward = useCallback(async (): Promise<boolean> => {
-    if (!user || !canClaimToday()) return false;
-    
-    try {
+  // Mutation para resgatar recompensa diária
+  const claimRewardMutation = useMutation({
+    mutationFn: async (): Promise<boolean> => {
+      if (!user?.id || !canClaimToday) return false;
+
       const reward = getTodayReward();
       const today = new Date();
-      
+
       // Atualiza streak
       await supabase
         .from("user_streaks")
-        .update({
-          last_claimed_at: today.toISOString(),
-        })
+        .update({ last_claimed_at: today.toISOString() })
         .eq("user_id", user.id);
-      
-      // Busca stats atuais e atualiza diretamente
+
+      // Busca stats atuais e atualiza
       const { data: currentStats } = await supabase
         .from("user_stats")
         .select("xp, coins")
         .eq("user_id", user.id)
         .maybeSingle();
-      
+
       const newXP = (currentStats?.xp || 0) + reward.xp;
       const newCoins = (currentStats?.coins || 0) + reward.coins;
-      
+
       await supabase
         .from("user_stats")
         .upsert({
@@ -216,13 +190,8 @@ export function useStreak(): UseStreak {
           xp: newXP,
           coins: newCoins,
         }, { onConflict: "user_id" });
-      
-      setStreak(prev => ({
-        ...prev,
-        lastClaimedAt: today.toISOString(),
-      }));
-      
-      // Track gamification event for streak missions
+
+      // Track gamification event
       await supabase.from("gamification_events").insert({
         user_id: user.id,
         event_type: "streak_claimed",
@@ -232,31 +201,36 @@ export function useStreak(): UseStreak {
       });
 
       // Update streak mission progress
-      await supabase.rpc("update_mission_progress_for_event", {
-        p_user_id: user.id,
-        p_event_type: "streak_claimed",
-        p_game_type: null,
-        p_increment: 1
-      });
-      
-      toast.success("🎁 Recompensa Resgatada!", {
-        description: `+${reward.coins} moedas e +${reward.xp} XP`,
-      });
-      
-      return true;
-    } catch (err) {
-      console.error("Erro ao resgatar recompensa:", err);
-      return false;
-    }
-  }, [user, canClaimToday, getTodayReward, streak.currentStreak]);
+      try {
+        await supabase.rpc("update_mission_progress_for_event", {
+          p_user_id: user.id,
+          p_event_type: "streak_claimed",
+          p_game_type: null,
+          p_increment: 1
+        });
+      } catch {
+        // ignore if rpc not exists
+      }
+    onSuccess: (success) => {
+      if (success) {
+        const reward = getTodayReward();
+        toast.success("🎁 Recompensa Resgatada!", {
+          description: `+${reward.coins} moedas e +${reward.xp} XP`,
+        });
+      }
+      queryClient.invalidateQueries({ queryKey: ['streak', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['user-data', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['daily-missions', user?.id] });
+    },
+  });
 
   return {
     streak,
-    canClaimToday: canClaimToday(),
-    isAtRisk: isAtRisk(),
+    canClaimToday,
+    isAtRisk,
     isLoading,
-    claimDailyReward,
-    recordPlay,
+    claimDailyReward: () => claimRewardMutation.mutateAsync(),
+    recordPlay: () => recordPlayMutation.mutateAsync(),
     getTodayReward,
   };
 }

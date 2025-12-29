@@ -4,29 +4,41 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
-import Dashboard from "./pages/Dashboard";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
 import Auth from "./pages/Auth";
-import Admin from "./pages/Admin";
-import Invite from "./pages/Invite";
-import Onboarding from "./pages/Onboarding";
+import Dashboard from "./pages/Dashboard";
+import Pricing from "./pages/Pricing";
+import Product from "./pages/Product";
+import Services from "./pages/Services";
+import UseCases from "./pages/UseCases";
+import Demo from "./pages/Demo";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
-import NotFound from "./pages/NotFound";
-import About from "./pages/About";
-import Services from "./pages/Services";
-import Pricing from "./pages/Pricing";
-import Demo from "./pages/Demo";
-import Product from "./pages/Product";
-import UseCases from "./pages/UseCases";
 import Security from "./pages/Security";
-import Contact from "./pages/Contact";
-import TrainingDetail from "./pages/TrainingDetail";
-import ModulePlayer from "./pages/ModulePlayer";
-import Trainings from "./pages/Trainings";
-import Marketplace from "./pages/Marketplace";
+import Admin from "./pages/Admin";
 import { AdminGuard } from "./components/auth/AdminGuard";
+import NotFound from "./pages/NotFound";
+import Subscription from "./pages/Subscription";
+import Onboarding from "./pages/Onboarding";
+import Invite from "./pages/Invite";
+import Trainings from "./pages/Trainings";
+import TrainingDetail from "./pages/TrainingDetail";
+import Marketplace from "./pages/Marketplace";
+import ModulePlayer from "./pages/ModulePlayer";
 
-const queryClient = new QueryClient();
+// QueryClient otimizado para reduzir re-fetches desnecessários
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 20000,           // 20s antes de considerar stale
+      gcTime: 300000,             // 5min no garbage collection
+      refetchOnWindowFocus: false, // Não refetch ao focar janela
+      retry: 1,                    // Apenas 1 retry em erro
+      refetchOnMount: false,       // Não refetch ao montar se tiver cache válido
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

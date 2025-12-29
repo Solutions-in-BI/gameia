@@ -1,9 +1,11 @@
 /**
  * Hook que escuta eventos de gamificação via Realtime
  * Atualiza missões e verifica insígnias automaticamente
+ * 
+ * OTIMIZADO: Usa useRef para callback estável, evitando re-renders
  */
 
-import { useEffect, useCallback, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 
@@ -14,14 +16,18 @@ interface UseGamificationListenerOptions {
 export function useGamificationListener(options: UseGamificationListenerOptions = {}) {
   const { user, isAuthenticated } = useAuth();
   const lastEventIdRef = useRef<string | null>(null);
-
-  const handleGamificationEvent = useCallback(() => {
-    console.log("[GamificationListener] New event detected");
-    options.onEvent?.();
-  }, [options]);
+  
+  // Usar ref para manter callback estável entre renders
+  const onEventRef = useRef(options.onEvent);
+  
+  // Atualiza a ref quando o callback muda, sem causar re-subscribe
+  useEffect(() => {
+    onEventRef.current = options.onEvent;
+  }, [options.onEvent]);
 
   useEffect(() => {
-    if (!isAuthenticated || !user) return;
+    // Só subscreve se autenticado e tem user.id
+    if (!isAuthenticated || !user?.id) return;
 
     console.log("[GamificationListener] Setting up realtime subscription");
 
@@ -40,7 +46,9 @@ export function useGamificationListener(options: UseGamificationListenerOptions 
           const eventId = (payload.new as { id?: string })?.id;
           if (eventId && eventId !== lastEventIdRef.current) {
             lastEventIdRef.current = eventId;
-            handleGamificationEvent();
+            console.log("[GamificationListener] New event detected");
+            // Usa a ref estável
+            onEventRef.current?.();
           }
         }
       )
@@ -52,5 +60,6 @@ export function useGamificationListener(options: UseGamificationListenerOptions 
       console.log("[GamificationListener] Cleaning up subscription");
       supabase.removeChannel(channel);
     };
-  }, [isAuthenticated, user, handleGamificationEvent]);
+  // IMPORTANTE: Não incluir options.onEvent nas deps - usamos ref
+  }, [isAuthenticated, user?.id]);
 }

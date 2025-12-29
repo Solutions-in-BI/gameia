@@ -1,13 +1,11 @@
 /**
  * Hook para gerenciar sistema de níveis
+ * OTIMIZADO: Usa React Query para cache e useUserData para dados centralizados
  */
 
-import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "./useAuth";
-import { useToast } from "./use-toast";
+import { useCallback } from "react";
+import { useUserData } from "./useUserData";
 import { 
-  calculateLevel, 
   getLevelInfo, 
   getLevelProgress, 
   XP_REWARDS,
@@ -25,99 +23,34 @@ interface UseLevel {
 }
 
 export function useLevel(): UseLevel {
-  const { user, isAuthenticated } = useAuth();
-  const { toast } = useToast();
-  
-  const [xp, setXP] = useState(0);
-  const [level, setLevel] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
+  const { 
+    xp, 
+    level, 
+    isLoading, 
+    addXP: addXPBase, 
+    addGameXP: addGameXPBase 
+  } = useUserData();
 
-  // Busca XP e Level do usuário
-  const fetchLevel = useCallback(async () => {
-    if (!user) {
-      setIsLoading(false);
-      return;
-    }
-    
-    try {
-      const { data, error } = await supabase
-        .from("user_stats")
-        .select("xp, level")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      
-      if (error) throw error;
-      
-      if (data) {
-        setXP(data.xp || 0);
-        setLevel(data.level || 1);
-      }
-    } catch (err) {
-      console.error("Erro ao buscar nível:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user]);
+  const progress = getLevelProgress(xp, level);
+  const levelInfo = getLevelInfo(level, xp);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchLevel();
-    } else {
-      setIsLoading(false);
-    }
-  }, [isAuthenticated, fetchLevel]);
-
-  // Adiciona XP
+  // Wrapper que retorna boolean para compatibilidade
   const addXP = useCallback(async (amount: number, reason?: string): Promise<boolean> => {
-    if (!user || amount <= 0) return false;
-    
     try {
-      const newXP = xp + amount;
-      const newLevel = calculateLevel(newXP);
-      const leveledUp = newLevel > level;
-      
-      const { error } = await supabase
-        .from("user_stats")
-        .update({ xp: newXP, level: newLevel })
-        .eq("user_id", user.id);
-      
-      if (error) throw error;
-      
-      setXP(newXP);
-      setLevel(newLevel);
-      
-      // Notifica level up
-      if (leveledUp) {
-        const info = getLevelInfo(newLevel, newXP);
-        toast({
-          title: `🎉 Level Up! Nível ${newLevel}`,
-          description: `Você agora é ${info.icon} ${info.title}!`,
-        });
-      } else if (reason) {
-        toast({
-          title: `+${amount} XP`,
-          description: reason,
-        });
-      }
-      
-      return leveledUp;
-    } catch (err) {
-      console.error("Erro ao adicionar XP:", err);
+      await addXPBase(amount, reason);
+      return true;
+    } catch {
       return false;
     }
-  }, [user, xp, level, toast]);
+  }, [addXPBase]);
 
   // Adiciona XP de jogo (completar + bônus de score)
   const addGameXP = useCallback(async (score: number) => {
     const gameXP = XP_REWARDS.GAME_COMPLETED;
     const scoreBonus = Math.floor(score * XP_REWARDS.SCORE_BONUS);
     const totalXP = gameXP + scoreBonus;
-    
-    await addXP(totalXP);
-  }, [addXP]);
-
-  const progress = getLevelProgress(xp, level);
-  const levelInfo = getLevelInfo(level, xp);
+    await addXPBase(totalXP);
+  }, [addXPBase]);
 
   return {
     level,
