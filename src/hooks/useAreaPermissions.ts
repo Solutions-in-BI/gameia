@@ -5,7 +5,6 @@
 
 import { useCallback, useMemo } from "react";
 import { useRoles, AppRole } from "./useRoles";
-import { useOrganization } from "./useOrganization";
 
 export type AppArea = "app" | "manage" | "console";
 
@@ -31,9 +30,10 @@ const AREA_ACCESS_MAP: Record<string, AppArea[]> = {
 
 export function useAreaPermissions(): AreaPermissions {
   const { highestRole, isLoading: rolesLoading } = useRoles();
-  const { currentOrg, isLoading: orgLoading } = useOrganization();
+  // Não dependemos mais de useOrganization para verificar área
+  // Apenas roles determinam acesso às áreas
 
-  const isLoading = rolesLoading || orgLoading;
+  const isLoading = rolesLoading;
 
   // Verificar acesso a uma área específica
   const hasAreaAccess = useCallback((area: AppArea): boolean => {
