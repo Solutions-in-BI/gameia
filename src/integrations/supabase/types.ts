@@ -1700,6 +1700,86 @@ export type Database = {
           },
         ]
       }
+      experience_requests: {
+        Row: {
+          completed_at: string | null
+          completion_notes: string | null
+          created_at: string | null
+          id: string
+          inventory_id: string
+          notes: string | null
+          organization_id: string
+          preferred_date: string | null
+          requested_at: string | null
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          completion_notes?: string | null
+          created_at?: string | null
+          id?: string
+          inventory_id: string
+          notes?: string | null
+          organization_id: string
+          preferred_date?: string | null
+          requested_at?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          completion_notes?: string | null
+          created_at?: string | null
+          id?: string
+          inventory_id?: string
+          notes?: string | null
+          organization_id?: string
+          preferred_date?: string | null
+          requested_at?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "experience_requests_inventory_id_fkey"
+            columns: ["inventory_id"]
+            isOneToOne: false
+            referencedRelation: "user_inventory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "experience_requests_inventory_id_fkey"
+            columns: ["inventory_id"]
+            isOneToOne: false
+            referencedRelation: "vw_active_boosts"
+            referencedColumns: ["inventory_id"]
+          },
+          {
+            foreignKeyName: "experience_requests_inventory_id_fkey"
+            columns: ["inventory_id"]
+            isOneToOne: false
+            referencedRelation: "vw_expiring_items"
+            referencedColumns: ["inventory_id"]
+          },
+          {
+            foreignKeyName: "experience_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       friend_group_members: {
         Row: {
           group_id: string
@@ -2169,6 +2249,55 @@ export type Database = {
         }
         Relationships: []
       }
+      item_usage_log: {
+        Row: {
+          action: string
+          created_at: string | null
+          details: Json | null
+          id: string
+          inventory_id: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          inventory_id: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          inventory_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "item_usage_log_inventory_id_fkey"
+            columns: ["inventory_id"]
+            isOneToOne: false
+            referencedRelation: "user_inventory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "item_usage_log_inventory_id_fkey"
+            columns: ["inventory_id"]
+            isOneToOne: false
+            referencedRelation: "vw_active_boosts"
+            referencedColumns: ["inventory_id"]
+          },
+          {
+            foreignKeyName: "item_usage_log_inventory_id_fkey"
+            columns: ["inventory_id"]
+            isOneToOne: false
+            referencedRelation: "vw_expiring_items"
+            referencedColumns: ["inventory_id"]
+          },
+        ]
+      }
       leaderboard: {
         Row: {
           created_at: string
@@ -2297,58 +2426,91 @@ export type Database = {
       }
       marketplace_items: {
         Row: {
+          available_for_orgs_only: boolean | null
+          boost_duration_hours: number | null
+          boost_type: string | null
+          boost_value: number | null
           category: string
+          configurable_by_org: boolean | null
           created_at: string
           created_by: string | null
           description: string | null
+          expires_after_purchase: number | null
+          expires_after_use: boolean | null
           icon: string
           id: string
           image_url: string | null
           is_active: boolean
           is_featured: boolean | null
           is_limited_edition: boolean | null
+          item_type: string | null
+          max_uses: number | null
           name: string
           organization_id: string | null
           price: number
           rarity: string
+          requires_approval: boolean | null
           sort_order: number | null
           stock: number | null
+          usage_instructions: string | null
         }
         Insert: {
+          available_for_orgs_only?: boolean | null
+          boost_duration_hours?: number | null
+          boost_type?: string | null
+          boost_value?: number | null
           category?: string
+          configurable_by_org?: boolean | null
           created_at?: string
           created_by?: string | null
           description?: string | null
+          expires_after_purchase?: number | null
+          expires_after_use?: boolean | null
           icon: string
           id?: string
           image_url?: string | null
           is_active?: boolean
           is_featured?: boolean | null
           is_limited_edition?: boolean | null
+          item_type?: string | null
+          max_uses?: number | null
           name: string
           organization_id?: string | null
           price: number
           rarity?: string
+          requires_approval?: boolean | null
           sort_order?: number | null
           stock?: number | null
+          usage_instructions?: string | null
         }
         Update: {
+          available_for_orgs_only?: boolean | null
+          boost_duration_hours?: number | null
+          boost_type?: string | null
+          boost_value?: number | null
           category?: string
+          configurable_by_org?: boolean | null
           created_at?: string
           created_by?: string | null
           description?: string | null
+          expires_after_purchase?: number | null
+          expires_after_use?: boolean | null
           icon?: string
           id?: string
           image_url?: string | null
           is_active?: boolean
           is_featured?: boolean | null
           is_limited_edition?: boolean | null
+          item_type?: string | null
+          max_uses?: number | null
           name?: string
           organization_id?: string | null
           price?: number
           rarity?: string
+          requires_approval?: boolean | null
           sort_order?: number | null
           stock?: number | null
+          usage_instructions?: string | null
         }
         Relationships: [
           {
@@ -2904,6 +3066,57 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "organization_invites_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_marketplace_config: {
+        Row: {
+          auto_approve: boolean | null
+          created_at: string | null
+          custom_instructions: string | null
+          id: string
+          is_enabled: boolean | null
+          item_id: string
+          organization_id: string
+          price_override: number | null
+          requires_manager_approval: boolean | null
+        }
+        Insert: {
+          auto_approve?: boolean | null
+          created_at?: string | null
+          custom_instructions?: string | null
+          id?: string
+          is_enabled?: boolean | null
+          item_id: string
+          organization_id: string
+          price_override?: number | null
+          requires_manager_approval?: boolean | null
+        }
+        Update: {
+          auto_approve?: boolean | null
+          created_at?: string | null
+          custom_instructions?: string | null
+          id?: string
+          is_enabled?: boolean | null
+          item_id?: string
+          organization_id?: string
+          price_override?: number | null
+          requires_manager_approval?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_marketplace_config_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_marketplace_config_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -5065,25 +5278,52 @@ export type Database = {
       }
       user_inventory: {
         Row: {
+          approval_status: string | null
+          approved_at: string | null
+          approved_by: string | null
+          boost_active_until: string | null
+          expires_at: string | null
           id: string
           is_equipped: boolean
           item_id: string
           purchased_at: string
+          rejection_reason: string | null
+          status: string | null
+          used_at: string | null
           user_id: string
+          uses_remaining: number | null
         }
         Insert: {
+          approval_status?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          boost_active_until?: string | null
+          expires_at?: string | null
           id?: string
           is_equipped?: boolean
           item_id: string
           purchased_at?: string
+          rejection_reason?: string | null
+          status?: string | null
+          used_at?: string | null
           user_id: string
+          uses_remaining?: number | null
         }
         Update: {
+          approval_status?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          boost_active_until?: string | null
+          expires_at?: string | null
           id?: string
           is_equipped?: boolean
           item_id?: string
           purchased_at?: string
+          rejection_reason?: string | null
+          status?: string | null
+          used_at?: string | null
           user_id?: string
+          uses_remaining?: number | null
         }
         Relationships: [
           {
@@ -5797,6 +6037,19 @@ export type Database = {
       }
     }
     Views: {
+      vw_active_boosts: {
+        Row: {
+          boost_active_until: string | null
+          boost_type: string | null
+          boost_value: number | null
+          hours_remaining: number | null
+          inventory_id: string | null
+          item_icon: string | null
+          item_name: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
       vw_challenges_with_stats: {
         Row: {
           auto_enroll: boolean | null
@@ -5856,6 +6109,18 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      vw_expiring_items: {
+        Row: {
+          days_remaining: number | null
+          expires_at: string | null
+          inventory_id: string | null
+          item_icon: string | null
+          item_name: string | null
+          item_type: string | null
+          user_id: string | null
+        }
+        Relationships: []
       }
       vw_org_skill_metrics: {
         Row: {
@@ -5951,6 +6216,7 @@ export type Database = {
         Args: { p_client_ip?: string; p_invite_code: string }
         Returns: Json
       }
+      activate_boost: { Args: { p_inventory_id: string }; Returns: Json }
       add_skill_xp: {
         Args: {
           p_skill_id: string
