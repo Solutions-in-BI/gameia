@@ -1,6 +1,6 @@
 /**
  * HubOverview - Tab "Visão Geral" do hub
- * Quick actions, summary cards, next steps, timeline
+ * Quick actions, summary cards, missions, goals, timeline
  */
 
 import { useState } from "react";
@@ -19,13 +19,17 @@ import {
   Calendar,
   Users,
   Brain,
+  ListChecks,
 } from "lucide-react";
 import { HubCard, HubCardHeader, HubStat, HubEmptyState, HubButton, HubHeader } from "./common";
+import { DailyMissionsCard, MonthlyGoalsCard } from "./overview";
 import { useStreak } from "@/hooks/useStreak";
 import { useLevel } from "@/hooks/useLevel";
 import { useSkillProgress } from "@/hooks/useSkillProgress";
 import { useSkillImpact, SourceType } from "@/hooks/useSkillImpact";
 import { useTrails } from "@/hooks/useTrails";
+import { useDailyMissions } from "@/hooks/useDailyMissions";
+import { useInsignias } from "@/hooks/useInsignias";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { formatDistanceToNow } from "date-fns";
@@ -52,11 +56,16 @@ export function HubOverview({ onNavigate }: HubOverviewProps) {
   const { skills } = useSkillProgress();
   const { suggestions, evolutionTimeline } = useSkillImpact();
   const { getOverallStats } = useTrails();
+  const { completedCount, totalCount } = useDailyMissions();
+  const { insignias } = useInsignias();
 
   const trailStats = getOverallStats();
   
   // Find skill with highest level as "skill em foco"
   const topSkill = skills.length > 0 ? skills[0] : null;
+  
+  // Insignias stats
+  const unlockedInsignias = insignias.filter(i => i.isUnlocked).length;
 
   // Pending actions count
   const pendingActions = suggestions ? (
@@ -77,6 +86,13 @@ export function HubOverview({ onNavigate }: HubOverviewProps) {
       {/* Summary Cards - Always visible */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <HubStat
+          label="Missões Hoje"
+          value={`${completedCount}/${totalCount}`}
+          icon={ListChecks}
+          iconColor="text-green-500"
+          onClick={() => {}}
+        />
+        <HubStat
           label="Streak Atual"
           value={`${streak.currentStreak} dias`}
           icon={Flame}
@@ -84,24 +100,17 @@ export function HubOverview({ onNavigate }: HubOverviewProps) {
           onClick={() => {}}
         />
         <HubStat
-          label="Trilha do Mês"
-          value={`${trailStats.completedTrails}/${trailStats.totalTrails}`}
+          label="Insígnias"
+          value={`${unlockedInsignias}/${insignias.length}`}
           icon={Award}
           iconColor="text-purple-500"
-          onClick={() => onNavigate("caminho")}
+          onClick={() => onNavigate("evolution")}
         />
         <HubStat
           label="Skill em Foco"
           value={topSkill?.name || "—"}
           icon={Target}
           iconColor="text-primary"
-          onClick={() => onNavigate("evolution")}
-        />
-        <HubStat
-          label="Atividades"
-          value={evolutionTimeline?.length || 0}
-          icon={Clock}
-          iconColor="text-secondary"
           onClick={() => onNavigate("evolution")}
         />
       </div>
@@ -133,6 +142,12 @@ export function HubOverview({ onNavigate }: HubOverviewProps) {
           />
         </div>
       </HubCard>
+
+      {/* Missions and Goals Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <DailyMissionsCard />
+        <MonthlyGoalsCard />
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Próximos Passos */}
