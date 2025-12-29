@@ -224,7 +224,8 @@ export function useReportMembers() {
     queryFn: async () => {
       if (!currentOrg?.id) return [];
       
-      const { data, error } = await supabase
+      // Buscar membros da organização
+      const { data: members, error } = await supabase
         .from('organization_members')
         .select(`
           user_id,
@@ -238,11 +239,36 @@ export function useReportMembers() {
       
       if (error) throw error;
       
-      return data?.map(m => ({
+      const membersList = members?.map(m => ({
         id: m.user_id,
         nickname: (m.profiles as { nickname?: string })?.nickname || 'Sem nome',
         avatar_url: (m.profiles as { avatar_url?: string })?.avatar_url,
       })) || [];
+      
+      // Buscar também o owner da organização se não estiver na lista
+      const { data: org } = await supabase
+        .from('organizations')
+        .select('owner_id')
+        .eq('id', currentOrg.id)
+        .single();
+      
+      if (org?.owner_id && !membersList.find(m => m.id === org.owner_id)) {
+        const { data: ownerProfile } = await supabase
+          .from('profiles')
+          .select('id, nickname, avatar_url')
+          .eq('id', org.owner_id)
+          .single();
+        
+        if (ownerProfile) {
+          membersList.unshift({
+            id: ownerProfile.id,
+            nickname: ownerProfile.nickname || 'Owner',
+            avatar_url: ownerProfile.avatar_url,
+          });
+        }
+      }
+      
+      return membersList;
     },
     enabled: !!currentOrg?.id,
   });
