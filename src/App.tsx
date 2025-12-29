@@ -20,6 +20,7 @@ import Admin from "./pages/Admin";
 import Manage from "./pages/Manage";
 import Console from "./pages/Console";
 import Profile from "./pages/Profile";
+import CertificateVerify from "./pages/CertificateVerify";
 import { AdminGuard } from "./components/auth/AdminGuard";
 import { AreaGuard } from "./components/auth/AreaGuard";
 import NotFound from "./pages/NotFound";
@@ -107,6 +108,7 @@ const App = () => (
           
           {/* Utility Routes */}
           <Route path="/invite/:code" element={<Invite />} />
+          <Route path="/certificates/:code" element={<CertificateVerify />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
           

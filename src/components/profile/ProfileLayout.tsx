@@ -3,12 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   User, TrendingUp, Swords, ShoppingBag, 
-  History, Settings, ArrowLeft, Crown
+  History, Settings, ArrowLeft, Crown, Award
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useLevel } from "@/hooks/useLevel";
-import { useRoles, AppRole } from "@/hooks/useRoles";
+import { useRoles } from "@/hooks/useRoles";
 import { ProfileHeader } from "./common/ProfileHeader";
 import { OverviewTab } from "./tabs/OverviewTab";
 import { EvolutionTab } from "./tabs/EvolutionTab";
@@ -16,9 +16,10 @@ import { ArenaTab } from "./tabs/ArenaTab";
 import { ShopTab } from "./tabs/ShopTab";
 import { HistoryTab } from "./tabs/HistoryTab";
 import { SettingsTab } from "./tabs/SettingsTab";
+import { CertificationsTab } from "./tabs/CertificationsTab";
 import { getLevelProgress } from "@/constants/levels";
 
-type TabId = "overview" | "evolution" | "arena" | "shop" | "history" | "settings";
+type TabId = "overview" | "evolution" | "arena" | "shop" | "certifications" | "history" | "settings";
 
 interface Tab {
   id: TabId;
@@ -31,6 +32,7 @@ const tabs: Tab[] = [
   { id: "evolution", label: "Evolução", icon: TrendingUp },
   { id: "arena", label: "Arena", icon: Swords },
   { id: "shop", label: "Loja", icon: ShoppingBag },
+  { id: "certifications", label: "Certificados", icon: Award },
   { id: "history", label: "Histórico", icon: History },
   { id: "settings", label: "Configurações", icon: Settings },
 ];
@@ -74,6 +76,8 @@ export function ProfileLayout() {
         return <ArenaTab />;
       case "shop":
         return <ShopTab />;
+      case "certifications":
+        return <CertificationsTab />;
       case "history":
         return <HistoryTab />;
       case "settings":
