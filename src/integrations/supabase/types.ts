@@ -5362,6 +5362,19 @@ export type Database = {
         }
         Returns: Json
       }
+      update_mission_progress_for_event: {
+        Args: {
+          p_event_type: string
+          p_game_type?: string
+          p_increment?: number
+          p_user_id: string
+        }
+        Returns: undefined
+      }
+      update_xp_mission_progress: {
+        Args: { p_user_id: string; p_xp_earned: number }
+        Returns: undefined
+      }
       validate_email_domain: {
         Args: { p_email: string; p_organization_id: string }
         Returns: boolean
