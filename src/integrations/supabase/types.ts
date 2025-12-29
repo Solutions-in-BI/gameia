@@ -109,6 +109,60 @@ export type Database = {
           },
         ]
       }
+      assessment_context_links: {
+        Row: {
+          assessment_cycle_id: string | null
+          closed_at: string | null
+          closure_reason: string | null
+          context_skill_ids: string[] | null
+          created_at: string | null
+          id: string
+          loop_status: string | null
+          origin_event_id: string | null
+          origin_id: string | null
+          origin_type: string
+        }
+        Insert: {
+          assessment_cycle_id?: string | null
+          closed_at?: string | null
+          closure_reason?: string | null
+          context_skill_ids?: string[] | null
+          created_at?: string | null
+          id?: string
+          loop_status?: string | null
+          origin_event_id?: string | null
+          origin_id?: string | null
+          origin_type: string
+        }
+        Update: {
+          assessment_cycle_id?: string | null
+          closed_at?: string | null
+          closure_reason?: string | null
+          context_skill_ids?: string[] | null
+          created_at?: string | null
+          id?: string
+          loop_status?: string | null
+          origin_event_id?: string | null
+          origin_id?: string | null
+          origin_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_context_links_assessment_cycle_id_fkey"
+            columns: ["assessment_cycle_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_cycles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_context_links_origin_event_id_fkey"
+            columns: ["origin_event_id"]
+            isOneToOne: false
+            referencedRelation: "core_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assessment_cycles: {
         Row: {
           config: Json | null
@@ -164,6 +218,141 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "assessment_cycles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assessment_suggestions: {
+        Row: {
+          accepted_at: string | null
+          context_event_id: string | null
+          context_id: string | null
+          context_type: string | null
+          created_at: string | null
+          dismissed_at: string | null
+          id: string
+          organization_id: string | null
+          priority: number | null
+          reason: string | null
+          skills_to_evaluate: string[] | null
+          status: string | null
+          suggestion_type: string
+          trigger_id: string | null
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          context_event_id?: string | null
+          context_id?: string | null
+          context_type?: string | null
+          created_at?: string | null
+          dismissed_at?: string | null
+          id?: string
+          organization_id?: string | null
+          priority?: number | null
+          reason?: string | null
+          skills_to_evaluate?: string[] | null
+          status?: string | null
+          suggestion_type: string
+          trigger_id?: string | null
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          context_event_id?: string | null
+          context_id?: string | null
+          context_type?: string | null
+          created_at?: string | null
+          dismissed_at?: string | null
+          id?: string
+          organization_id?: string | null
+          priority?: number | null
+          reason?: string | null
+          skills_to_evaluate?: string[] | null
+          status?: string | null
+          suggestion_type?: string
+          trigger_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_suggestions_context_event_id_fkey"
+            columns: ["context_event_id"]
+            isOneToOne: false
+            referencedRelation: "core_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_suggestions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_suggestions_trigger_id_fkey"
+            columns: ["trigger_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_triggers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assessment_triggers: {
+        Row: {
+          assessment_type: string | null
+          created_at: string | null
+          cycle_template: Json
+          event_count: number | null
+          event_type: string | null
+          id: string
+          is_active: boolean | null
+          organization_id: string | null
+          schedule_cron: string | null
+          skills_to_evaluate: string[] | null
+          threshold_type: string | null
+          threshold_value: number | null
+          trigger_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          assessment_type?: string | null
+          created_at?: string | null
+          cycle_template?: Json
+          event_count?: number | null
+          event_type?: string | null
+          id?: string
+          is_active?: boolean | null
+          organization_id?: string | null
+          schedule_cron?: string | null
+          skills_to_evaluate?: string[] | null
+          threshold_type?: string | null
+          threshold_value?: number | null
+          trigger_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          assessment_type?: string | null
+          created_at?: string | null
+          cycle_template?: Json
+          event_count?: number | null
+          event_type?: string | null
+          id?: string
+          is_active?: boolean | null
+          organization_id?: string | null
+          schedule_cron?: string | null
+          skills_to_evaluate?: string[] | null
+          threshold_type?: string | null
+          threshold_value?: number | null
+          trigger_type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_triggers_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -5627,6 +5816,18 @@ export type Database = {
       }
       check_skills_health: { Args: never; Returns: Json }
       complete_daily_mission: { Args: { p_mission_id: string }; Returns: Json }
+      create_contextual_assessment: {
+        Args: {
+          p_assessment_type?: string
+          p_evaluators?: string[]
+          p_origin_event_id: string
+          p_origin_id: string
+          p_origin_type: string
+          p_skill_ids: string[]
+          p_user_id: string
+        }
+        Returns: string
+      }
       create_org_invite: {
         Args: {
           p_email?: string
@@ -5811,6 +6012,10 @@ export type Database = {
         }
         Returns: string
       }
+      process_assessment_completion: {
+        Args: { p_assessment_id: string }
+        Returns: Json
+      }
       purchase_marketplace_item: { Args: { p_item_id: string }; Returns: Json }
       record_core_event: {
         Args: {
@@ -5839,6 +6044,18 @@ export type Database = {
         Returns: string
       }
       revoke_org_invite: { Args: { p_invite_id: string }; Returns: Json }
+      suggest_assessments_for_user: {
+        Args: { p_user_id: string }
+        Returns: {
+          context_event_id: string
+          context_id: string
+          context_type: string
+          priority: number
+          reason: string
+          skills_to_evaluate: string[]
+          suggestion_type: string
+        }[]
+      }
       update_mission_progress: {
         Args: {
           p_game_type?: string
