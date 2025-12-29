@@ -17,7 +17,7 @@ import { TrainingManagement } from "@/components/admin/training/TrainingManageme
 import { IntegrationsSettings } from "@/components/admin/settings/IntegrationsSettings";
 import { SSOSettings } from "@/components/admin/settings/SSOSettings";
 import { GameConfigurationHub } from "@/components/admin/games";
-import { OrgTrainingConfigSection, TrainingMetricsDashboard } from "./training";
+import { OrgTrainingConfigSection, TrainingMetricsDashboard, TrainingReportsSection } from "./training";
 
 // Placeholder para seções ainda não migradas
 function UsersPermissionsSection() {
@@ -118,6 +118,7 @@ export function ConsoleCenter() {
             <TrainingMetricsDashboard />
             <TrainingManagement />
             <OrgTrainingConfigSection />
+            <TrainingReportsSection />
           </div>
         );
       case "cognitive":
