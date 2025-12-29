@@ -4,69 +4,77 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
+    /*
+      GAMEIA THEME (Elegant / balanced)
+      - Neutral, premium base
+      - Deep indigo primary
+      - Subtle teal secondary
+      - Violet accent for highlights
+    */
+    --background: 220 25% 98%;
     --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
-    --card-hover: 210 40% 98%;
+    --card-hover: 220 25% 97%;
 
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    --primary: 239 84% 67%;
+    --primary: 224 78% 58%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 239 84% 75%;
+    --primary-glow: 224 78% 66%;
 
-    --secondary: 187 94% 43%;
+    --secondary: 174 65% 40%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 210 40% 96%;
+    --muted: 220 20% 96%;
     --muted-foreground: 215 16% 47%;
 
-    --accent: 263 70% 58%;
+    --accent: 262 70% 60%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 239 84% 67%;
+    --border: 220 18% 90%;
+    --input: 220 18% 90%;
+    --ring: 224 78% 58%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
 
     /* Gameia tokens */
-    --gameia-success: 155 70% 45%;
-    --gameia-warning: 38 95% 55%;
-    --gameia-info: 187 94% 43%;
-    --gameia-purple: 263 70% 58%;
-    --gameia-teal: 187 94% 43%;
+    --gameia-success: 158 64% 38%;
+    --gameia-warning: 38 92% 52%;
+    --gameia-info: 174 65% 40%;
+    --gameia-purple: 262 70% 60%;
+    --gameia-teal: 174 65% 40%;
 
     /* Pillar Colors */
-    --pillar-curriculum: 239 84% 67%;
-    --pillar-gamification: 187 94% 43%;
-    --pillar-guidance: 263 70% 58%;
+    --pillar-curriculum: 224 78% 58%;
+    --pillar-gamification: 174 65% 40%;
+    --pillar-guidance: 262 70% 60%;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(239 84% 67%), hsl(187 94% 43%));
-    --gradient-secondary: linear-gradient(135deg, hsl(187 94% 43%), hsl(263 70% 58%));
-    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(210 40% 98%));
-    --gradient-hero: linear-gradient(180deg, hsl(239 84% 67% / 0.05) 0%, hsl(210 40% 98%) 100%);
-    --gradient-mesh: radial-gradient(at 40% 20%, hsl(239 84% 67% / 0.08) 0px, transparent 50%),
-                     radial-gradient(at 80% 0%, hsl(263 70% 58% / 0.06) 0px, transparent 50%),
-                     radial-gradient(at 0% 50%, hsl(187 94% 43% / 0.06) 0px, transparent 50%);
+    --gradient-primary: linear-gradient(135deg, hsl(224 78% 58%), hsl(174 65% 40%));
+    --gradient-secondary: linear-gradient(135deg, hsl(174 65% 40%), hsl(262 70% 60%));
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(220 25% 98%));
+    --gradient-hero: linear-gradient(180deg, hsl(224 78% 58% / 0.05) 0%, hsl(220 25% 98%) 100%);
+    --gradient-mesh:
+      radial-gradient(at 40% 20%, hsl(224 78% 58% / 0.08) 0px, transparent 52%),
+      radial-gradient(at 80% 0%, hsl(262 70% 60% / 0.06) 0px, transparent 52%),
+      radial-gradient(at 0% 55%, hsl(174 65% 40% / 0.06) 0px, transparent 52%);
 
     /* Shadows */
     --shadow-sm: 0 1px 2px hsl(222 47% 11% / 0.04);
-    --shadow-md: 0 4px 12px hsl(222 47% 11% / 0.06);
-    --shadow-lg: 0 8px 24px hsl(222 47% 11% / 0.08);
-    --shadow-glow-primary: 0 0 20px hsl(239 84% 67% / 0.25);
-    --shadow-glow-secondary: 0 0 20px hsl(187 94% 43% / 0.25);
+    --shadow-md: 0 6px 18px hsl(222 47% 11% / 0.08);
+    --shadow-lg: 0 14px 40px hsl(222 47% 11% / 0.12);
+    --shadow-glow-primary: 0 0 26px hsl(224 78% 58% / 0.2);
+    --shadow-glow-secondary: 0 0 26px hsl(174 65% 40% / 0.2);
   }
 
   .dark {
-    --background: 222 47% 8%;
+    --background: 222 47% 6%;
     --foreground: 210 40% 98%;
 
     --card: 222 41% 10%;
@@ -76,53 +84,54 @@
     --popover: 222 41% 10%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 239 84% 67%;
+    --primary: 224 78% 60%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 239 84% 75%;
+    --primary-glow: 224 78% 68%;
 
-    --secondary: 187 94% 43%;
-    --secondary-foreground: 222 47% 8%;
+    --secondary: 174 65% 42%;
+    --secondary-foreground: 222 47% 6%;
 
-    --muted: 217 33% 17%;
+    --muted: 222 25% 16%;
     --muted-foreground: 215 20% 55%;
 
-    --accent: 263 70% 58%;
+    --accent: 262 70% 62%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 210 50% 18%;
-    --input: 217 33% 17%;
-    --ring: 239 84% 67%;
+    --border: 222 22% 18%;
+    --input: 222 25% 16%;
+    --ring: 224 78% 60%;
 
     /* Gameia tokens */
-    --gameia-success: 155 75% 50%;
-    --gameia-warning: 38 95% 60%;
-    --gameia-info: 187 94% 48%;
-    --gameia-purple: 263 70% 62%;
-    --gameia-teal: 187 94% 48%;
+    --gameia-success: 158 64% 46%;
+    --gameia-warning: 38 92% 60%;
+    --gameia-info: 174 65% 46%;
+    --gameia-purple: 262 70% 66%;
+    --gameia-teal: 174 65% 46%;
 
     /* Pillar Colors */
-    --pillar-curriculum: 239 84% 67%;
-    --pillar-gamification: 187 94% 48%;
-    --pillar-guidance: 263 70% 62%;
+    --pillar-curriculum: 224 78% 60%;
+    --pillar-gamification: 174 65% 46%;
+    --pillar-guidance: 262 70% 66%;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(239 84% 67%), hsl(187 94% 43%));
-    --gradient-secondary: linear-gradient(135deg, hsl(187 94% 43%), hsl(263 70% 58%));
+    --gradient-primary: linear-gradient(135deg, hsl(224 78% 60%), hsl(174 65% 42%));
+    --gradient-secondary: linear-gradient(135deg, hsl(174 65% 42%), hsl(262 70% 62%));
     --gradient-card: linear-gradient(145deg, hsl(222 41% 12%), hsl(222 47% 8%));
     --gradient-hero: linear-gradient(180deg, hsl(222 47% 8%) 0%, hsl(222 41% 12%) 100%);
-    --gradient-mesh: radial-gradient(at 40% 20%, hsl(239 84% 67% / 0.12) 0px, transparent 50%),
-                     radial-gradient(at 80% 0%, hsl(263 70% 58% / 0.08) 0px, transparent 50%),
-                     radial-gradient(at 0% 50%, hsl(187 94% 43% / 0.08) 0px, transparent 50%);
+    --gradient-mesh:
+      radial-gradient(at 40% 20%, hsl(224 78% 60% / 0.14) 0px, transparent 52%),
+      radial-gradient(at 80% 0%, hsl(262 70% 62% / 0.1) 0px, transparent 52%),
+      radial-gradient(at 0% 55%, hsl(174 65% 42% / 0.1) 0px, transparent 52%);
 
     /* Shadows */
-    --shadow-sm: 0 1px 2px hsl(0 0% 0% / 0.2);
-    --shadow-md: 0 4px 12px hsl(0 0% 0% / 0.3);
-    --shadow-lg: 0 8px 24px hsl(0 0% 0% / 0.4);
-    --shadow-glow-primary: 0 0 30px hsl(239 84% 67% / 0.3);
-    --shadow-glow-secondary: 0 0 30px hsl(187 94% 43% / 0.3);
+    --shadow-sm: 0 1px 2px hsl(0 0% 0% / 0.22);
+    --shadow-md: 0 10px 24px hsl(0 0% 0% / 0.3);
+    --shadow-lg: 0 18px 48px hsl(0 0% 0% / 0.42);
+    --shadow-glow-primary: 0 0 32px hsl(224 78% 60% / 0.26);
+    --shadow-glow-secondary: 0 0 32px hsl(174 65% 42% / 0.22);
   }
 }
 
@@ -133,23 +142,33 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Outfit', sans-serif;
+    font-family: "Outfit", sans-serif;
+    background-image: var(--gradient-mesh);
+    background-attachment: fixed;
+    background-size: cover;
   }
 
-  h1, h2, h3, .display-text {
-    font-family: 'Outfit', sans-serif;
+  h1,
+  h2,
+  h3,
+  .display-text {
+    font-family: "Outfit", sans-serif;
     font-weight: 600;
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.2);
   }
 }
 
 @layer components {
   .gameia-card {
-    @apply relative bg-card border border-border rounded-2xl transition-all duration-300;
+    @apply relative bg-card/90 backdrop-blur-sm border border-border rounded-2xl transition-all duration-300;
     box-shadow: var(--shadow-md);
   }
 
   .gameia-card:hover {
-    @apply border-primary/30;
+    @apply border-primary/25;
     box-shadow: var(--shadow-lg);
     transform: translateY(-2px);
   }
@@ -159,7 +178,7 @@
   }
 
   .pillar-card::before {
-    content: '';
+    content: "";
     @apply absolute inset-0 opacity-10;
   }
 
@@ -177,7 +196,7 @@
 
   .btn-gameia {
     @apply px-6 py-3 rounded-xl font-semibold transition-all duration-300;
-    font-family: 'Outfit', sans-serif;
+    font-family: "Outfit", sans-serif;
   }
 
   .btn-primary-gameia {
@@ -193,6 +212,21 @@
   .stat-card-gameia {
     @apply bg-card/80 backdrop-blur-sm border border-border rounded-xl p-5;
     box-shadow: var(--shadow-sm);
+  }
+
+  .surface {
+    @apply bg-card/70 backdrop-blur-md border border-border rounded-2xl;
+    box-shadow: var(--shadow-md);
+  }
+
+  .surface-hover {
+    @apply transition-all duration-300;
+  }
+
+  .surface-hover:hover {
+    @apply border-primary/25;
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-1px);
   }
 
   .progress-bar {
@@ -225,12 +259,7 @@
 
   .animate-shimmer {
     animation: shimmer 2s linear infinite;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      hsl(var(--primary) / 0.1),
-      transparent
-    );
+    background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.1), transparent);
     background-size: 200% 100%;
   }
 
@@ -262,29 +291,54 @@
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
 }
 
 @keyframes pulse-soft {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 @keyframes gradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 @keyframes bounce-subtle {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
 }
 
 /* Skill Tree Styles */
@@ -306,10 +360,11 @@
 
 /* Level Ring Animation */
 @keyframes level-pulse {
-  0%, 100% { 
+  0%,
+  100% {
     box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4);
   }
-  50% { 
+  50% {
     box-shadow: 0 0 0 8px hsl(var(--primary) / 0);
   }
 }
