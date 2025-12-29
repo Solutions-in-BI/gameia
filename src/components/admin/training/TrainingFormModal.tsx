@@ -121,13 +121,20 @@ export function TrainingFormModal({
   // Fetch available skills and insignias
   useEffect(() => {
     async function fetchOptions() {
-      const [skillsRes, insigniasRes] = await Promise.all([
-        supabase.from("skill_configurations").select("id, name, icon").eq("is_active", true),
-        supabase.from("insignias").select("id, name, icon").eq("is_active", true)
-      ]);
+      // Use explicit any to avoid deep type instantiation issues with new tables
+      const client = supabase as unknown as {
+        from: (table: string) => {
+          select: (cols: string) => {
+            eq: (col: string, val: unknown) => Promise<{ data: unknown[] | null }>;
+          };
+        };
+      };
       
-      if (skillsRes.data) setAvailableSkills(skillsRes.data);
-      if (insigniasRes.data) setAvailableInsignias(insigniasRes.data);
+      const skillsRes = await client.from("skill_configurations").select("id, name, icon").eq("is_active", true);
+      const insigniasRes = await client.from("insignias").select("id, name, icon").eq("is_active", true);
+      
+      if (skillsRes.data) setAvailableSkills(skillsRes.data as Array<{id: string; name: string; icon: string}>);
+      if (insigniasRes.data) setAvailableInsignias(insigniasRes.data as Array<{id: string; name: string; icon: string}>);
     }
     if (isOpen) fetchOptions();
   }, [isOpen]);
