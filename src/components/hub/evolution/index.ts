@@ -1,3 +1,3 @@
 export { EvolutionTab } from "./EvolutionTab";
-export { CommitmentsSubtab } from "./CommitmentsSubtab";
+export { ChallengesSubtab, CommitmentsSubtab } from "./ChallengesSubtab";
 export { InsigniasSubtab } from "./InsigniasSubtab";
