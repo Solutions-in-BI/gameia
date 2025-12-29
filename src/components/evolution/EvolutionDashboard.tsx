@@ -29,6 +29,12 @@ import { useSkillProgress } from "@/hooks/useSkillProgress";
 import { format, formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
+export type EvolutionTab = "overview" | "cognitive" | "assessments" | "pdi" | "one-on-one" | "profile";
+
+interface EvolutionDashboardProps {
+  onTabChange: (tab: EvolutionTab) => void;
+}
+
 // Mapeamento de source_type para labels e ícones
 const SOURCE_CONFIG: Record<SourceType, { label: string; icon: typeof Brain; color: string }> = {
   game: { label: "Jogo", icon: Zap, color: "text-yellow-500" },
@@ -40,7 +46,7 @@ const SOURCE_CONFIG: Record<SourceType, { label: string; icon: typeof Brain; col
   challenge: { label: "Desafio", icon: Sparkles, color: "text-cyan-500" },
 };
 
-export function EvolutionDashboard() {
+export function EvolutionDashboard({ onTabChange }: EvolutionDashboardProps) {
   const { suggestions, evolutionTimeline, suggestionsLoading, timelineLoading } = useSkillImpact();
   const { skills, isLoading: skillsLoading } = useSkillProgress();
 

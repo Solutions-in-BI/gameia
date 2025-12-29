@@ -33,7 +33,11 @@ import {
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
-export function PDISection() {
+interface PDISectionProps {
+  onBack?: () => void;
+}
+
+export function PDISection({ onBack }: PDISectionProps) {
   const { user } = useAuth();
   const { myPlans, myPlansLoading, createPlan, getGoalsForPlan, createGoal, addCheckIn } = usePDI();
   const [selectedPlan, setSelectedPlan] = useState<DevelopmentPlan | null>(null);
@@ -311,8 +315,13 @@ export function PDISection() {
     >
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Meu PDI</h2>
-          <p className="text-muted-foreground">Planos de Desenvolvimento Individual</p>
+          {onBack && (
+            <Button variant="ghost" onClick={onBack} className="mb-2 -ml-2">
+              ← Voltar
+            </Button>
+          )}
+          <h2 className="text-2xl font-bold">Trilha de Desenvolvimento</h2>
+          <p className="text-muted-foreground">Seus planos de evolução gamificados</p>
         </div>
         <Dialog open={isCreatingPlan} onOpenChange={setIsCreatingPlan}>
           <DialogTrigger asChild>

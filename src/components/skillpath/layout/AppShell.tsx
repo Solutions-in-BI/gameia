@@ -19,7 +19,7 @@ import {
   Store,
   Crown,
   LayoutDashboard,
-  Sparkles
+  TrendingUp
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -56,21 +56,21 @@ const HEADER_NAV_ITEMS: { id: DashboardTab; label: string; icon: React.ElementTy
 const MAIN_NAV_ITEMS = [
   {
     id: "gamification" as const,
-    label: "Treinamento",
-    shortLabel: "Treinar",
+    label: "Arena",
+    shortLabel: "Arena",
     icon: Gamepad2,
-    description: "Games, Quiz e Cenários",
+    description: "Games, Quiz e Desafios",
   },
   {
     id: "development" as const,
-    label: "Desenvolvimento",
-    shortLabel: "Dev",
-    icon: Sparkles,
-    description: "Testes e avaliações",
+    label: "Evolução",
+    shortLabel: "Evolução",
+    icon: TrendingUp,
+    description: "Tudo impacta suas skills",
   },
   {
     id: "guidance" as const,
-    label: "Orientação",
+    label: "Caminho",
     shortLabel: "Caminho",
     icon: Compass,
     description: "Seu GPS profissional",
