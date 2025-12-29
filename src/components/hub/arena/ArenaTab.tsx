@@ -236,19 +236,13 @@ export function ArenaTab() {
     }
     
     if (type === "cognitive_test") {
-      const test = tests.find(t => t.id === id);
-      if (test) {
-        return (
-          <CognitiveTestPlayer
-            testId={id}
-            testName={test.name}
-            onBack={handleBack}
-            onComplete={() => {
-              handleBack();
-            }}
-          />
-        );
-      }
+      return (
+        <CognitiveTestPlayer
+          testId={id}
+          onComplete={handleBack}
+          onCancel={handleBack}
+        />
+      );
     }
     
     if (type === "training") {

@@ -1,6 +1,7 @@
 /**
  * EvolutionTab - Tab "Evolução" do hub
- * Subtabs: Resumo, Compromissos, Skills, PDI, Feedback, 1:1, Perfil Cognitivo
+ * Mostra RESULTADOS e histórico (não inicia experiências)
+ * Subtabs: Resumo, Histórico, Desafios, Insígnias, Skills, PDI, Feedback, 1:1
  */
 
 import { useState } from "react";
@@ -13,7 +14,8 @@ import {
   Brain,
   BarChart3,
   Award,
-  Handshake
+  History,
+  Sparkles
 } from "lucide-react";
 import { HubHeader } from "../common";
 import { EvolutionDashboard } from "@/components/evolution/EvolutionDashboard";
@@ -24,18 +26,19 @@ import { OneOnOneSection } from "@/components/game/development/OneOnOneSection";
 import { MyCognitiveProfile } from "@/components/game/development/MyCognitiveProfile";
 import { InsigniasSubtab } from "./InsigniasSubtab";
 import { ChallengesSubtab } from "./ChallengesSubtab";
+import { HistorySubtab } from "./HistorySubtab";
 
-type EvolutionSubtab = "summary" | "commitments" | "insignias" | "skills" | "pdi" | "feedback" | "1on1" | "profile";
+type EvolutionSubtab = "summary" | "history" | "challenges" | "insignias" | "skills" | "pdi" | "feedback" | "1on1";
 
 const SUBTABS = [
   { id: "summary" as const, label: "Resumo", icon: BarChart3 },
-  { id: "commitments" as const, label: "Desafios", icon: Target },
+  { id: "history" as const, label: "Histórico", icon: History },
+  { id: "challenges" as const, label: "Desafios", icon: Target },
   { id: "insignias" as const, label: "Insígnias", icon: Award },
-  { id: "skills" as const, label: "Skills", icon: Target },
+  { id: "skills" as const, label: "Skills", icon: Sparkles },
   { id: "pdi" as const, label: "PDI", icon: TrendingUp },
   { id: "feedback" as const, label: "Feedback 360", icon: Users },
   { id: "1on1" as const, label: "1:1", icon: Calendar },
-  { id: "profile" as const, label: "Perfil", icon: Brain },
 ];
 
 export function EvolutionTab() {
@@ -46,16 +49,18 @@ export function EvolutionTab() {
       case "summary":
         return <EvolutionDashboard onTabChange={(tab) => {
           const mapping: Record<string, EvolutionSubtab> = {
-            cognitive: "profile",
+            cognitive: "history",
             assessments: "feedback",
             pdi: "pdi",
             "one-on-one": "1on1",
-            profile: "profile",
-            commitments: "commitments",
+            profile: "history",
+            commitments: "challenges",
           };
           if (mapping[tab]) setSubtab(mapping[tab]);
         }} />;
-      case "commitments":
+      case "history":
+        return <HistorySubtab />;
+      case "challenges":
         return <ChallengesSubtab />;
       case "insignias":
         return <InsigniasSubtab />;
@@ -67,8 +72,6 @@ export function EvolutionTab() {
         return <Assessment360Section />;
       case "1on1":
         return <OneOnOneSection />;
-      case "profile":
-        return <MyCognitiveProfile />;
       default:
         return null;
     }
