@@ -6241,6 +6241,18 @@ export type Database = {
       }
       check_skills_health: { Args: never; Returns: Json }
       complete_daily_mission: { Args: { p_mission_id: string }; Returns: Json }
+      create_assessment_notification: {
+        Args: {
+          p_action_url?: string
+          p_data?: Json
+          p_message: string
+          p_notification_type: string
+          p_priority?: string
+          p_title: string
+          p_user_id: string
+        }
+        Returns: string
+      }
       create_contextual_assessment: {
         Args: {
           p_assessment_type?: string
@@ -6307,6 +6319,20 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      get_assessment_notifications: {
+        Args: { p_user_id: string }
+        Returns: {
+          action_url: string
+          created_at: string
+          data: Json
+          id: string
+          is_read: boolean
+          message: string
+          priority: string
+          title: string
+          type: string
+        }[]
       }
       get_consolidated_skill_score: {
         Args: { p_period_days?: number; p_skill_id: string; p_user_id: string }
@@ -6463,6 +6489,10 @@ export type Database = {
           p_xp_earned?: number
         }
         Returns: string
+      }
+      notify_team_assessment_cycle: {
+        Args: { p_cycle_id: string; p_team_id: string }
+        Returns: number
       }
       process_assessment_completion: {
         Args: { p_assessment_id: string }
