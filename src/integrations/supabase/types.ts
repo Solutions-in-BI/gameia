@@ -112,11 +112,15 @@ export type Database = {
       assessment_cycles: {
         Row: {
           config: Json | null
+          context_id: string | null
+          context_type: string | null
           created_at: string | null
           created_by: string | null
           cycle_type: string | null
           description: string | null
           end_date: string
+          evaluated_skills: string[] | null
+          feedback_questions: Json | null
           id: string
           name: string
           organization_id: string | null
@@ -125,11 +129,15 @@ export type Database = {
         }
         Insert: {
           config?: Json | null
+          context_id?: string | null
+          context_type?: string | null
           created_at?: string | null
           created_by?: string | null
           cycle_type?: string | null
           description?: string | null
           end_date: string
+          evaluated_skills?: string[] | null
+          feedback_questions?: Json | null
           id?: string
           name: string
           organization_id?: string | null
@@ -138,11 +146,15 @@ export type Database = {
         }
         Update: {
           config?: Json | null
+          context_id?: string | null
+          context_type?: string | null
           created_at?: string | null
           created_by?: string | null
           cycle_type?: string | null
           description?: string | null
           end_date?: string
+          evaluated_skills?: string[] | null
+          feedback_questions?: Json | null
           id?: string
           name?: string
           organization_id?: string | null
@@ -623,6 +635,8 @@ export type Database = {
           name: string
           organization_id: string | null
           questions_count: number | null
+          related_skills: string[] | null
+          skill_impact_config: Json | null
           test_type: string
           time_limit_minutes: number | null
           xp_reward: number | null
@@ -637,6 +651,8 @@ export type Database = {
           name: string
           organization_id?: string | null
           questions_count?: number | null
+          related_skills?: string[] | null
+          skill_impact_config?: Json | null
           test_type: string
           time_limit_minutes?: number | null
           xp_reward?: number | null
@@ -651,6 +667,8 @@ export type Database = {
           name?: string
           organization_id?: string | null
           questions_count?: number | null
+          related_skills?: string[] | null
+          skill_impact_config?: Json | null
           test_type?: string
           time_limit_minutes?: number | null
           xp_reward?: number | null
@@ -932,6 +950,8 @@ export type Database = {
       }
       development_goals: {
         Row: {
+          auto_challenges_enabled: boolean | null
+          challenge_config: Json | null
           created_at: string | null
           description: string | null
           evidence_urls: string[] | null
@@ -940,6 +960,7 @@ export type Database = {
           plan_id: string | null
           priority: string | null
           progress: number | null
+          related_games: string[] | null
           skill_id: string | null
           status: string | null
           success_criteria: string[] | null
@@ -948,6 +969,8 @@ export type Database = {
           xp_reward: number | null
         }
         Insert: {
+          auto_challenges_enabled?: boolean | null
+          challenge_config?: Json | null
           created_at?: string | null
           description?: string | null
           evidence_urls?: string[] | null
@@ -956,6 +979,7 @@ export type Database = {
           plan_id?: string | null
           priority?: string | null
           progress?: number | null
+          related_games?: string[] | null
           skill_id?: string | null
           status?: string | null
           success_criteria?: string[] | null
@@ -964,6 +988,8 @@ export type Database = {
           xp_reward?: number | null
         }
         Update: {
+          auto_challenges_enabled?: boolean | null
+          challenge_config?: Json | null
           created_at?: string | null
           description?: string | null
           evidence_urls?: string[] | null
@@ -972,6 +998,7 @@ export type Database = {
           plan_id?: string | null
           priority?: string | null
           progress?: number | null
+          related_games?: string[] | null
           skill_id?: string | null
           status?: string | null
           success_criteria?: string[] | null
@@ -1755,6 +1782,8 @@ export type Database = {
       }
       one_on_one_meetings: {
         Row: {
+          ai_insights: string | null
+          challenges_reviewed: string[] | null
           created_at: string | null
           duration_minutes: number | null
           employee_id: string
@@ -1762,12 +1791,17 @@ export type Database = {
           location: string | null
           manager_id: string
           organization_id: string | null
+          outcomes: Json | null
           recurrence: string | null
           scheduled_at: string
+          skills_discussed: string[] | null
           status: string | null
+          suggested_topics: Json | null
           template_id: string | null
         }
         Insert: {
+          ai_insights?: string | null
+          challenges_reviewed?: string[] | null
           created_at?: string | null
           duration_minutes?: number | null
           employee_id: string
@@ -1775,12 +1809,17 @@ export type Database = {
           location?: string | null
           manager_id: string
           organization_id?: string | null
+          outcomes?: Json | null
           recurrence?: string | null
           scheduled_at: string
+          skills_discussed?: string[] | null
           status?: string | null
+          suggested_topics?: Json | null
           template_id?: string | null
         }
         Update: {
+          ai_insights?: string | null
+          challenges_reviewed?: string[] | null
           created_at?: string | null
           duration_minutes?: number | null
           employee_id?: string
@@ -1788,9 +1827,12 @@ export type Database = {
           location?: string | null
           manager_id?: string
           organization_id?: string | null
+          outcomes?: Json | null
           recurrence?: string | null
           scheduled_at?: string
+          skills_discussed?: string[] | null
           status?: string | null
+          suggested_topics?: Json | null
           template_id?: string | null
         }
         Relationships: [
@@ -3190,6 +3232,70 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      skill_impact_events: {
+        Row: {
+          created_at: string | null
+          id: string
+          impact_type: string
+          impact_value: number
+          metadata: Json | null
+          normalized_score: number | null
+          organization_id: string | null
+          skill_id: string
+          source_id: string | null
+          source_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          impact_type: string
+          impact_value?: number
+          metadata?: Json | null
+          normalized_score?: number | null
+          organization_id?: string | null
+          skill_id: string
+          source_id?: string | null
+          source_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          impact_type?: string
+          impact_value?: number
+          metadata?: Json | null
+          normalized_score?: number | null
+          organization_id?: string | null
+          skill_id?: string
+          source_id?: string | null
+          source_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skill_impact_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "skill_impact_events_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skill_configurations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "skill_impact_events_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "vw_org_skill_metrics"
+            referencedColumns: ["skill_id"]
           },
         ]
       }
@@ -4891,6 +4997,14 @@ export type Database = {
         }
         Returns: Json
       }
+      get_consolidated_skill_score: {
+        Args: { p_period_days?: number; p_skill_id: string; p_user_id: string }
+        Returns: Json
+      }
+      get_evolution_suggestions: {
+        Args: { p_limit?: number; p_user_id: string }
+        Returns: Json
+      }
       get_games_report: {
         Args: { _org_id: string; _period?: string }
         Returns: Json
@@ -4998,6 +5112,18 @@ export type Database = {
         Returns: string
       }
       purchase_marketplace_item: { Args: { p_item_id: string }; Returns: Json }
+      record_skill_impact: {
+        Args: {
+          p_impact_type: string
+          p_impact_value: number
+          p_metadata?: Json
+          p_skill_id: string
+          p_source_id: string
+          p_source_type: string
+          p_user_id: string
+        }
+        Returns: string
+      }
       revoke_org_invite: { Args: { p_invite_id: string }; Returns: Json }
       validate_email_domain: {
         Args: { p_email: string; p_organization_id: string }
