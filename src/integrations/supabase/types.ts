@@ -2427,6 +2427,7 @@ export type Database = {
       marketplace_items: {
         Row: {
           available_for_orgs_only: boolean | null
+          behavior_type: string | null
           boost_duration_hours: number | null
           boost_type: string | null
           boost_value: number | null
@@ -2456,6 +2457,7 @@ export type Database = {
         }
         Insert: {
           available_for_orgs_only?: boolean | null
+          behavior_type?: string | null
           boost_duration_hours?: number | null
           boost_type?: string | null
           boost_value?: number | null
@@ -2485,6 +2487,7 @@ export type Database = {
         }
         Update: {
           available_for_orgs_only?: boolean | null
+          behavior_type?: string | null
           boost_duration_hours?: number | null
           boost_type?: string | null
           boost_value?: number | null

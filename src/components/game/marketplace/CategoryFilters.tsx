@@ -1,37 +1,93 @@
+/**
+ * CategoryFilters - Nova hierarquia de 4 camadas
+ * Personalização | Vantagens | Desenvolvimento | Experiências
+ */
+
 import { motion } from "framer-motion";
-import { Briefcase, Gift, Gamepad2 } from "lucide-react";
+import { Palette, Zap, GraduationCap, Gift } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type CategorySection = "rewards" | "customization" | "recreation";
-export type Category = "all" | "reward" | "experience" | "learning" | "gift" | "benefit" | "avatar" | "frame" | "banner" | "title" | "pet" | "effect" | "boost";
+export type CategorySection = "customization" | "advantages" | "development" | "experiences";
+export type Category = "all" | "avatar" | "frame" | "banner" | "title" | "pet" | "mascot" | "boost" | "effect" | "learning" | "experience" | "benefit" | "reward" | "gift";
 export type SortOption = "rarity" | "price_asc" | "price_desc" | "name";
 
-// Rewards categories (real benefits)
-export const REWARDS_CATEGORIES: { key: Category; label: string }[] = [
-  { key: "all", label: "Todos" },
-  { key: "reward", label: "Recompensas" },
-  { key: "experience", label: "Experiências" },
-  { key: "learning", label: "Desenvolvimento" },
-  { key: "gift", label: "Presentes" },
-  { key: "benefit", label: "Benefícios" },
-];
+// Section configuration with icons, labels, and descriptions
+export const SECTION_CONFIG: Record<CategorySection, {
+  icon: typeof Palette;
+  label: string;
+  shortLabel: string;
+  description: string;
+  categories: { key: Category; label: string }[];
+}> = {
+  customization: {
+    icon: Palette,
+    label: "Personalização",
+    shortLabel: "Perfil",
+    description: "Destaque-se com itens exclusivos para seu perfil",
+    categories: [
+      { key: "all", label: "Todos" },
+      { key: "avatar", label: "Avatares" },
+      { key: "frame", label: "Molduras" },
+      { key: "banner", label: "Banners" },
+      { key: "title", label: "Títulos" },
+      { key: "pet", label: "Mascotes" },
+    ],
+  },
+  advantages: {
+    icon: Zap,
+    label: "Vantagens",
+    shortLabel: "Boosts",
+    description: "Potencialize seus ganhos temporariamente",
+    categories: [
+      { key: "all", label: "Todos" },
+      { key: "boost", label: "Multiplicadores" },
+      { key: "effect", label: "Efeitos" },
+    ],
+  },
+  development: {
+    icon: GraduationCap,
+    label: "Desenvolvimento",
+    shortLabel: "Cursos",
+    description: "Invista em conhecimento e crescimento",
+    categories: [
+      { key: "all", label: "Todos" },
+      { key: "learning", label: "Cursos" },
+    ],
+  },
+  experiences: {
+    icon: Gift,
+    label: "Experiências",
+    shortLabel: "Benefícios",
+    description: "Benefícios reais aprovados pelo seu gestor",
+    categories: [
+      { key: "all", label: "Todos" },
+      { key: "experience", label: "Experiências" },
+      { key: "benefit", label: "Benefícios" },
+      { key: "reward", label: "Recompensas" },
+      { key: "gift", label: "Presentes" },
+    ],
+  },
+};
 
-// Customization categories
-export const CUSTOMIZATION_CATEGORIES: { key: Category; label: string }[] = [
-  { key: "all", label: "Todos" },
-  { key: "avatar", label: "Avatares" },
-  { key: "frame", label: "Molduras" },
-  { key: "banner", label: "Banners" },
-  { key: "title", label: "Títulos" },
-  { key: "pet", label: "Mascotes" },
-];
+// Section order for display
+export const SECTION_ORDER: CategorySection[] = ["customization", "advantages", "development", "experiences"];
 
-// Recreation categories
-export const RECREATION_CATEGORIES: { key: Category; label: string }[] = [
-  { key: "all", label: "Todos" },
-  { key: "effect", label: "Efeitos" },
-  { key: "boost", label: "Boosts" },
-];
+// Category to section mapping
+export const CATEGORY_TO_SECTION: Record<string, CategorySection> = {
+  avatar: "customization",
+  frame: "customization",
+  banner: "customization",
+  title: "customization",
+  pet: "customization",
+  mascot: "customization",
+  boost: "advantages",
+  effect: "advantages",
+  learning: "development",
+  experience: "experiences",
+  benefit: "experiences",
+  reward: "experiences",
+  gift: "experiences",
+};
 
 interface CategoryFiltersProps {
   section: CategorySection;
@@ -50,13 +106,7 @@ export function CategoryFilters({
   onCategoryChange,
   onSortChange,
 }: CategoryFiltersProps) {
-  const getCurrentCategories = () => {
-    switch (section) {
-      case "rewards": return REWARDS_CATEGORIES;
-      case "customization": return CUSTOMIZATION_CATEGORIES;
-      case "recreation": return RECREATION_CATEGORIES;
-    }
-  };
+  const currentSection = SECTION_CONFIG[section];
 
   const handleSectionChange = (newSection: CategorySection) => {
     onSectionChange(newSection);
@@ -67,67 +117,70 @@ export function CategoryFilters({
     <div className="space-y-4 mb-6">
       {/* Section Tabs */}
       <div className="flex justify-center">
-        <div className="inline-flex bg-muted/50 rounded-lg p-1 gap-1">
-          <button
-            onClick={() => handleSectionChange("rewards")}
-            className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all",
-              section === "rewards" 
-                ? "bg-background text-foreground shadow-sm" 
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <Gift className="w-4 h-4" />
-            <span className="hidden sm:inline">Benefícios</span>
-          </button>
-          <button
-            onClick={() => handleSectionChange("customization")}
-            className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all",
-              section === "customization" 
-                ? "bg-background text-foreground shadow-sm" 
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <Briefcase className="w-4 h-4" />
-            <span className="hidden sm:inline">Personalização</span>
-          </button>
-          <button
-            onClick={() => handleSectionChange("recreation")}
-            className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all",
-              section === "recreation" 
-                ? "bg-background text-foreground shadow-sm" 
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <Gamepad2 className="w-4 h-4" />
-            <span className="hidden sm:inline">Jogos</span>
-          </button>
+        <div className="inline-flex bg-muted/50 rounded-xl p-1 gap-1">
+          {SECTION_ORDER.map((sectionKey) => {
+            const config = SECTION_CONFIG[sectionKey];
+            const Icon = config.icon;
+            const isActive = section === sectionKey;
+
+            return (
+              <motion.button
+                key={sectionKey}
+                onClick={() => handleSectionChange(sectionKey)}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className={cn(
+                  "relative flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-all",
+                  isActive 
+                    ? "bg-background text-foreground shadow-sm" 
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Icon className={cn("w-4 h-4", isActive && "text-primary")} />
+                <span className="hidden sm:inline">{config.label}</span>
+                <span className="sm:hidden">{config.shortLabel}</span>
+                
+                {/* Active indicator */}
+                {isActive && (
+                  <motion.div
+                    layoutId="sectionIndicator"
+                    className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary"
+                  />
+                )}
+              </motion.button>
+            );
+          })}
         </div>
       </div>
 
+      {/* Section description */}
+      <p className="text-center text-sm text-muted-foreground">
+        {currentSection.description}
+      </p>
+
       {/* Category chips */}
       <div className="flex flex-wrap justify-center gap-2">
-        {getCurrentCategories().map((cat) => (
-          <button
+        {currentSection.categories.map((cat) => (
+          <motion.button
             key={cat.key}
             onClick={() => onCategoryChange(cat.key)}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             className={cn(
-              "px-3 py-1.5 rounded-md text-sm font-medium transition-all",
+              "px-3 py-1.5 rounded-lg text-sm font-medium transition-all",
               category === cat.key
-                ? "bg-primary text-primary-foreground"
+                ? "bg-primary text-primary-foreground shadow-sm"
                 : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
             )}
           >
             {cat.label}
-          </button>
+          </motion.button>
         ))}
       </div>
 
       {/* Sort options */}
       <div className="flex justify-center">
-        <div className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+        <div className="inline-flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 px-3 py-1.5 rounded-lg">
           <span>Ordenar:</span>
           <select
             value={sortBy}

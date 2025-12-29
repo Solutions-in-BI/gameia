@@ -1,5 +1,5 @@
 /**
- * Página do Marketplace - Design Premium
+ * MarketplacePage - Redesenhado com nova hierarquia de 4 seções
  */
 
 import { useState, useMemo } from "react";
@@ -12,7 +12,7 @@ import { PageHeader } from "@/components/game/common/PageHeader";
 
 // Components
 import { FeaturedCarousel } from "./FeaturedCarousel";
-import { CategoryFilters, CategorySection, Category, SortOption } from "./CategoryFilters";
+import { CategoryFilters, CategorySection, Category, SortOption, SECTION_CONFIG, CATEGORY_TO_SECTION } from "./CategoryFilters";
 import { EnhancedItemCard } from "./EnhancedItemCard";
 import { InventoryGrid } from "./InventoryGrid";
 import { ItemExpirationBanner } from "./ItemExpirationBanner";
@@ -25,26 +25,27 @@ type Tab = "shop" | "inventory";
 
 export function MarketplacePage({ onBack }: MarketplacePageProps) {
   const [activeTab, setActiveTab] = useState<Tab>("shop");
-  const [categorySection, setCategorySection] = useState<CategorySection>("rewards");
+  const [categorySection, setCategorySection] = useState<CategorySection>("customization");
   const [category, setCategory] = useState<Category>("all");
   const [sortBy, setSortBy] = useState<SortOption>("rarity");
   
   const { items, inventory, coins, isLoading, purchaseItem, toggleEquip, featuredItems } = useMarketplace();
   const { isAuthenticated } = useAuth();
 
-  // Category mappings per section
-  const sectionCategories: Record<CategorySection, string[]> = {
-    rewards: ["reward", "experience", "learning", "gift", "benefit"],
-    customization: ["avatar", "frame", "banner", "title", "pet"],
-    recreation: ["effect", "boost"],
+  // Get valid categories for current section
+  const getValidCategories = (section: CategorySection): string[] => {
+    return SECTION_CONFIG[section].categories.map(c => c.key).filter(k => k !== "all");
   };
 
   // Filter and sort items
   const filteredItems = useMemo(() => {
-    const validCategories = sectionCategories[categorySection];
+    const validCategories = getValidCategories(categorySection);
     
     let filtered = items.filter(item => {
-      if (!validCategories.includes(item.category)) return false;
+      // Check if item belongs to this section by category
+      const itemSection = CATEGORY_TO_SECTION[item.category];
+      if (itemSection !== categorySection) return false;
+      
       return category === "all" || item.category === category;
     });
 
@@ -74,13 +75,6 @@ export function MarketplacePage({ onBack }: MarketplacePageProps) {
   }, [items, categorySection, category, sortBy]);
 
   const ownedIds = useMemo(() => new Set(inventory.map(inv => inv.item_id)), [inventory]);
-
-  // Section description
-  const sectionDescriptions: Record<CategorySection, string> = {
-    rewards: "Troque suas moedas por benefícios reais",
-    customization: "Personalize seu perfil na plataforma",
-    recreation: "Itens especiais para os jogos",
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -169,11 +163,6 @@ export function MarketplacePage({ onBack }: MarketplacePageProps) {
                 onCategoryChange={setCategory}
                 onSortChange={setSortBy}
               />
-
-              {/* Section description */}
-              <p className="text-center text-sm text-muted-foreground -mt-2">
-                {sectionDescriptions[categorySection]}
-              </p>
 
               {/* Items Grid */}
               {isLoading ? (
