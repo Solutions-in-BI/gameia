@@ -1,5 +1,6 @@
 /**
  * Hook para gerenciar organizações/empresas
+ * Usa localStorage para cache e evitar flash de "Nenhuma organização"
  */
 
 import { useState, useEffect, useCallback } from "react";
@@ -67,11 +68,35 @@ interface UseOrganization {
   refresh: () => Promise<void>;
 }
 
+const ORG_CACHE_KEY = "gameia_org_cache";
+
+function getCachedOrg(): Organization | null {
+  try {
+    const cached = localStorage.getItem(ORG_CACHE_KEY);
+    return cached ? JSON.parse(cached) : null;
+  } catch {
+    return null;
+  }
+}
+
+function setCachedOrg(org: Organization | null) {
+  try {
+    if (org) {
+      localStorage.setItem(ORG_CACHE_KEY, JSON.stringify(org));
+    } else {
+      localStorage.removeItem(ORG_CACHE_KEY);
+    }
+  } catch {
+    // Ignore localStorage errors
+  }
+}
+
 export function useOrganization(): UseOrganization {
   const { user, profile, isAuthenticated } = useAuth();
   const { toast } = useToast();
   
-  const [currentOrg, setCurrentOrg] = useState<Organization | null>(null);
+  // Initialize from cache to avoid flash
+  const [currentOrg, setCurrentOrg] = useState<Organization | null>(getCachedOrg);
   const [members, setMembers] = useState<OrganizationMember[]>([]);
   const [challenges, setChallenges] = useState<OrganizationChallenge[]>([]);
   const [myOrganizations, setMyOrganizations] = useState<Organization[]>([]);
@@ -106,7 +131,10 @@ export function useOrganization(): UseOrganization {
           const next = org as Organization;
           // Evita loop de render ao não atualizar estado quando nada mudou
           setCurrentOrg((prev) => {
-            if (!prev) return next;
+            if (!prev) {
+              setCachedOrg(next);
+              return next;
+            }
 
             const isSame =
               prev.id === next.id &&
@@ -119,8 +147,14 @@ export function useOrganization(): UseOrganization {
               prev.owner_id === next.owner_id &&
               prev.created_at === next.created_at;
 
+            if (!isSame) {
+              setCachedOrg(next);
+            }
             return isSame ? prev : next;
           });
+        } else {
+          setCurrentOrg(null);
+          setCachedOrg(null);
         }
       }
     } catch (err) {
