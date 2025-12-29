@@ -17,20 +17,8 @@ import { TeamManagement } from "@/components/admin/teams/TeamManagement";
 import { MembersManagement } from "@/components/admin/members/MembersManagement";
 import { ReportsPage } from "@/components/admin/reports/ReportsPage";
 
-// Placeholder para seções ainda não migradas
-function AlertsSection() {
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Alertas & Ações</h1>
-        <p className="text-muted-foreground">Pendências e notificações importantes</p>
-      </div>
-      <div className="bg-card border border-border rounded-xl p-8 text-center">
-        <p className="text-muted-foreground">Em breve: alertas de inatividade, metas em risco, e ações recomendadas.</p>
-      </div>
-    </div>
-  );
-}
+// Importar AlertsSection real
+import { AlertsSection } from "./alerts";
 
 function CommitmentsSection() {
   return (
