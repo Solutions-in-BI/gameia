@@ -10,13 +10,13 @@ import { ConsoleSidebar, ConsoleSection, ConsoleHeader } from "./layout";
 // Importar componentes existentes do admin que serão reutilizados
 import { OrganizationSettings } from "@/components/admin/settings/OrganizationSettings";
 import { PlanBillingSettings } from "@/components/admin/settings/PlanBillingSettings";
-import { GameConfigSettings } from "@/components/admin/settings/GameConfigSettings";
 import { BadgeConfigSettings } from "@/components/admin/settings/BadgeConfigSettings";
 import { LevelConfigSettings } from "@/components/admin/settings/LevelConfigSettings";
 import { MarketplaceManagement } from "@/components/admin/marketplace/MarketplaceManagement";
 import { TrainingManagement } from "@/components/admin/training/TrainingManagement";
 import { IntegrationsSettings } from "@/components/admin/settings/IntegrationsSettings";
 import { SSOSettings } from "@/components/admin/settings/SSOSettings";
+import { GameConfigurationHub } from "@/components/admin/games";
 
 // Placeholder para seções ainda não migradas
 function UsersPermissionsSection() {
@@ -104,7 +104,7 @@ export function ConsoleCenter() {
         return <UsersPermissionsSection />;
       case "gamification":
       case "games":
-        return <GameConfigSettings />;
+        return <GameConfigurationHub />;
       case "badges":
         return <BadgeConfigSettings />;
       case "levels":
