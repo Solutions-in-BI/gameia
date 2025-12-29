@@ -1,13 +1,16 @@
+/**
+ * Página do Marketplace - Design Premium
+ */
+
 import { useState, useMemo } from "react";
-import { ShoppingBag, Package } from "lucide-react";
+import { ShoppingBag, Package, Store } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { GameLayout } from "../common/GameLayout";
 import { useMarketplace } from "@/hooks/useMarketplace";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
+import { PageHeader } from "@/components/game/common/PageHeader";
 
 // Components
-import { MarketplaceHeader } from "./MarketplaceHeader";
 import { FeaturedCarousel } from "./FeaturedCarousel";
 import { CategoryFilters, CategorySection, Category, SortOption } from "./CategoryFilters";
 import { EnhancedItemCard } from "./EnhancedItemCard";
@@ -79,20 +82,34 @@ export function MarketplacePage({ onBack }: MarketplacePageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-background py-6 px-4">
-      <div className="max-w-5xl mx-auto">
-        {/* Header */}
-        <MarketplaceHeader coins={coins} isAuthenticated={isAuthenticated} />
+    <div className="min-h-screen bg-background">
+      <PageHeader 
+        title="Loja de Recompensas" 
+        subtitle="Troque suas moedas por benefícios"
+        icon={<Store className="w-5 h-5 text-primary" />}
+        coins={coins}
+        showCoins={isAuthenticated}
+      />
+
+      <div className="max-w-5xl mx-auto px-4 py-6">
+        {/* Login prompt */}
+        {!isAuthenticated && (
+          <div className="mb-6 p-4 rounded-xl bg-muted/50 border border-border text-center">
+            <p className="text-sm text-muted-foreground">
+              Faça login para comprar e acumular moedas
+            </p>
+          </div>
+        )}
 
         {/* Tab Navigation */}
         <div className="flex gap-2 mb-6 max-w-sm mx-auto">
           <button
             onClick={() => setActiveTab("shop")}
             className={cn(
-              "flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-all",
+              "flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-medium transition-all",
               activeTab === "shop"
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground hover:text-foreground"
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80"
             )}
           >
             <ShoppingBag className="w-4 h-4" />
@@ -102,10 +119,10 @@ export function MarketplacePage({ onBack }: MarketplacePageProps) {
           <button
             onClick={() => setActiveTab("inventory")}
             className={cn(
-              "flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-all",
+              "flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-medium transition-all",
               activeTab === "inventory"
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground hover:text-foreground"
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80"
             )}
           >
             <Package className="w-4 h-4" />
@@ -161,11 +178,11 @@ export function MarketplacePage({ onBack }: MarketplacePageProps) {
               {isLoading ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                   {[...Array(8)].map((_, i) => (
-                    <div key={i} className="h-56 rounded-lg bg-muted animate-pulse" />
+                    <div key={i} className="aspect-[3/4] rounded-xl bg-muted animate-pulse" />
                   ))}
                 </div>
               ) : filteredItems.length === 0 ? (
-                <div className="text-center py-12 bg-muted/30 rounded-lg">
+                <div className="text-center py-12 bg-card rounded-xl border border-border">
                   <Package className="w-12 h-12 mx-auto text-muted-foreground/30 mb-3" />
                   <p className="text-muted-foreground">
                     Nenhum item disponível nesta categoria
