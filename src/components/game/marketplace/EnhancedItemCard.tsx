@@ -2,6 +2,7 @@
  * EnhancedItemCard - Card de item com badges claros de tipo, regras e estado
  */
 
+import { forwardRef } from "react";
 import { motion } from "framer-motion";
 import { 
   Check, Lock, Sparkles, Star, Zap, Gift, Clock, Award, 
@@ -68,28 +69,30 @@ function getBehaviorType(item: MarketplaceItem): keyof typeof BEHAVIOR_CONFIG {
   return "consumable";
 }
 
-export function EnhancedItemCard({ item, owned, canAfford, onPurchase, index = 0 }: EnhancedItemCardProps) {
-  const rarityConfig = RARITY_CONFIG[item.rarity as keyof typeof RARITY_CONFIG] || RARITY_CONFIG.common;
-  const behaviorType = getBehaviorType(item);
-  const behaviorConfig = BEHAVIOR_CONFIG[behaviorType];
-  const typeConfig = ITEM_TYPE_CONFIG[(item.item_type || "cosmetic") as keyof typeof ITEM_TYPE_CONFIG] || ITEM_TYPE_CONFIG.cosmetic;
-  
-  const isLegendary = item.rarity === "legendary";
-  const isBoost = item.item_type === "boost" || item.category === "boost";
-  const hasExpiration = item.expires_after_purchase !== null && item.expires_after_purchase > 0;
-  const requiresApproval = item.requires_approval;
-  const isSingleUse = item.max_uses === 1;
-  
-  const BehaviorIcon = behaviorConfig.icon;
+export const EnhancedItemCard = forwardRef<HTMLDivElement, EnhancedItemCardProps>(
+  function EnhancedItemCard({ item, owned, canAfford, onPurchase, index = 0 }, ref) {
+    const rarityConfig = RARITY_CONFIG[item.rarity as keyof typeof RARITY_CONFIG] || RARITY_CONFIG.common;
+    const behaviorType = getBehaviorType(item);
+    const behaviorConfig = BEHAVIOR_CONFIG[behaviorType];
+    const typeConfig = ITEM_TYPE_CONFIG[(item.item_type || "cosmetic") as keyof typeof ITEM_TYPE_CONFIG] || ITEM_TYPE_CONFIG.cosmetic;
+    
+    const isLegendary = item.rarity === "legendary";
+    const isBoost = item.item_type === "boost" || item.category === "boost";
+    const hasExpiration = item.expires_after_purchase !== null && item.expires_after_purchase > 0;
+    const requiresApproval = item.requires_approval;
+    const isSingleUse = item.max_uses === 1;
+    
+    const BehaviorIcon = behaviorConfig.icon;
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2, delay: index * 0.03 }}
-      whileHover={{ y: -4 }}
-      className="group"
-    >
+    return (
+      <motion.div
+        ref={ref}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2, delay: index * 0.03 }}
+        whileHover={{ y: -4 }}
+        className="group"
+      >
       <div className={cn(
         "relative rounded-xl border bg-card overflow-hidden transition-all h-full flex flex-col",
         rarityConfig.border, rarityConfig.glow, owned && "opacity-70"
@@ -221,4 +224,4 @@ export function EnhancedItemCard({ item, owned, canAfford, onPurchase, index = 0
       </div>
     </motion.div>
   );
-}
+});

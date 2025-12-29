@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -20,7 +21,8 @@ const RARITY_LABELS: Record<string, string> = {
   legendary: "Lendário",
 };
 
-export function FeaturedCarousel({ items, ownedIds, coins, onPurchase }: FeaturedCarouselProps) {
+export const FeaturedCarousel = forwardRef<HTMLDivElement, FeaturedCarouselProps>(
+  function FeaturedCarousel({ items, ownedIds, coins, onPurchase }, ref) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
@@ -49,7 +51,7 @@ export function FeaturedCarousel({ items, ownedIds, coins, onPurchase }: Feature
   const canAfford = coins >= currentItem.price;
 
   return (
-    <div className="mb-6">
+    <div ref={ref} className="mb-6">
       <div className="flex items-center gap-2 mb-3">
         <Sparkles className="w-4 h-4 text-amber-500" />
         <h2 className="text-sm font-medium text-muted-foreground">Em destaque</h2>
@@ -152,4 +154,4 @@ export function FeaturedCarousel({ items, ownedIds, coins, onPurchase }: Feature
       )}
     </div>
   );
-}
+});
