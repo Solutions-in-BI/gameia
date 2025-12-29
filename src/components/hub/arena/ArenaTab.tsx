@@ -25,9 +25,9 @@ import { HubCard, HubCardHeader, HubEmptyState, HubButton, HubHeader } from "../
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useSkillProgress } from "@/hooks/useSkillProgress";
-import { useCommitments, Commitment } from "@/hooks/useCommitments";
+import { useChallenges, Challenge } from "@/hooks/useChallenges";
 import { useOrganization } from "@/hooks/useOrganization";
-import { CommitmentsHighlight, CommitmentDetailModal } from "@/components/commitments";
+import { ChallengesHighlight, ChallengeDetailModal } from "@/components/challenges";
 
 // Games data
 import { SnakeGame } from "@/components/game/snake/SnakeGame";
@@ -175,11 +175,11 @@ export function ArenaTab() {
   const [activeGame, setActiveGame] = useState<ActiveGame>(null);
   const { skills } = useSkillProgress();
   
-  // Commitments
+  // Challenges (formerly Commitments)
   const { currentOrg } = useOrganization();
-  const { activeCommitments } = useCommitments(currentOrg?.id);
-  const [selectedCommitment, setSelectedCommitment] = useState<Commitment | null>(null);
-  const [showCommitmentDetail, setShowCommitmentDetail] = useState(false);
+  const { activeChallenges, getSupporters } = useChallenges(currentOrg?.id);
+  const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
+  const [showChallengeDetail, setShowChallengeDetail] = useState(false);
 
   // Find recommended game based on weak skills
   const weakSkills = skills.slice(0, 3).map(s => s.name.toLowerCase());
@@ -225,27 +225,27 @@ export function ArenaTab() {
         onAction={() => recommendedGame && setActiveGame(recommendedGame.id)}
       />
 
-      {/* Active Commitments Highlight */}
-      {activeCommitments.length > 0 && (
-        <CommitmentsHighlight
-          commitments={activeCommitments}
-          onCommitmentClick={(c) => {
-            setSelectedCommitment(c);
-            setShowCommitmentDetail(true);
+      {/* Active Challenges Highlight */}
+      {activeChallenges.length > 0 && (
+        <ChallengesHighlight
+          challenges={activeChallenges}
+          onChallengeClick={(c) => {
+            setSelectedChallenge(c);
+            setShowChallengeDetail(true);
           }}
           onViewAllClick={() => {
-            // Navigate to evolution tab with commitments subtab
+            // Navigate to evolution tab with challenges subtab
             window.location.href = "/app?tab=evolution&subtab=commitments";
           }}
         />
       )}
 
-      {/* Commitment Detail Modal */}
-      <CommitmentDetailModal
-        commitment={selectedCommitment}
-        open={showCommitmentDetail}
-        onOpenChange={setShowCommitmentDetail}
-        orgId={currentOrg?.id || ""}
+      {/* Challenge Detail Modal */}
+      <ChallengeDetailModal
+        challenge={selectedChallenge}
+        isOpen={showChallengeDetail}
+        onClose={() => setShowChallengeDetail(false)}
+        getSupporters={getSupporters}
       />
 
       {/* Recommended Game - Highlight */}
