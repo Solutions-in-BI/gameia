@@ -29,7 +29,7 @@ export function DevelopmentSection() {
       case "one-on-one":
         return <OneOnOneSection onBack={() => setActiveTab("overview")} />;
       case "profile":
-        return <MyCognitiveProfile />;
+        return <MyCognitiveProfile onBack={() => setActiveTab("overview")} />;
       default:
         return <EvolutionDashboard onTabChange={setActiveTab} />;
     }

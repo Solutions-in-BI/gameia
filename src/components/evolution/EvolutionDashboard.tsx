@@ -18,6 +18,7 @@ import {
   Clock,
   CheckCircle2,
   AlertCircle,
+  BarChart3,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -92,7 +93,7 @@ export function EvolutionDashboard({ onTabChange }: EvolutionDashboardProps) {
       </div>
 
       {/* Quick Actions - Acesso rápido às seções */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <QuickActionCard
           icon={Brain}
           title="Desafios Mentais"
@@ -120,6 +121,13 @@ export function EvolutionDashboard({ onTabChange }: EvolutionDashboardProps) {
           description="Check-ins com gestor"
           gradient="from-orange-500 to-amber-600"
           onClick={() => onTabChange("one-on-one")}
+        />
+        <QuickActionCard
+          icon={BarChart3}
+          title="Meu Perfil"
+          description="Análise cognitiva"
+          gradient="from-pink-500 to-rose-600"
+          onClick={() => onTabChange("profile")}
         />
       </div>
 

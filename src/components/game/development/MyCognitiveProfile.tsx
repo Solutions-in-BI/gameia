@@ -11,8 +11,10 @@ import {
   Target,
   Lightbulb,
   Award,
-  BarChart3
+  BarChart3,
+  ArrowLeft
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -35,7 +37,11 @@ const COGNITIVE_DIMENSIONS = [
   { key: "working_memory", label: "Memória", shortLabel: "Mem." },
 ];
 
-export function MyCognitiveProfile() {
+interface MyCognitiveProfileProps {
+  onBack?: () => void;
+}
+
+export function MyCognitiveProfile({ onBack }: MyCognitiveProfileProps) {
   const { myProfile, mySessions, profileLoading } = useCognitiveTests();
 
   if (profileLoading) {
@@ -84,14 +90,21 @@ export function MyCognitiveProfile() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Brain className="w-6 h-6 text-primary" />
-            Meu Perfil Cognitivo
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Análise das suas habilidades mentais
-          </p>
+        <div className="flex items-center gap-4">
+          {onBack && (
+            <Button variant="ghost" size="icon" onClick={onBack}>
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+          )}
+          <div>
+            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+              <Brain className="w-6 h-6 text-primary" />
+              Meu Perfil Cognitivo
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Análise das suas habilidades mentais
+            </p>
+          </div>
         </div>
         <Badge variant="outline" className="text-sm">
           {myProfile.assessments_count || 0} avaliações realizadas
