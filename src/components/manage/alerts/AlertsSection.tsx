@@ -18,7 +18,10 @@ import {
   GraduationCap,
   RefreshCw,
   Target,
-  Bell
+  Bell,
+  Brain,
+  Users,
+  ClipboardCheck
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -65,6 +68,9 @@ const ALERT_ICONS: Record<string, typeof AlertTriangle> = {
   user_inactive: Clock,
   performance_drop: TrendingDown,
   goal_failed: Target,
+  assessment_suggestion: Brain,
+  team_assessment: Users,
+  pdi_goal_due: ClipboardCheck,
   default: AlertTriangle
 };
 
@@ -79,7 +85,9 @@ const ACTION_LABELS: Record<string, { label: string; icon: typeof Calendar }> = 
   schedule_1on1: { label: "Agendar 1:1", icon: Calendar },
   send_reminder: { label: "Enviar Lembrete", icon: MessageSquare },
   assign_training: { label: "Sugerir Treinamento", icon: GraduationCap },
-  create_goal: { label: "Criar Meta", icon: Target }
+  create_goal: { label: "Criar Meta", icon: Target },
+  start_assessment: { label: "Iniciar Assessment", icon: Brain },
+  review_pdi: { label: "Revisar PDI", icon: ClipboardCheck }
 };
 
 export function AlertsSection() {
