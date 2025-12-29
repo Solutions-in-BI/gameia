@@ -122,6 +122,65 @@ export function useRealtimeHub() {
           queryClient.invalidateQueries({ queryKey: ['insignias'] });
         }
       )
+      // Escuta sugestões de assessment
+      .on(
+        'postgres_changes',
+        { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'assessment_suggestions',
+          filter: `user_id=eq.${user.id}` 
+        },
+        () => {
+          console.log("[RealtimeHub] assessment suggestion received");
+          queryClient.invalidateQueries({ queryKey: ['assessment-suggestions'] });
+          queryClient.invalidateQueries({ queryKey: ['contextual-assessments'] });
+        }
+      )
+      // Escuta resultados de assessment 360
+      .on(
+        'postgres_changes',
+        { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'assessment_360_results',
+          filter: `user_id=eq.${user.id}` 
+        },
+        () => {
+          console.log("[RealtimeHub] assessment 360 result received");
+          queryClient.invalidateQueries({ queryKey: ['assessment-360'] });
+          queryClient.invalidateQueries({ queryKey: ['evolution-dashboard'] });
+        }
+      )
+      // Escuta mudanças em development_plans
+      .on(
+        'postgres_changes',
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'development_plans',
+          filter: `user_id=eq.${user.id}` 
+        },
+        () => {
+          console.log("[RealtimeHub] development plan changed");
+          queryClient.invalidateQueries({ queryKey: ['pdi'] });
+          queryClient.invalidateQueries({ queryKey: ['development-plans'] });
+        }
+      )
+      // Escuta mudanças em development_goals
+      .on(
+        'postgres_changes',
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'development_goals'
+        },
+        () => {
+          console.log("[RealtimeHub] development goal changed");
+          queryClient.invalidateQueries({ queryKey: ['pdi'] });
+          queryClient.invalidateQueries({ queryKey: ['development-goals'] });
+        }
+      )
       .subscribe((status) => {
         console.log("[RealtimeHub] Subscription status:", status);
       });
