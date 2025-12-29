@@ -464,6 +464,48 @@ export type Database = {
           },
         ]
       }
+      challenge_supporters: {
+        Row: {
+          coins_staked: number
+          commitment_id: string
+          created_at: string
+          id: string
+          reward_claimed: boolean
+          supporter_id: string
+        }
+        Insert: {
+          coins_staked?: number
+          commitment_id: string
+          created_at?: string
+          id?: string
+          reward_claimed?: boolean
+          supporter_id: string
+        }
+        Update: {
+          coins_staked?: number
+          commitment_id?: string
+          created_at?: string
+          id?: string
+          reward_claimed?: boolean
+          supporter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_supporters_commitment_id_fkey"
+            columns: ["commitment_id"]
+            isOneToOne: false
+            referencedRelation: "commitments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "challenge_supporters_commitment_id_fkey"
+            columns: ["commitment_id"]
+            isOneToOne: false
+            referencedRelation: "vw_challenges_with_stats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cognitive_profiles: {
         Row: {
           assessments_count: number | null
@@ -719,6 +761,13 @@ export type Database = {
             referencedRelation: "commitments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "commitment_participants_commitment_id_fkey"
+            columns: ["commitment_id"]
+            isOneToOne: false
+            referencedRelation: "vw_challenges_with_stats"
+            referencedColumns: ["id"]
+          },
         ]
       }
       commitment_progress_logs: {
@@ -763,6 +812,13 @@ export type Database = {
             referencedRelation: "commitments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "commitment_progress_logs_commitment_id_fkey"
+            columns: ["commitment_id"]
+            isOneToOne: false
+            referencedRelation: "vw_challenges_with_stats"
+            referencedColumns: ["id"]
+          },
         ]
       }
       commitments: {
@@ -774,8 +830,10 @@ export type Database = {
           current_value: number
           description: string
           ends_at: string
+          icon: string | null
           id: string
           insignia_id: string | null
+          is_featured: boolean | null
           max_participants: number | null
           metric_type: string
           name: string
@@ -786,8 +844,11 @@ export type Database = {
           starts_at: string
           status: Database["public"]["Enums"]["commitment_status"]
           success_criteria: string
+          supporter_multiplier: number | null
+          supporters_count: number | null
           target_value: number
           team_id: string | null
+          total_staked: number | null
           updated_at: string
           xp_reward: number
         }
@@ -799,8 +860,10 @@ export type Database = {
           current_value?: number
           description: string
           ends_at: string
+          icon?: string | null
           id?: string
           insignia_id?: string | null
+          is_featured?: boolean | null
           max_participants?: number | null
           metric_type?: string
           name: string
@@ -811,8 +874,11 @@ export type Database = {
           starts_at: string
           status?: Database["public"]["Enums"]["commitment_status"]
           success_criteria: string
+          supporter_multiplier?: number | null
+          supporters_count?: number | null
           target_value?: number
           team_id?: string | null
+          total_staked?: number | null
           updated_at?: string
           xp_reward?: number
         }
@@ -824,8 +890,10 @@ export type Database = {
           current_value?: number
           description?: string
           ends_at?: string
+          icon?: string | null
           id?: string
           insignia_id?: string | null
+          is_featured?: boolean | null
           max_participants?: number | null
           metric_type?: string
           name?: string
@@ -836,8 +904,11 @@ export type Database = {
           starts_at?: string
           status?: Database["public"]["Enums"]["commitment_status"]
           success_criteria?: string
+          supporter_multiplier?: number | null
+          supporters_count?: number | null
           target_value?: number
           team_id?: string | null
+          total_staked?: number | null
           updated_at?: string
           xp_reward?: number
         }
@@ -5260,6 +5331,66 @@ export type Database = {
       }
     }
     Views: {
+      vw_challenges_with_stats: {
+        Row: {
+          auto_enroll: boolean | null
+          calculated_supporters_count: number | null
+          calculated_total_staked: number | null
+          coins_reward: number | null
+          created_at: string | null
+          created_by: string | null
+          current_value: number | null
+          description: string | null
+          ends_at: string | null
+          icon: string | null
+          id: string | null
+          insignia_id: string | null
+          is_featured: boolean | null
+          max_participants: number | null
+          metric_type: string | null
+          name: string | null
+          organization_id: string | null
+          progress_percentage: number | null
+          reward_type:
+            | Database["public"]["Enums"]["commitment_reward_type"]
+            | null
+          scope: Database["public"]["Enums"]["commitment_scope"] | null
+          source: Database["public"]["Enums"]["commitment_source"] | null
+          starts_at: string | null
+          status: Database["public"]["Enums"]["commitment_status"] | null
+          success_criteria: string | null
+          supporter_multiplier: number | null
+          supporters_count: number | null
+          target_value: number | null
+          team_id: string | null
+          total_staked: number | null
+          updated_at: string | null
+          xp_reward: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commitments_insignia_id_fkey"
+            columns: ["insignia_id"]
+            isOneToOne: false
+            referencedRelation: "insignias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commitments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commitments_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "organization_teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vw_org_skill_metrics: {
         Row: {
           avg_level: number | null
@@ -5364,6 +5495,10 @@ export type Database = {
         }
         Returns: Json
       }
+      calculate_supporter_multiplier: {
+        Args: { p_commitment_id: string }
+        Returns: number
+      }
       can_view_user_data: {
         Args: { _org_id: string; _target_user_id: string }
         Returns: boolean
@@ -5378,6 +5513,10 @@ export type Database = {
           p_role?: string
         }
         Returns: Json
+      }
+      distribute_challenge_rewards: {
+        Args: { p_commitment_id: string }
+        Returns: undefined
       }
       generate_daily_missions: {
         Args: { p_user_id: string }
@@ -5573,7 +5712,7 @@ export type Database = {
     Enums: {
       app_role: "super_admin" | "admin" | "manager" | "user"
       commitment_reward_type: "coins" | "xp" | "both" | "insignia"
-      commitment_scope: "team" | "global"
+      commitment_scope: "team" | "global" | "personal"
       commitment_source: "internal" | "external"
       commitment_status:
         | "draft"
@@ -5715,7 +5854,7 @@ export const Constants = {
     Enums: {
       app_role: ["super_admin", "admin", "manager", "user"],
       commitment_reward_type: ["coins", "xp", "both", "insignia"],
-      commitment_scope: ["team", "global"],
+      commitment_scope: ["team", "global", "personal"],
       commitment_source: ["internal", "external"],
       commitment_status: [
         "draft",
