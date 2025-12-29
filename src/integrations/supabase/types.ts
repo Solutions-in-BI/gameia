@@ -683,6 +683,188 @@ export type Database = {
           },
         ]
       }
+      commitment_participants: {
+        Row: {
+          commitment_id: string
+          contributed: boolean
+          id: string
+          individual_progress: number
+          joined_at: string
+          reward_claimed: boolean
+          user_id: string
+        }
+        Insert: {
+          commitment_id: string
+          contributed?: boolean
+          id?: string
+          individual_progress?: number
+          joined_at?: string
+          reward_claimed?: boolean
+          user_id: string
+        }
+        Update: {
+          commitment_id?: string
+          contributed?: boolean
+          id?: string
+          individual_progress?: number
+          joined_at?: string
+          reward_claimed?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commitment_participants_commitment_id_fkey"
+            columns: ["commitment_id"]
+            isOneToOne: false
+            referencedRelation: "commitments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      commitment_progress_logs: {
+        Row: {
+          change_amount: number | null
+          commitment_id: string
+          created_at: string
+          id: string
+          logged_by: string
+          new_value: number
+          note: string | null
+          previous_value: number | null
+          source: string
+        }
+        Insert: {
+          change_amount?: number | null
+          commitment_id: string
+          created_at?: string
+          id?: string
+          logged_by: string
+          new_value: number
+          note?: string | null
+          previous_value?: number | null
+          source?: string
+        }
+        Update: {
+          change_amount?: number | null
+          commitment_id?: string
+          created_at?: string
+          id?: string
+          logged_by?: string
+          new_value?: number
+          note?: string | null
+          previous_value?: number | null
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commitment_progress_logs_commitment_id_fkey"
+            columns: ["commitment_id"]
+            isOneToOne: false
+            referencedRelation: "commitments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      commitments: {
+        Row: {
+          auto_enroll: boolean
+          coins_reward: number
+          created_at: string
+          created_by: string
+          current_value: number
+          description: string
+          ends_at: string
+          id: string
+          insignia_id: string | null
+          max_participants: number | null
+          metric_type: string
+          name: string
+          organization_id: string
+          reward_type: Database["public"]["Enums"]["commitment_reward_type"]
+          scope: Database["public"]["Enums"]["commitment_scope"]
+          source: Database["public"]["Enums"]["commitment_source"]
+          starts_at: string
+          status: Database["public"]["Enums"]["commitment_status"]
+          success_criteria: string
+          target_value: number
+          team_id: string | null
+          updated_at: string
+          xp_reward: number
+        }
+        Insert: {
+          auto_enroll?: boolean
+          coins_reward?: number
+          created_at?: string
+          created_by: string
+          current_value?: number
+          description: string
+          ends_at: string
+          id?: string
+          insignia_id?: string | null
+          max_participants?: number | null
+          metric_type?: string
+          name: string
+          organization_id: string
+          reward_type?: Database["public"]["Enums"]["commitment_reward_type"]
+          scope: Database["public"]["Enums"]["commitment_scope"]
+          source: Database["public"]["Enums"]["commitment_source"]
+          starts_at: string
+          status?: Database["public"]["Enums"]["commitment_status"]
+          success_criteria: string
+          target_value?: number
+          team_id?: string | null
+          updated_at?: string
+          xp_reward?: number
+        }
+        Update: {
+          auto_enroll?: boolean
+          coins_reward?: number
+          created_at?: string
+          created_by?: string
+          current_value?: number
+          description?: string
+          ends_at?: string
+          id?: string
+          insignia_id?: string | null
+          max_participants?: number | null
+          metric_type?: string
+          name?: string
+          organization_id?: string
+          reward_type?: Database["public"]["Enums"]["commitment_reward_type"]
+          scope?: Database["public"]["Enums"]["commitment_scope"]
+          source?: Database["public"]["Enums"]["commitment_source"]
+          starts_at?: string
+          status?: Database["public"]["Enums"]["commitment_status"]
+          success_criteria?: string
+          target_value?: number
+          team_id?: string | null
+          updated_at?: string
+          xp_reward?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commitments_insignia_id_fkey"
+            columns: ["insignia_id"]
+            isOneToOne: false
+            referencedRelation: "insignias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commitments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commitments_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "organization_teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       competency_assessments: {
         Row: {
           assessment_type: string
@@ -5300,7 +5482,15 @@ export type Database = {
         Args: { _org_id: string; _user_id: string }
         Returns: boolean
       }
+      is_org_member: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_org_member_or_owner: { Args: { _org_id: string }; Returns: boolean }
+      is_team_manager: {
+        Args: { _team_id: string; _user_id: string }
+        Returns: boolean
+      }
       list_org_invites: {
         Args: { p_organization_id: string }
         Returns: {
@@ -5382,6 +5572,15 @@ export type Database = {
     }
     Enums: {
       app_role: "super_admin" | "admin" | "manager" | "user"
+      commitment_reward_type: "coins" | "xp" | "both" | "insignia"
+      commitment_scope: "team" | "global"
+      commitment_source: "internal" | "external"
+      commitment_status:
+        | "draft"
+        | "active"
+        | "completed"
+        | "failed"
+        | "cancelled"
       friendship_status: "pending" | "accepted" | "blocked"
       gift_status: "pending" | "accepted" | "rejected"
       org_role: "owner" | "admin" | "manager" | "member"
@@ -5515,6 +5714,16 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["super_admin", "admin", "manager", "user"],
+      commitment_reward_type: ["coins", "xp", "both", "insignia"],
+      commitment_scope: ["team", "global"],
+      commitment_source: ["internal", "external"],
+      commitment_status: [
+        "draft",
+        "active",
+        "completed",
+        "failed",
+        "cancelled",
+      ],
       friendship_status: ["pending", "accepted", "blocked"],
       gift_status: ["pending", "accepted", "rejected"],
       org_role: ["owner", "admin", "manager", "member"],
