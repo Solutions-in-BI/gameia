@@ -2,7 +2,7 @@
  * SalesStagesManager - Gerenciamento de Estágios de Conversa
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
 import {
   Plus,
@@ -110,25 +110,25 @@ export function SalesStagesManager() {
   const [editingStage, setEditingStage] = useState<Partial<SalesStage> | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  
+  const hasFetched = useRef(false);
+  const lastOrgId = useRef<string | null>(null);
 
-  useEffect(() => {
-    fetchData();
-  }, [currentOrg]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
+      const orgId = currentOrg?.id || '00000000-0000-0000-0000-000000000000';
       const [stagesRes, tracksRes] = await Promise.all([
         supabase
           .from("sales_conversation_stages")
           .select("*")
-          .or(`organization_id.is.null,organization_id.eq.${currentOrg?.id || '00000000-0000-0000-0000-000000000000'}`)
+          .or(`organization_id.is.null,organization_id.eq.${orgId}`)
           .order("track_key")
           .order("stage_order"),
         supabase
           .from("sales_tracks")
           .select("id, track_key, name")
-          .or(`organization_id.is.null,organization_id.eq.${currentOrg?.id || '00000000-0000-0000-0000-000000000000'}`)
+          .or(`organization_id.is.null,organization_id.eq.${orgId}`)
           .eq("is_active", true)
       ]);
 
@@ -143,7 +143,16 @@ export function SalesStagesManager() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentOrg?.id]);
+
+  useEffect(() => {
+    const orgId = currentOrg?.id || null;
+    if (!hasFetched.current || lastOrgId.current !== orgId) {
+      hasFetched.current = true;
+      lastOrgId.current = orgId;
+      fetchData();
+    }
+  }, [currentOrg?.id, fetchData]);
 
   const filteredStages = selectedTrack === "all"
     ? stages

@@ -2,7 +2,7 @@
  * SalesTracksManager - Gerenciamento de Trilhas de Vendas
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus,
@@ -107,22 +107,21 @@ export function SalesTracksManager() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [selectedSkillToAdd, setSelectedSkillToAdd] = useState<string>("");
+  
+  const hasFetched = useRef(false);
+  const lastOrgId = useRef<string | null>(null);
 
-  useEffect(() => {
-    fetchTracks();
-  }, [currentOrg]);
-
-  const fetchTracks = async () => {
+  const fetchTracks = useCallback(async () => {
     setIsLoading(true);
     try {
+      const orgId = currentOrg?.id || '00000000-0000-0000-0000-000000000000';
       const { data, error } = await supabase
         .from("sales_tracks")
         .select("*")
-        .or(`organization_id.is.null,organization_id.eq.${currentOrg?.id || '00000000-0000-0000-0000-000000000000'}`)
+        .or(`organization_id.is.null,organization_id.eq.${orgId}`)
         .order("name");
 
       if (error) throw error;
-      // Cast to SalesTrack[] to handle new columns that may not be in generated types yet
       setTracks((data || []) as unknown as SalesTrack[]);
     } catch (error) {
       console.error("Error fetching tracks:", error);
@@ -130,7 +129,16 @@ export function SalesTracksManager() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentOrg?.id]);
+
+  useEffect(() => {
+    const orgId = currentOrg?.id || null;
+    if (!hasFetched.current || lastOrgId.current !== orgId) {
+      hasFetched.current = true;
+      lastOrgId.current = orgId;
+      fetchTracks();
+    }
+  }, [currentOrg?.id, fetchTracks]);
 
   const handleSave = async () => {
     if (!editingTrack?.name || !editingTrack?.track_key) {
