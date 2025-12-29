@@ -99,7 +99,10 @@ export function InventoryGrid({ inventory, onToggleEquip }: InventoryGridProps) 
       const hasActiveBoost = inv.boost_active_until && new Date(inv.boost_active_until) > new Date();
       const isEquippable = ["avatar", "frame", "banner", "title", "pet", "mascot"].includes(inv.item.category);
       const isBoost = inv.item.item_type === "boost" || inv.item.category === "boost";
-      const isBenefit = inv.item.requires_approval || ["experience", "benefit", "reward", "gift"].includes(inv.item.category);
+      // Benefits include experiences, learning, and anything that requires approval
+      const isBenefit = inv.item.requires_approval || 
+        ["experience", "benefit", "reward", "gift", "learning"].includes(inv.item.category) ||
+        inv.item.item_type === "experience";
 
       // Classify into groups
       if (isExpired || isUsed) {
@@ -117,8 +120,8 @@ export function InventoryGrid({ inventory, onToggleEquip }: InventoryGridProps) 
       } else if (isEquippable) {
         groups.equippable.push(inv);
       } else {
-        // Fallback to equippable for other cosmetic items
-        groups.equippable.push(inv);
+        // Non-equippable cosmetic items go to benefits as a fallback
+        groups.benefitsAvailable.push(inv);
       }
     });
 
@@ -267,7 +270,9 @@ function InventoryCard({
   index 
 }: InventoryCardProps) {
   const isBoost = item.item_type === "boost" || item.category === "boost";
-  const isBenefit = item.requires_approval || ["experience", "benefit", "reward", "gift"].includes(item.category);
+  const isBenefit = item.requires_approval || 
+    ["experience", "benefit", "reward", "gift", "learning"].includes(item.category) ||
+    item.item_type === "experience";
   const isHistory = groupKey === "history";
   const isPending = groupKey === "pending";
   const isActiveBoost = groupKey === "boostsActive";
