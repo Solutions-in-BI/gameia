@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useOrganization } from "@/hooks/useOrganization";
+import { useCoreEvents } from "@/hooks/useCoreEvents";
 import { toast } from "sonner";
 import type { Json } from "@/integrations/supabase/types";
 
@@ -71,6 +72,7 @@ export interface CognitiveProfile {
 export function useCognitiveTests() {
   const { user } = useAuth();
   const { currentOrg } = useOrganization();
+  const { recordTestCompleted } = useCoreEvents();
   const queryClient = useQueryClient();
 
   const { data: tests = [], isLoading: testsLoading } = useQuery({
@@ -237,10 +239,18 @@ export function useCognitiveTests() {
       sessionId,
       answers,
       score,
+      testId,
+      targetScore = 70,
+      xpReward = 0,
+      relatedSkills = [],
     }: {
       sessionId: string;
       answers: { question_id: string; answer: string; time_seconds: number }[];
       score: number;
+      testId: string;
+      targetScore?: number;
+      xpReward?: number;
+      relatedSkills?: string[];
     }) => {
       const { data, error } = await supabase
         .from("cognitive_test_sessions")
@@ -255,12 +265,23 @@ export function useCognitiveTests() {
         .single();
 
       if (error) throw error;
-      return data;
+
+      // Registrar evento no motor de eventos
+      await recordTestCompleted(
+        testId,
+        score,
+        targetScore,
+        xpReward,
+        relatedSkills
+      );
+
+      return { ...data, score };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["my-cognitive-sessions"] });
       queryClient.invalidateQueries({ queryKey: ["my-cognitive-profile"] });
-      toast.success("Teste concluído com sucesso!");
+      queryClient.invalidateQueries({ queryKey: ["assessment-suggestions"] });
+      toast.success(`Teste concluído! Score: ${data.score}%`);
     },
     onError: () => {
       toast.error("Erro ao finalizar teste");

@@ -104,9 +104,8 @@ export interface AssessmentCompletionResult {
 export interface SuggestedAssessment {
   suggestion_type: string;
   reason: string;
-  skills_to_evaluate: string[];
+  skill_ids: string[] | null;
   priority: number;
-  context_event_id: string | null;
   context_type: string;
   context_id: string | null;
 }

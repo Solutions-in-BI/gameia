@@ -6472,12 +6472,11 @@ export type Database = {
       suggest_assessments_for_user: {
         Args: { p_user_id: string }
         Returns: {
-          context_event_id: string
           context_id: string
           context_type: string
           priority: number
           reason: string
-          skills_to_evaluate: string[]
+          skill_ids: string[]
           suggestion_type: string
         }[]
       }

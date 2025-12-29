@@ -179,6 +179,10 @@ export function CognitiveTestPlayer({ testId, onComplete, onCancel }: CognitiveT
         sessionId,
         answers: answers.map(({ is_correct, ...rest }) => rest),
         score,
+        testId,
+        targetScore,
+        xpReward: test?.xp_reward || 0,
+        relatedSkills: (test as { related_skills?: string[] })?.related_skills || [],
       });
 
       // Apply rewards using reward engine
