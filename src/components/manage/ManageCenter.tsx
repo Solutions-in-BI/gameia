@@ -9,6 +9,7 @@ import { ManageSidebar, ManageSection, ManageHeader } from "./layout";
 import { useOrganization } from "@/hooks/useOrganization";
 import { useOrgMetrics } from "@/hooks/useOrgMetrics";
 import { useOrgTeams } from "@/hooks/useOrgTeams";
+import { useExperiences } from "@/hooks/useExperiences";
 import { Loader2 } from "lucide-react";
 
 // Importar componentes existentes do admin que serão reutilizados
@@ -21,6 +22,7 @@ import { ReportsPage } from "@/components/admin/reports/ReportsPage";
 import { AlertsSection } from "./alerts";
 import { TeamAssessmentsPanel } from "./TeamAssessmentsPanel";
 import { TrainingAssignments } from "./trainings";
+import { ExperienceApprovalsPanel } from "./benefits";
 
 function CommitmentsSection() {
   return (
@@ -68,6 +70,9 @@ export function ManageCenter() {
   
   // Buscar times
   const { teams, isLoading: teamsLoading } = useOrgTeams(orgId);
+  
+  // Buscar aprovações pendentes
+  const { pendingApprovals } = useExperiences();
 
   const isLoading = orgLoading || metricsLoading || teamsLoading;
 
@@ -109,6 +114,8 @@ export function ManageCenter() {
         );
       case "trainings":
         return <TrainingAssignments />;
+      case "benefits":
+        return <ExperienceApprovalsPanel />;
       case "commitments":
         return <CommitmentsSection />;
       case "assessments":
@@ -145,6 +152,7 @@ export function ManageCenter() {
         <ManageSidebar
           activeSection={activeSection}
           onSectionChange={setActiveSection}
+          pendingApprovalsCount={pendingApprovals.length}
         />
         
         <main className="flex-1 p-6 overflow-auto">
