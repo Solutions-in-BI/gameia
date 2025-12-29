@@ -1,21 +1,36 @@
 /**
- * Header institucional reutilizável
+ * Header institucional reutilizável (Atualizado)
  * Navegação principal do site
  */
 
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, LogIn, Sparkles } from "lucide-react";
+import { Menu, X, LogIn, Sparkles, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/common/Logo";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const navLinks = [
   { label: "Home", href: "/" },
-  { label: "Sobre", href: "/sobre" },
-  { label: "Serviços", href: "/servicos" },
-  { label: "Planos", href: "/planos" },
-  { label: "Demo", href: "/demo" },
+  { label: "Produto", href: "/produto" },
+  { 
+    label: "Casos de Uso", 
+    href: "/casos-de-uso",
+    submenu: [
+      { label: "Vendas", href: "/casos-de-uso?tab=vendas" },
+      { label: "Operações", href: "/casos-de-uso?tab=operacoes" },
+      { label: "Liderança", href: "/casos-de-uso?tab=lideranca" },
+      { label: "Onboarding", href: "/casos-de-uso?tab=onboarding" },
+    ]
+  },
+  { label: "Preços", href: "/planos" },
+  { label: "Segurança", href: "/seguranca" },
 ];
 
 export const Header = () => {
@@ -56,22 +71,58 @@ export const Header = () => {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-1">
             {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                to={link.href}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  location.pathname === link.href
-                    ? "text-primary bg-primary/10"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                }`}
-              >
-                {link.label}
-              </Link>
+              link.submenu ? (
+                <DropdownMenu key={link.href}>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1 ${
+                        location.pathname.startsWith(link.href)
+                          ? "text-primary bg-primary/10"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                      }`}
+                    >
+                      {link.label}
+                      <ChevronDown className="h-3 w-3" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start">
+                    <DropdownMenuItem asChild>
+                      <Link to={link.href} className="w-full">
+                        Ver todos
+                      </Link>
+                    </DropdownMenuItem>
+                    {link.submenu.map((sublink) => (
+                      <DropdownMenuItem key={sublink.href} asChild>
+                        <Link to={sublink.href} className="w-full">
+                          {sublink.label}
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Link
+                  key={link.href}
+                  to={link.href}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    location.pathname === link.href
+                      ? "text-primary bg-primary/10"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              )
             ))}
           </nav>
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-3">
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/contato">
+                Contato
+              </Link>
+            </Button>
             <Button variant="ghost" size="sm" asChild>
               <Link to="/auth" className="gap-2">
                 <LogIn className="h-4 w-4" />
@@ -79,9 +130,9 @@ export const Header = () => {
               </Link>
             </Button>
             <Button size="sm" asChild className="gap-2">
-              <Link to="/auth?tab=signup">
+              <Link to="/demo">
                 <Sparkles className="h-4 w-4" />
-                Começar Grátis
+                Ver Demo
               </Link>
             </Button>
           </div>
@@ -112,19 +163,38 @@ export const Header = () => {
           >
             <nav className="container mx-auto px-4 py-4 flex flex-col gap-2">
               {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  to={link.href}
-                  className={`px-4 py-3 rounded-lg text-sm font-medium transition-all ${
-                    location.pathname === link.href
-                      ? "text-primary bg-primary/10"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                  }`}
-                >
-                  {link.label}
-                </Link>
+                <div key={link.href}>
+                  <Link
+                    to={link.href}
+                    className={`px-4 py-3 rounded-lg text-sm font-medium transition-all block ${
+                      location.pathname === link.href
+                        ? "text-primary bg-primary/10"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                  {link.submenu && (
+                    <div className="ml-4 mt-1 space-y-1">
+                      {link.submenu.map((sublink) => (
+                        <Link
+                          key={sublink.href}
+                          to={sublink.href}
+                          className="px-4 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 block"
+                        >
+                          {sublink.label}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
               ))}
               <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-border">
+                <Button variant="outline" asChild className="w-full">
+                  <Link to="/contato">
+                    Contato
+                  </Link>
+                </Button>
                 <Button variant="outline" asChild className="w-full">
                   <Link to="/auth" className="gap-2">
                     <LogIn className="h-4 w-4" />
@@ -132,9 +202,9 @@ export const Header = () => {
                   </Link>
                 </Button>
                 <Button asChild className="w-full gap-2">
-                  <Link to="/auth?tab=signup">
+                  <Link to="/demo">
                     <Sparkles className="h-4 w-4" />
-                    Começar Grátis
+                    Ver Demo
                   </Link>
                 </Button>
               </div>

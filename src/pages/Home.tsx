@@ -1,10 +1,11 @@
 /**
- * Home - Página Principal Institucional
+ * Home - Página Principal Institucional (Atualizada)
  * Site completo da GAMEIA
  */
 
+import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Trophy,
   Target,
@@ -27,6 +28,8 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { HeroCarousel } from "@/components/home/HeroCarousel";
 import { TestimonialsCarousel } from "@/components/home/TestimonialsCarousel";
+import { SEOHead, SEO_CONFIG, SocialProof } from "@/components/marketing";
+import { useTracking } from "@/hooks/useTracking";
 
 // Estatísticas de benefícios
 const stats = [
@@ -143,8 +146,21 @@ const plans = [
 ];
 
 const Home = () => {
+  const navigate = useNavigate();
+  const { trackPageView, trackDemoClick } = useTracking();
+
+  useEffect(() => {
+    trackPageView("home");
+  }, [trackPageView]);
+
+  const handleDemoClick = () => {
+    trackDemoClick("home_cta");
+    navigate("/demo");
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead {...SEO_CONFIG.home} />
       <Header />
       
       {/* Hero Section */}
@@ -174,6 +190,9 @@ const Home = () => {
             ))}
           </div>
         </div>
+        
+        {/* Social Proof */}
+        <SocialProof variant="logos" className="mt-12" />
       </section>
 
       {/* Features Section */}

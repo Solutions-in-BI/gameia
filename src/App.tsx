@@ -16,6 +16,10 @@ import About from "./pages/About";
 import Services from "./pages/Services";
 import Pricing from "./pages/Pricing";
 import Demo from "./pages/Demo";
+import Product from "./pages/Product";
+import UseCases from "./pages/UseCases";
+import Security from "./pages/Security";
+import Contact from "./pages/Contact";
 import TrainingDetail from "./pages/TrainingDetail";
 import ModulePlayer from "./pages/ModulePlayer";
 import { AdminGuard } from "./components/auth/AdminGuard";
@@ -29,17 +33,28 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          {/* Public Marketing Pages */}
           <Route path="/" element={<Home />} />
+          <Route path="/produto" element={<Product />} />
+          <Route path="/casos-de-uso" element={<UseCases />} />
+          <Route path="/planos" element={<Pricing />} />
+          <Route path="/seguranca" element={<Security />} />
+          <Route path="/contato" element={<Contact />} />
+          <Route path="/sobre" element={<About />} />
+          <Route path="/servicos" element={<Services />} />
+          <Route path="/demo" element={<Demo />} />
+          
+          {/* App Routes */}
           <Route path="/app" element={<Dashboard />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/app/trainings/:id" element={<TrainingDetail />} />
           <Route path="/app/trainings/:trainingId/module/:moduleId" element={<ModulePlayer />} />
-          <Route path="/sobre" element={<About />} />
-          <Route path="/servicos" element={<Services />} />
-          <Route path="/planos" element={<Pricing />} />
-          <Route path="/demo" element={<Demo />} />
+          
+          {/* Auth & Onboarding */}
           <Route path="/auth" element={<Auth />} />
           <Route path="/onboarding" element={<Onboarding />} />
+          
+          {/* Admin */}
           <Route
             path="/admin"
             element={
@@ -48,9 +63,12 @@ const App = () => (
               </AdminGuard>
             }
           />
+          
+          {/* Utility Routes */}
           <Route path="/invite/:code" element={<Invite />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
+          
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

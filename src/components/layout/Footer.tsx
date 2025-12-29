@@ -1,5 +1,5 @@
 /**
- * Footer institucional completo
+ * Footer institucional completo (Atualizado)
  * Links, redes sociais, copyright
  */
 
@@ -16,22 +16,28 @@ import {
 
 const footerLinks = {
   produto: [
-    { label: "Recursos", href: "/servicos" },
-    { label: "Jogos", href: "/servicos#jogos" },
-    { label: "Planos", href: "/planos" },
+    { label: "Visão Geral", href: "/produto" },
+    { label: "Módulos", href: "/servicos" },
+    { label: "Preços", href: "/planos" },
     { label: "Agendar Demo", href: "/demo" },
+  ],
+  solucoes: [
+    { label: "Vendas", href: "/casos-de-uso?tab=vendas" },
+    { label: "Operações", href: "/casos-de-uso?tab=operacoes" },
+    { label: "Liderança", href: "/casos-de-uso?tab=lideranca" },
+    { label: "Onboarding", href: "/casos-de-uso?tab=onboarding" },
   ],
   empresa: [
     { label: "Sobre Nós", href: "/sobre" },
+    { label: "Segurança", href: "/seguranca" },
+    { label: "Contato", href: "/contato" },
     { label: "Blog", href: "#" },
-    { label: "Carreiras", href: "#" },
-    { label: "Contato", href: "/demo" },
   ],
   legal: [
     { label: "Termos de Uso", href: "/terms" },
     { label: "Privacidade", href: "/privacy" },
     { label: "Cookies", href: "/privacy" },
-    { label: "LGPD", href: "/privacy" },
+    { label: "LGPD", href: "/seguranca" },
   ],
 };
 
@@ -46,9 +52,9 @@ export const Footer = () => {
     <footer className="bg-muted/30 border-t border-border">
       {/* Main Footer */}
       <div className="container mx-auto px-4 py-12 md:py-16">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 md:gap-12">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-8 md:gap-12">
           {/* Brand Column */}
-          <div className="col-span-2 md:col-span-2">
+          <div className="col-span-2">
             <Link to="/" className="flex items-center gap-2 mb-4">
               <Logo className="h-8 w-8" />
               <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
@@ -104,6 +110,23 @@ export const Footer = () => {
             <h4 className="font-semibold text-foreground mb-4">Produto</h4>
             <ul className="space-y-3">
               {footerLinks.produto.map((link) => (
+                <li key={link.label}>
+                  <Link
+                    to={link.href}
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Soluções */}
+          <div>
+            <h4 className="font-semibold text-foreground mb-4">Soluções</h4>
+            <ul className="space-y-3">
+              {footerLinks.solucoes.map((link) => (
                 <li key={link.label}>
                   <Link
                     to={link.href}

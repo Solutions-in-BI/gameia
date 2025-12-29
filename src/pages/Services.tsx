@@ -1,10 +1,11 @@
 /**
- * Serviços - Página de módulos e funcionalidades
+ * Serviços - Página de módulos e funcionalidades (Atualizada)
  * Detalhamento dos jogos e recursos da plataforma
  */
 
+import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Gamepad2,
   MessageSquare,
@@ -20,10 +21,16 @@ import {
   ArrowRight,
   CheckCircle2,
   Play,
+  TrendingUp,
+  GraduationCap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { SEOHead, SEO_CONFIG, SocialProof, TestimonialCard, CommercialFAQ } from "@/components/marketing";
+import { useTracking } from "@/hooks/useTracking";
 
 const mainModules = [
   {
@@ -32,6 +39,7 @@ const mainModules = [
     title: "Quiz Master",
     subtitle: "Conhecimento Gamificado",
     description: "Quizzes competitivos com múltiplas categorias, modos de jogo e sistema de apostas entre colegas.",
+    stats: "95% de engajamento",
     features: [
       "Categorias personalizáveis",
       "Modo duelo 1v1",
@@ -40,7 +48,6 @@ const mainModules = [
       "Perguntas adaptativas",
     ],
     gradient: "from-violet-500 to-purple-600",
-    color: "violet",
   },
   {
     id: "sales",
@@ -48,6 +55,7 @@ const mainModules = [
     title: "Simulador de Vendas",
     subtitle: "Conversas com IA",
     description: "Pratique técnicas de vendas conversando com clientes virtuais que respondem de forma realista usando IA.",
+    stats: "+32% em conversão",
     features: [
       "Personas de clientes variadas",
       "Cenários por produto/serviço",
@@ -56,7 +64,6 @@ const mainModules = [
       "Diferentes níveis de dificuldade",
     ],
     gradient: "from-emerald-500 to-teal-600",
-    color: "emerald",
   },
   {
     id: "decision",
@@ -64,6 +71,7 @@ const mainModules = [
     title: "Cenários de Decisão",
     subtitle: "Pensamento Estratégico",
     description: "Situações complexas do dia a dia corporativo que testam tomada de decisão, priorização e resolução de problemas.",
+    stats: "87% de precisão",
     features: [
       "Cenários baseados em casos reais",
       "Múltiplas ramificações",
@@ -72,7 +80,6 @@ const mainModules = [
       "Geração de cenários com IA",
     ],
     gradient: "from-blue-500 to-cyan-600",
-    color: "blue",
   },
   {
     id: "outreach",
@@ -80,6 +87,7 @@ const mainModules = [
     title: "Cold Outreach",
     subtitle: "Prospecção Efetiva",
     description: "Treine abordagens de prospecção em diferentes canais: email, LinkedIn, WhatsApp e chamadas telefônicas.",
+    stats: "+45% em respostas",
     features: [
       "Templates por canal",
       "Análise de copy",
@@ -88,7 +96,6 @@ const mainModules = [
       "Métricas de conversão",
     ],
     gradient: "from-amber-500 to-orange-600",
-    color: "amber",
   },
 ];
 
@@ -125,116 +132,153 @@ const platformFeatures = [
   },
 ];
 
-const useCases = [
+const RESULTS = [
+  { value: "300%", label: "Aumento no engajamento", description: "vs. treinamentos tradicionais" },
+  { value: "45%", label: "Redução no turnover", description: "nos primeiros 12 meses" },
+  { value: "60%", label: "Menor tempo de onboarding", description: "para novos colaboradores" },
+  { value: "32%", label: "Aumento em vendas", description: "após 90 dias de uso" },
+];
+
+const TESTIMONIALS = [
   {
-    title: "Onboarding",
-    description: "Acelere a integração de novos colaboradores com trilhas gamificadas.",
-    icon: "🚀",
+    quote: "Nosso time comercial aumentou a taxa de conversão em 32% após 3 meses usando o simulador de vendas.",
+    author: "Carlos Mendes",
+    role: "Diretor Comercial",
+    company: "TechCorp Brasil",
   },
   {
-    title: "Vendas",
-    description: "Desenvolva técnicas de negociação e fechamento com simulações.",
-    icon: "💼",
+    quote: "O onboarding que levava 45 dias agora leva 18. A gamificação transformou completamente nossa integração.",
+    author: "Ana Paula Silva",
+    role: "Head de RH",
+    company: "Varejo Plus",
   },
   {
-    title: "Compliance",
-    description: "Torne treinamentos obrigatórios em experiências engajadoras.",
-    icon: "📋",
-  },
-  {
-    title: "Liderança",
-    description: "Prepare gestores com cenários de tomada de decisão.",
-    icon: "👔",
-  },
-  {
-    title: "Atendimento",
-    description: "Treine equipes de suporte com simulações de clientes.",
-    icon: "🎧",
-  },
-  {
-    title: "Produto",
-    description: "Ensine características e diferenciais de forma interativa.",
-    icon: "📦",
+    quote: "Finalmente consigo medir o desenvolvimento real das competências do meu time. Os dados são incríveis.",
+    author: "Roberto Almeida",
+    role: "Gerente de T&D",
+    company: "Indústria SA",
   },
 ];
 
 const Services = () => {
+  const navigate = useNavigate();
+  const { trackPageView, trackDemoClick, trackCTAClick } = useTracking();
+
+  useEffect(() => {
+    trackPageView("services");
+  }, [trackPageView]);
+
+  const handleDemoClick = () => {
+    trackDemoClick("services_hero");
+    navigate("/demo");
+  };
+
+  const handleContactClick = () => {
+    trackCTAClick("contact", "services");
+    navigate("/contato");
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead {...SEO_CONFIG.product} />
       <Header />
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 md:pt-40 md:pb-32">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <motion.span
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="inline-block px-4 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6"
-            >
-              Nossos Serviços
-            </motion.span>
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6"
-            >
-              Módulos que <span className="text-primary">transformam</span> aprendizado
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8"
-            >
-              Conheça cada jogo e funcionalidade da plataforma GAMEIA. 
-              Tudo pensado para maximizar engajamento e resultados.
-            </motion.p>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="flex flex-col sm:flex-row gap-4 justify-center"
-            >
-              <Button size="lg" asChild className="gap-2">
-                <Link to="/demo">
-                  <Play className="h-5 w-5" />
-                  Ver Demo
-                </Link>
+      <section className="pt-24 pb-16 md:pt-32 md:pb-20 px-4">
+        <div className="container mx-auto max-w-6xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center max-w-3xl mx-auto"
+          >
+            <Badge variant="secondary" className="mb-4">
+              <Zap className="w-3 h-3 mr-1" />
+              +150 empresas já transformaram seus treinamentos
+            </Badge>
+            
+            <h1 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
+              Treinamentos que{" "}
+              <span className="text-primary">geram resultados</span>,
+              <br />não apenas certificados
+            </h1>
+            
+            <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+              Transforme treinamentos corporativos em experiências engajantes com gamificação 
+              inteligente. Aumente engajamento em 300% e reduza turnover em 45%.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+              <Button size="lg" onClick={handleDemoClick} className="gap-2">
+                Ver demo gratuita
+                <ArrowRight className="w-4 h-4" />
               </Button>
-              <Button size="lg" variant="outline" asChild>
-                <Link to="/planos">Ver Planos</Link>
+              <Button size="lg" variant="outline" onClick={handleContactClick}>
+                Falar com especialista
               </Button>
-            </motion.div>
+            </div>
+
+            <SocialProof variant="compact" />
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Results Section */}
+      <section className="py-16 px-4 bg-muted/30">
+        <div className="container mx-auto max-w-6xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
+              Resultados que nossos clientes alcançam
+            </h2>
+            <p className="text-muted-foreground">
+              Métricas reais de empresas que usam GAMEIA
+            </p>
+          </motion.div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {RESULTS.map((result, index) => (
+              <motion.div
+                key={result.label}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className="text-center p-6 rounded-xl bg-card border border-border"
+              >
+                <div className="text-4xl md:text-5xl font-bold text-primary mb-2">
+                  {result.value}
+                </div>
+                <div className="font-semibold text-foreground mb-1">{result.label}</div>
+                <div className="text-sm text-muted-foreground">{result.description}</div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Main Modules */}
-      <section id="jogos" className="py-20 md:py-32 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-3xl md:text-4xl font-bold mb-4"
-            >
-              Jogos & <span className="text-primary">Simulações</span>
-            </motion.h2>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-              className="text-muted-foreground text-lg max-w-2xl mx-auto"
-            >
+      <section id="jogos" className="py-16 px-4">
+        <div className="container mx-auto max-w-6xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <Badge variant="outline" className="mb-4">Módulos</Badge>
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
+              Jogos & Simulações
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
               Módulos gamificados que cobrem desde conhecimento técnico até soft skills
-            </motion.p>
-          </div>
+            </p>
+          </motion.div>
 
-          <div className="space-y-8">
+          <div className="grid md:grid-cols-2 gap-6">
             {mainModules.map((module, index) => (
               <motion.div
                 key={module.id}
@@ -242,36 +286,34 @@ const Services = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="p-8 rounded-3xl bg-background border border-border hover:border-primary/30 transition-all"
               >
-                <div className="grid lg:grid-cols-2 gap-8 items-center">
-                  <div className={index % 2 === 1 ? "lg:order-2" : ""}>
-                    <div className={`inline-flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-r ${module.gradient} mb-4`}>
-                      <module.icon className="h-7 w-7 text-white" />
+                <Card className="p-6 h-full">
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className={`inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-r ${module.gradient} text-white shrink-0`}>
+                      <module.icon className="w-6 h-6" />
                     </div>
-                    <span className="text-sm text-primary font-medium">{module.subtitle}</span>
-                    <h3 className="text-2xl md:text-3xl font-bold mt-2 mb-4">{module.title}</h3>
-                    <p className="text-muted-foreground text-lg mb-6">{module.description}</p>
-                    <Button asChild className="gap-2">
-                      <Link to="/demo">
-                        Experimentar
-                        <ArrowRight className="h-4 w-4" />
-                      </Link>
-                    </Button>
+                    <div>
+                      <span className="text-xs text-primary font-medium">{module.subtitle}</span>
+                      <h3 className="text-xl font-semibold text-foreground">{module.title}</h3>
+                    </div>
                   </div>
                   
-                  <div className={`p-6 rounded-2xl bg-muted/50 ${index % 2 === 1 ? "lg:order-1" : ""}`}>
-                    <h4 className="font-semibold mb-4">Recursos Inclusos</h4>
-                    <ul className="space-y-3">
-                      {module.features.map((feature) => (
-                        <li key={feature} className="flex items-center gap-3">
-                          <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
-                          <span>{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
+                  <p className="text-muted-foreground mb-4">{module.description}</p>
+                  
+                  <Badge variant="secondary" className="mb-4">
+                    <TrendingUp className="w-3 h-3 mr-1" />
+                    {module.stats}
+                  </Badge>
+
+                  <ul className="space-y-2">
+                    {module.features.map((feature) => (
+                      <li key={feature} className="flex items-center gap-2 text-sm">
+                        <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+                        <span className="text-muted-foreground">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </Card>
               </motion.div>
             ))}
           </div>
@@ -279,27 +321,19 @@ const Services = () => {
       </section>
 
       {/* Platform Features */}
-      <section className="py-20 md:py-32">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-3xl md:text-4xl font-bold mb-4"
-            >
-              Recursos da <span className="text-primary">Plataforma</span>
-            </motion.h2>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-              className="text-muted-foreground text-lg max-w-2xl mx-auto"
-            >
-              Além dos jogos, uma infraestrutura completa de gamificação
-            </motion.p>
-          </div>
+      <section className="py-16 px-4 bg-muted/30">
+        <div className="container mx-auto max-w-6xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <Badge variant="outline" className="mb-4">Recursos</Badge>
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
+              Tudo que você precisa em uma plataforma
+            </h2>
+          </motion.div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {platformFeatures.map((feature, index) => (
@@ -309,12 +343,12 @@ const Services = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="p-6 rounded-2xl bg-muted/30 border border-border hover:border-primary/30 transition-colors"
+                className="text-center p-6"
               >
-                <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10 mb-4">
-                  <feature.icon className="h-6 w-6 text-primary" />
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 text-primary mb-4">
+                  <feature.icon className="w-6 h-6" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
+                <h3 className="font-semibold text-foreground mb-2">{feature.title}</h3>
                 <p className="text-sm text-muted-foreground">{feature.description}</p>
               </motion.div>
             ))}
@@ -322,77 +356,59 @@ const Services = () => {
         </div>
       </section>
 
-      {/* Use Cases */}
-      <section className="py-20 md:py-32 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-3xl md:text-4xl font-bold mb-4"
-            >
-              Casos de <span className="text-primary">Uso</span>
-            </motion.h2>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-              className="text-muted-foreground text-lg max-w-2xl mx-auto"
-            >
-              Aplicações práticas da plataforma em diferentes contextos
-            </motion.p>
-          </div>
+      {/* Testimonials */}
+      <section className="py-16 px-4">
+        <div className="container mx-auto max-w-6xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <Badge variant="outline" className="mb-4">Depoimentos</Badge>
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
+              O que nossos clientes dizem
+            </h2>
+          </motion.div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {useCases.map((useCase, index) => (
-              <motion.div
-                key={useCase.title}
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="p-6 rounded-2xl bg-background border border-border hover:border-primary/30 hover:scale-105 transition-all duration-300"
-              >
-                <span className="text-4xl mb-4 block">{useCase.icon}</span>
-                <h3 className="text-lg font-semibold mb-2">{useCase.title}</h3>
-                <p className="text-sm text-muted-foreground">{useCase.description}</p>
-              </motion.div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {TESTIMONIALS.map((testimonial, index) => (
+              <TestimonialCard key={index} {...testimonial} />
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-20 md:py-32">
-        <div className="container mx-auto px-4">
+      {/* FAQ */}
+      <section className="py-16 px-4 bg-muted/30">
+        <div className="container mx-auto max-w-6xl">
+          <CommercialFAQ variant="general" />
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 px-4">
+        <div className="container mx-auto max-w-4xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="max-w-3xl mx-auto text-center p-8 md:p-12 rounded-3xl bg-gradient-to-br from-primary/10 via-background to-primary/5 border border-primary/20"
+            className="text-center p-8 md:p-12 rounded-2xl bg-gradient-to-br from-primary to-primary-glow text-white"
           >
-            <Sparkles className="h-12 w-12 text-primary mx-auto mb-6" />
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Pronto para experimentar?
+            <h2 className="text-2xl md:text-4xl font-bold mb-4">
+              Pronto para transformar seus treinamentos?
             </h2>
-            <p className="text-muted-foreground text-lg mb-8">
-              Agende uma demonstração personalizada e veja como a GAMEIA 
-              pode transformar seus treinamentos.
+            <p className="text-white/80 mb-8 max-w-xl mx-auto">
+              Agende uma demo gratuita e descubra como a gamificação pode revolucionar 
+              o desenvolvimento da sua equipe.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" asChild className="gap-2">
-                <Link to="/auth?tab=signup">
-                  <Sparkles className="h-5 w-5" />
-                  Começar Trial Grátis
-                </Link>
+              <Button size="lg" variant="secondary" onClick={handleDemoClick} className="gap-2">
+                Ver demo gratuita
+                <ArrowRight className="w-4 h-4" />
               </Button>
-              <Button size="lg" variant="outline" asChild className="gap-2">
-                <Link to="/demo">
-                  <Play className="h-5 w-5" />
-                  Agendar Demo
-                </Link>
+              <Button size="lg" variant="outline" onClick={handleContactClick} className="bg-transparent border-white/30 text-white hover:bg-white/10">
+                Falar com vendas
               </Button>
             </div>
           </motion.div>
