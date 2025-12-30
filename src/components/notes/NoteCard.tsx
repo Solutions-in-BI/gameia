@@ -69,7 +69,7 @@ export function NoteCard({ note, compact = false }: NoteCardProps) {
 
   const handleNavigateToContext = () => {
     // Navigate to module player with context
-    let url = `/app/trainings/${note.training_id}/modules/${note.module_id}`;
+    let url = `/app/trainings/${note.training_id}/module/${note.module_id}`;
     
     if (note.timestamp_seconds) {
       url += `?t=${note.timestamp_seconds}`;

@@ -167,7 +167,7 @@ export function TrainingPlayerLayout({
                 </p>
               </div>
 
-              <Link to={`/trainings/${training.id}`}>
+              <Link to={`/app/trainings/${training.id}`}>
                 <Button variant="ghost" size="icon">
                   <X className="h-5 w-5" />
                 </Button>
@@ -190,7 +190,7 @@ export function TrainingPlayerLayout({
         {!isMobile && (
           <header className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
             <div className="flex items-center justify-between p-4">
-              <Link to={`/trainings/${training.id}`} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+              <Link to={`/app/trainings/${training.id}`} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
                 <ArrowLeft className="h-4 w-4" />
                 <span className="text-sm">Voltar ao treinamento</span>
               </Link>
