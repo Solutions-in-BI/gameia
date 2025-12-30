@@ -7,6 +7,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useOneOnOne, OneOnOneMeeting } from "@/hooks/useOneOnOne";
 import { useAuth } from "@/hooks/useAuth";
+import { MeetingPreparationCard } from "./MeetingPreparationCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -110,6 +111,10 @@ export function OneOnOneSection({ onBack }: OneOnOneSectionProps) {
   if (selectedMeeting) {
     const meetingDate = new Date(selectedMeeting.scheduled_at);
     const isPast = isBefore(meetingDate, now);
+    // Get the other participant for preparation card
+    const otherParticipantId = selectedMeeting.manager_id === user?.id 
+      ? selectedMeeting.employee_id 
+      : selectedMeeting.manager_id;
 
     return (
       <motion.div
@@ -138,6 +143,11 @@ export function OneOnOneSection({ onBack }: OneOnOneSectionProps) {
             {selectedMeeting.status === "completed" ? "Concluída" : "Agendada"}
           </Badge>
         </div>
+
+        {/* Card de preparação com dados do colaborador */}
+        {otherParticipantId && !isPast && (
+          <MeetingPreparationCard userId={otherParticipantId} />
+        )}
 
         {selectedMeeting.location && (
           <Card>
