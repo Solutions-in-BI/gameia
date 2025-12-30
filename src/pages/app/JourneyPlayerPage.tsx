@@ -185,8 +185,8 @@ export default function JourneyPlayerPage() {
 
   // Handle start journey
   const handleStartJourney = async () => {
-    await startJourney();
-    if (trainingsWithModules.length > 0 && trainingsWithModules[0].modules.length > 0) {
+    const success = await startJourney();
+    if (success && trainingsWithModules.length > 0 && trainingsWithModules[0].modules.length > 0) {
       const firstTraining = trainingsWithModules[0];
       const firstModule = firstTraining.modules[0];
       navigate(`/app/journeys/${journeyId}/training/${firstTraining.id}/module/${firstModule.id}`);

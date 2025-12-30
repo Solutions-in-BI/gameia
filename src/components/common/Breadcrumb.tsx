@@ -69,7 +69,7 @@ export function buildJourneyBreadcrumbs(
   moduleName?: string
 ): BreadcrumbItem[] {
   const items: BreadcrumbItem[] = [
-    { label: "Arena", href: "/app/arena" },
+    { label: "Desenvolvimento", href: "/app/development" },
   ];
 
   if (journeyName && journeyId) {
