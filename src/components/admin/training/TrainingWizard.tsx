@@ -1,5 +1,6 @@
 /**
  * TrainingWizard - Wizard multi-step para criar/editar treinamentos
+ * Atualizado com 5 abas: Informações, Distribuição, Recompensas, Certificado, Revisão
  */
 
 import { useState, useEffect } from "react";
@@ -22,18 +23,26 @@ import {
   Info,
   Gift,
   Eye,
+  Users,
+  Award,
 } from "lucide-react";
 import type { Training } from "@/hooks/useTrainings";
+import { useOrganization } from "@/hooks/useOrganization";
+import { useOrgTeams } from "@/hooks/useOrgTeams";
+import { useInsignias } from "@/hooks/useInsignias";
+import { useOrgTrainingConfig } from "@/hooks/useOrgTrainingConfig";
 
 import { BasicInfoStep } from "./wizard/BasicInfoStep";
+import { DistributionStep } from "./wizard/DistributionStep";
 import { RewardsStep } from "./wizard/RewardsStep";
+import { CertificateStep } from "./wizard/CertificateStep";
 import { ReviewStep } from "./wizard/ReviewStep";
 
 interface TrainingWizardProps {
   isOpen: boolean;
   onClose: () => void;
   training: Training | null;
-  onSave: (data: Partial<Training>) => Promise<void>;
+  onSave: (data: Partial<Training>, configData?: ConfigData) => Promise<void>;
 }
 
 export interface TrainingFormData {
@@ -50,6 +59,31 @@ export interface TrainingFormData {
   is_onboarding: boolean;
   thumbnail_url: string;
   training_key: string;
+  certificate_enabled: boolean;
+  insignia_reward_id: string | null;
+}
+
+export interface DistributionFormData {
+  is_active: boolean;
+  is_onboarding: boolean;
+  requirement_type: 'optional' | 'recommended' | 'mandatory';
+  team_ids: string[];
+  deadline_days: number | null;
+}
+
+export interface CertificateFormData {
+  certificate_enabled: boolean;
+  certificate_min_score: number;
+  require_full_completion: boolean;
+  insignia_reward_id: string | null;
+}
+
+export interface ConfigData {
+  requirement_type: 'optional' | 'recommended' | 'mandatory';
+  team_ids: string[];
+  deadline_days: number | null;
+  xp_multiplier: number;
+  coins_multiplier: number;
 }
 
 export interface SkillImpact {
@@ -64,8 +98,10 @@ export interface InsigniaRelation {
 
 const STEPS = [
   { id: 1, title: "Informações", icon: Info },
-  { id: 2, title: "Recompensas", icon: Gift },
-  { id: 3, title: "Revisão", icon: Eye },
+  { id: 2, title: "Distribuição", icon: Users },
+  { id: 3, title: "Recompensas", icon: Gift },
+  { id: 4, title: "Certificado", icon: Award },
+  { id: 5, title: "Revisão", icon: Eye },
 ];
 
 export function TrainingWizard({
@@ -74,10 +110,19 @@ export function TrainingWizard({
   training,
   onSave,
 }: TrainingWizardProps) {
+  const { currentOrg } = useOrganization();
+  const { teams } = useOrgTeams(currentOrg?.id);
+  const { insignias } = useInsignias();
+  const { getTrainingConfig } = useOrgTrainingConfig(currentOrg?.id);
+  
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [skillImpacts, setSkillImpacts] = useState<SkillImpact[]>([]);
   const [insigniaRelations, setInsigniaRelations] = useState<InsigniaRelation[]>([]);
+  
+  // Multipliers state
+  const [xpMultiplier, setXpMultiplier] = useState(1);
+  const [coinsMultiplier, setCoinsMultiplier] = useState(1);
   
   const [formData, setFormData] = useState<TrainingFormData>({
     name: "",
@@ -93,6 +138,23 @@ export function TrainingWizard({
     is_onboarding: false,
     thumbnail_url: "",
     training_key: "",
+    certificate_enabled: false,
+    insignia_reward_id: null,
+  });
+
+  const [distributionData, setDistributionData] = useState<DistributionFormData>({
+    is_active: true,
+    is_onboarding: false,
+    requirement_type: 'optional',
+    team_ids: [],
+    deadline_days: null,
+  });
+
+  const [certificateData, setCertificateData] = useState<CertificateFormData>({
+    certificate_enabled: false,
+    certificate_min_score: 70,
+    require_full_completion: true,
+    insignia_reward_id: null,
   });
 
   useEffect(() => {
@@ -111,6 +173,38 @@ export function TrainingWizard({
         is_onboarding: training.is_onboarding,
         thumbnail_url: training.thumbnail_url || "",
         training_key: training.training_key,
+        certificate_enabled: training.certificate_enabled,
+        insignia_reward_id: training.insignia_reward_id || null,
+      });
+
+      // Load distribution data from config if editing
+      const config = getTrainingConfig(training.id);
+      if (config) {
+        setDistributionData({
+          is_active: training.is_active,
+          is_onboarding: training.is_onboarding,
+          requirement_type: config.requirement_type === 'required' ? 'mandatory' : 
+                           config.requirement_type === 'suggested' ? 'recommended' : 'optional',
+          team_ids: config.team_ids || [],
+          deadline_days: config.deadline_days,
+        });
+        setXpMultiplier(config.xp_multiplier);
+        setCoinsMultiplier(config.coins_multiplier);
+      } else {
+        setDistributionData({
+          is_active: training.is_active,
+          is_onboarding: training.is_onboarding,
+          requirement_type: 'optional',
+          team_ids: [],
+          deadline_days: null,
+        });
+      }
+
+      setCertificateData({
+        certificate_enabled: training.certificate_enabled,
+        certificate_min_score: 70,
+        require_full_completion: true,
+        insignia_reward_id: training.insignia_reward_id || null,
       });
     } else {
       resetForm();
@@ -132,9 +226,26 @@ export function TrainingWizard({
       is_onboarding: false,
       thumbnail_url: "",
       training_key: "",
+      certificate_enabled: false,
+      insignia_reward_id: null,
+    });
+    setDistributionData({
+      is_active: true,
+      is_onboarding: false,
+      requirement_type: 'optional',
+      team_ids: [],
+      deadline_days: null,
+    });
+    setCertificateData({
+      certificate_enabled: false,
+      certificate_min_score: 70,
+      require_full_completion: true,
+      insignia_reward_id: null,
     });
     setSkillImpacts([]);
     setInsigniaRelations([]);
+    setXpMultiplier(1);
+    setCoinsMultiplier(1);
     setStep(1);
   };
 
@@ -148,9 +259,22 @@ export function TrainingWizard({
     try {
       const trainingData: Partial<Training> = {
         ...formData,
+        is_active: distributionData.is_active,
+        is_onboarding: distributionData.is_onboarding,
+        certificate_enabled: certificateData.certificate_enabled,
+        insignia_reward_id: certificateData.insignia_reward_id,
         training_key: formData.training_key || formData.name.toLowerCase().replace(/\s+/g, "_"),
       };
-      await onSave(trainingData);
+      
+      const configData: ConfigData = {
+        requirement_type: distributionData.requirement_type,
+        team_ids: distributionData.team_ids,
+        deadline_days: distributionData.deadline_days,
+        xp_multiplier: xpMultiplier,
+        coins_multiplier: coinsMultiplier,
+      };
+
+      await onSave(trainingData, configData);
       handleClose();
     } catch (error) {
       console.error("Error saving training:", error);
@@ -168,11 +292,26 @@ export function TrainingWizard({
     }
   };
 
+  // Convert insignias for select components
+  const availableInsignias = insignias.map(i => ({
+    id: i.id,
+    name: i.name,
+    icon: i.icon,
+  }));
+
   const renderStepContent = () => {
     switch (step) {
       case 1:
         return <BasicInfoStep formData={formData} setFormData={setFormData} />;
       case 2:
+        return (
+          <DistributionStep 
+            formData={distributionData} 
+            setFormData={setDistributionData}
+            teams={teams}
+          />
+        );
+      case 3:
         return (
           <RewardsStep 
             formData={formData} 
@@ -182,23 +321,42 @@ export function TrainingWizard({
             insigniaRelations={insigniaRelations}
             setInsigniaRelations={setInsigniaRelations}
             availableSkills={[]}
-            availableInsignias={[]}
+            availableInsignias={availableInsignias}
+            xpMultiplier={xpMultiplier}
+            setXpMultiplier={setXpMultiplier}
+            coinsMultiplier={coinsMultiplier}
+            setCoinsMultiplier={setCoinsMultiplier}
           />
         );
-      case 3:
+      case 4:
+        return (
+          <CertificateStep 
+            formData={certificateData} 
+            setFormData={setCertificateData}
+            availableInsignias={availableInsignias}
+          />
+        );
+      case 5:
         return (
           <ReviewStep 
-            formData={formData} 
+            formData={formData}
+            distributionData={distributionData}
+            certificateData={certificateData}
             skillImpacts={skillImpacts}
             insigniaRelations={insigniaRelations}
             availableSkills={[]}
-            availableInsignias={[]}
+            availableInsignias={availableInsignias}
+            teams={teams}
+            xpMultiplier={xpMultiplier}
+            coinsMultiplier={coinsMultiplier}
           />
         );
       default:
         return null;
     }
   };
+
+  const totalSteps = STEPS.length;
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -217,36 +375,36 @@ export function TrainingWizard({
             Configure as informações do treinamento
           </DialogDescription>
 
-          <div className="flex items-center justify-between mt-4">
+          <div className="flex items-center justify-between mt-4 overflow-x-auto pb-1">
             {STEPS.map((s, index) => {
               const Icon = s.icon;
               const isActive = step === s.id;
               const isCompleted = step > s.id;
               
               return (
-                <div key={s.id} className="flex items-center">
+                <div key={s.id} className="flex items-center flex-shrink-0">
                   <button
                     onClick={() => isCompleted && setStep(s.id)}
                     disabled={!isCompleted}
                     className={cn(
-                      "flex items-center gap-2 px-3 py-2 rounded-lg transition-all",
+                      "flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-all",
                       isActive && "bg-primary/10 text-primary",
                       isCompleted && "text-primary cursor-pointer hover:bg-primary/5",
                       !isActive && !isCompleted && "text-muted-foreground"
                     )}
                   >
                     <div className={cn(
-                      "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all",
+                      "w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium transition-all",
                       isActive && "bg-primary text-primary-foreground",
                       isCompleted && "bg-primary/20 text-primary",
                       !isActive && !isCompleted && "bg-muted text-muted-foreground"
                     )}>
-                      {isCompleted ? <Check className="w-4 h-4" /> : s.id}
+                      {isCompleted ? <Check className="w-3.5 h-3.5" /> : s.id}
                     </div>
-                    <span className="hidden sm:inline text-sm font-medium">{s.title}</span>
+                    <span className="hidden md:inline text-xs font-medium">{s.title}</span>
                   </button>
                   {index < STEPS.length - 1 && (
-                    <div className={cn("w-8 h-0.5 mx-2", step > s.id ? "bg-primary" : "bg-muted")} />
+                    <div className={cn("w-4 lg:w-6 h-0.5 mx-1", step > s.id ? "bg-primary" : "bg-muted")} />
                   )}
                 </div>
               );
@@ -275,7 +433,7 @@ export function TrainingWizard({
             {step === 1 ? "Cancelar" : (<><ArrowLeft className="w-4 h-4 mr-2" />Voltar</>)}
           </Button>
 
-          {step < 3 ? (
+          {step < totalSteps ? (
             <Button onClick={() => setStep(step + 1)} disabled={!canProceed()}>
               Continuar<ArrowRight className="w-4 h-4 ml-2" />
             </Button>
