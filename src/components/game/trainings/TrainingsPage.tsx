@@ -211,24 +211,32 @@ export function TrainingsPage({ onBack }: TrainingsPageProps) {
                       : "border-border hover:border-primary/40 bg-card"
                   )}
                 >
-                  {/* Image/Cover Area */}
-                  <div className="relative aspect-video overflow-hidden">
+                  {/* Image/Cover Area - Fixed height */}
+                  <div className="relative h-40 overflow-hidden bg-muted">
                     {training.thumbnail_url ? (
                       <img 
                         src={training.thumbnail_url} 
                         alt={training.name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    ) : (
-                      <div 
-                        className="w-full h-full flex items-center justify-center"
-                        style={{ 
-                          background: `linear-gradient(135deg, ${training.color}30 0%, ${training.color}10 100%)` 
+                        onError={(e) => {
+                          // Hide broken image and show fallback
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.nextElementSibling?.classList.remove('hidden');
                         }}
-                      >
-                        <span className="text-5xl opacity-80">{training.icon}</span>
-                      </div>
-                    )}
+                      />
+                    ) : null}
+                    {/* Fallback - always rendered, shown if no image or image fails */}
+                    <div 
+                      className={cn(
+                        "absolute inset-0 flex items-center justify-center",
+                        training.thumbnail_url ? "hidden" : ""
+                      )}
+                      style={{ 
+                        background: `linear-gradient(135deg, ${training.color}30 0%, ${training.color}10 100%)` 
+                      }}
+                    >
+                      <span className="text-5xl opacity-80">{training.icon}</span>
+                    </div>
                     
                     {/* Gradient Overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
@@ -345,23 +353,30 @@ function TrainingDetailModal({ training, modules, progress, isOpen, onClose }: T
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-lg p-0 overflow-hidden">
         {/* Cover Image */}
-        <div className="relative aspect-video">
+        <div className="relative aspect-video bg-muted">
           {training.thumbnail_url ? (
             <img 
               src={training.thumbnail_url} 
               alt={training.name}
               className="w-full h-full object-cover"
-            />
-          ) : (
-            <div 
-              className="w-full h-full flex items-center justify-center"
-              style={{ 
-                background: `linear-gradient(135deg, ${training.color}40 0%, ${training.color}15 100%)` 
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                e.currentTarget.nextElementSibling?.classList.remove('hidden');
               }}
-            >
-              <span className="text-6xl">{training.icon}</span>
-            </div>
-          )}
+            />
+          ) : null}
+          {/* Fallback */}
+          <div 
+            className={cn(
+              "absolute inset-0 flex items-center justify-center",
+              training.thumbnail_url ? "hidden" : ""
+            )}
+            style={{ 
+              background: `linear-gradient(135deg, ${training.color}40 0%, ${training.color}15 100%)` 
+            }}
+          >
+            <span className="text-6xl">{training.icon}</span>
+          </div>
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
           
           {/* Difficulty badge */}
