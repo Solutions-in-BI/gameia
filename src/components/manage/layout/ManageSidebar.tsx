@@ -47,6 +47,7 @@ const NAV_ITEMS: { id: ManageSection; label: string; icon: typeof LayoutDashboar
   { id: "trainings", label: "Treinamentos", icon: GraduationCap, description: "Progresso de capacitação" },
   { id: "certificates", label: "Certificados", icon: Award, description: "Competências validadas" },
   { id: "benefits", label: "Benefícios", icon: Gift, description: "Aprovações pendentes" },
+  { id: "rewards", label: "Recompensas", icon: Gift, description: "Itens e analytics" },
   { id: "commitments", label: "Compromissos", icon: Target, description: "Metas e desafios" },
   { id: "assessments", label: "Avaliações", icon: ClipboardCheck, description: "360°, PDI e 1:1" },
   { id: "reports", label: "Relatórios", icon: FileText, description: "Análises e exportações" },

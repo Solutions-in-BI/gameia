@@ -71,6 +71,10 @@ export function useRealtimeNotifications() {
       badge: "🎖️",
       level_up: "⬆️",
       challenge: "🎯",
+      challenge_completed: "🏆",
+      training_completed: "📚",
+      item_unlocked: "🎁",
+      item_enabled: "🛒",
       streak: "🔥",
     };
     

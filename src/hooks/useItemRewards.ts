@@ -137,10 +137,8 @@ export function useItemRewards() {
           .upsert({
             user_id: user.id,
             item_id: item.id,
-            organization_id: currentOrg.id,
-            source_type: sourceType,
-            source_id: sourceId,
-            acquired_at: new Date().toISOString(),
+            purchased_at: new Date().toISOString(),
+            status: "active",
           }, {
             onConflict: "user_id,item_id"
           });
