@@ -30,7 +30,8 @@ import {
 import { useTrainings, Training } from "@/hooks/useTrainings";
 import { useOrganization } from "@/hooks/useOrganization";
 import { useEvolutionTemplates, EvolutionTemplate } from "@/hooks/useEvolutionTemplates";
-import { TrainingWizard } from "@/components/admin/training/TrainingWizard";
+import { useOrgTrainingConfig } from "@/hooks/useOrgTrainingConfig";
+import { TrainingWizard, ConfigData } from "@/components/admin/training/TrainingWizard";
 import { TrainingCard } from "./TrainingCard";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -67,6 +68,7 @@ export function TrainingCatalogSection() {
   const { currentOrg } = useOrganization();
   const { trainings, modules, isLoading, createTraining, updateTraining, deleteTraining } = useTrainings(currentOrg?.id);
   const { templates } = useEvolutionTemplates(currentOrg?.id);
+  const { upsertConfig } = useOrgTrainingConfig(currentOrg?.id);
   
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -151,18 +153,38 @@ export function TrainingCatalogSection() {
     };
   };
 
-  const handleSaveTraining = async (data: Partial<Training>) => {
+  const handleSaveTraining = async (data: Partial<Training>, configData?: ConfigData) => {
     try {
+      let trainingId: string;
+      
       if (selectedTraining) {
         await updateTraining(selectedTraining.id, data);
+        trainingId = selectedTraining.id;
         toast.success("Treinamento atualizado");
       } else {
-        await createTraining({ ...data, organization_id: currentOrg?.id } as Training);
+        const newTraining = await createTraining({ ...data, organization_id: currentOrg?.id } as Training);
+        trainingId = newTraining?.id;
         toast.success("Treinamento criado");
       }
+      
+      // Save config if provided
+      if (configData && trainingId) {
+        await upsertConfig({
+          training_id: trainingId,
+          is_enabled: data.is_active ?? true,
+          requirement_type: configData.requirement_type === 'mandatory' ? 'required' : 
+                          configData.requirement_type === 'recommended' ? 'suggested' : 'optional',
+          team_ids: configData.team_ids,
+          deadline_days: configData.deadline_days,
+          xp_multiplier: configData.xp_multiplier,
+          coins_multiplier: configData.coins_multiplier,
+        });
+      }
+      
       setWizardOpen(false);
       setSelectedTraining(null);
     } catch (error) {
+      console.error("Error saving training:", error);
       toast.error("Erro ao salvar treinamento");
     }
   };
