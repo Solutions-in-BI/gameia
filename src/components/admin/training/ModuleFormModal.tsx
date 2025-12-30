@@ -164,12 +164,28 @@ export function ModuleFormModal({
     onClose();
   };
 
+  // Map content_type to step_type
+  const getStepTypeFromContentType = (contentType: string): string => {
+    switch (contentType) {
+      case 'quiz':
+        return 'quiz';
+      case 'video':
+        return 'video';
+      case 'text':
+      case 'pdf':
+      case 'link':
+      default:
+        return 'content';
+    }
+  };
+
   const handleSubmit = async () => {
     setIsLoading(true);
     try {
       const data: Partial<TrainingModule> = {
         ...formData,
         module_key: formData.module_key || formData.name.toLowerCase().replace(/\s+/g, "_"),
+        step_type: getStepTypeFromContentType(formData.content_type),
       };
       await onSave(data);
       handleClose();

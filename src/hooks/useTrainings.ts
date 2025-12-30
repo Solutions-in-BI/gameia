@@ -34,6 +34,7 @@ export interface TrainingModule {
   name: string;
   description: string | null;
   content_type: string;
+  step_type?: string | null;
   content_data: Record<string, unknown> | null;
   order_index: number;
   xp_reward: number;
