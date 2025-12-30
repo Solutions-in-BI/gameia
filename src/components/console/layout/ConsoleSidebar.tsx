@@ -35,8 +35,6 @@ export type ConsoleSection =
   | "trainings"
   | "trainings-catalog"
   | "trainings-evolution"
-  | "trainings-distribution"
-  | "trainings-rewards"
   | "cognitive"
   | "templates"
   | "integrations"
@@ -78,8 +76,6 @@ const NAV_ITEMS: NavItem[] = [
     children: [
       { id: "trainings-catalog", label: "Catálogo", icon: GraduationCap },
       { id: "trainings-evolution", label: "Templates de Evolução", icon: TrendingUp },
-      { id: "trainings-distribution", label: "Distribuição", icon: Shield },
-      { id: "trainings-rewards", label: "Recompensas", icon: Trophy },
     ],
   },
   { id: "cognitive", label: "Testes Cognitivos", icon: Brain, description: "Configuração de testes" },

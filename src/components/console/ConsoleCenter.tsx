@@ -20,8 +20,6 @@ import { GameConfigurationHub } from "@/components/admin/games";
 import { OrgTrainingConfigSection, TrainingMetricsDashboard, TrainingReportsSection } from "./training";
 import { TrainingCatalogSection } from "./training/TrainingCatalogSection";
 import { EvolutionTemplatesSection } from "./training/EvolutionTemplatesSection";
-import { TrainingDistributionSection } from "./training/TrainingDistributionSection";
-import { TrainingRewardsSection } from "./training/TrainingRewardsSection";
 
 // Placeholder para seções ainda não migradas
 function UsersPermissionsSection() {
@@ -121,10 +119,6 @@ export function ConsoleCenter() {
         return <TrainingCatalogSection />;
       case "trainings-evolution":
         return <EvolutionTemplatesSection />;
-      case "trainings-distribution":
-        return <TrainingDistributionSection />;
-      case "trainings-rewards":
-        return <TrainingRewardsSection />;
       case "cognitive":
         return <CognitiveSection />;
       case "templates":
