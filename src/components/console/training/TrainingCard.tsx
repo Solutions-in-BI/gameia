@@ -10,14 +10,13 @@ import {
   MoreVertical,
   Eye,
   Copy,
-  Play,
-  Pause,
   Send,
   Award,
   FileCheck,
   Sparkles,
-  Users,
+  Layers,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
@@ -102,6 +101,7 @@ export function TrainingCard({
   onToggleActive,
   onDistribute,
 }: TrainingCardProps) {
+  const navigate = useNavigate();
   const status = training.is_active ? 'active' : 'inactive';
   const statusConfig = STATUS_CONFIG[status];
 
@@ -268,6 +268,10 @@ export function TrainingCard({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => navigate(`/console/trainings/${training.id}/editor`)}>
+                <Layers className="w-4 h-4 mr-2" />
+                Editar Módulos
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => window.open(`/app/trainings/${training.id}`, '_blank')}>
                 <Eye className="w-4 h-4 mr-2" />
                 Visualizar
