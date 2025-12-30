@@ -12,12 +12,10 @@ import {
   Gift,
   Trophy,
   TrendingUp,
-  Users,
   Target,
   Award,
   Package,
   Sparkles,
-  Coins,
 } from "lucide-react";
 import {
   BarChart,
@@ -26,9 +24,6 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
   LineChart,
   Line,
 } from "recharts";
@@ -63,14 +58,6 @@ interface EngagementData {
   challenges_completed: number;
 }
 
-const CHART_COLORS = [
-  "hsl(var(--primary))",
-  "hsl(var(--chart-2))",
-  "hsl(var(--chart-3))",
-  "hsl(var(--chart-4))",
-  "hsl(var(--chart-5))",
-];
-
 export function RewardAnalyticsDashboard() {
   const { currentOrg } = useOrganization();
   const [isLoading, setIsLoading] = useState(true);
@@ -91,10 +78,13 @@ export function RewardAnalyticsDashboard() {
     setIsLoading(true);
     try {
       // 1. Buscar itens mais desbloqueados
-      const { data: inventoryData } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const inventoryResult = await (supabase as any)
         .from("user_inventory")
         .select("item_id")
         .eq("organization_id", currentOrg.id);
+
+      const inventoryData: Array<{ item_id: string }> = inventoryResult.data || [];
 
       if (inventoryData && inventoryData.length > 0) {
         // Contar itens por ID
@@ -105,15 +95,22 @@ export function RewardAnalyticsDashboard() {
 
         // Buscar detalhes dos itens
         const itemIds = Array.from(itemCounts.keys());
-        const { data: itemDetails } = await supabase
+        const itemsResponse = await supabase
           .from("marketplace_items")
           .select("id, name, icon, category")
           .in("id", itemIds);
 
+        const itemDetails = itemsResponse.data as Array<{
+          id: string;
+          name: string;
+          icon: string | null;
+          category: string;
+        }> | null;
+
         const stats: ItemStats[] = (itemDetails || []).map((item) => ({
           item_id: item.id,
           item_name: item.name,
-          item_icon: item.icon,
+          item_icon: item.icon || "📦",
           category: item.category,
           unlock_count: itemCounts.get(item.id) || 0,
         })).sort((a, b) => b.unlock_count - a.unlock_count).slice(0, 10);
@@ -122,7 +119,7 @@ export function RewardAnalyticsDashboard() {
 
         // Calcular categoria mais popular
         const categoryCounts = new Map<string, number>();
-        sorted.forEach(item => {
+        stats.forEach(item => {
           categoryCounts.set(item.category, (categoryCounts.get(item.category) || 0) + item.unlock_count);
         });
         const topCat = Array.from(categoryCounts.entries())
@@ -136,31 +133,36 @@ export function RewardAnalyticsDashboard() {
       }
 
       // 2. Buscar desafios que mais geraram recompensas
-      const { data: challenges } = await supabase
+      const challengesResponse = await supabase
         .from("commitments")
-        .select(`
-          id,
-          name,
-          reward_items,
-          commitment_participants(count)
-        `)
+        .select("id, name, reward_items")
         .eq("organization_id", currentOrg.id)
         .eq("status", "completed")
-        .not("reward_items", "eq", "[]")
         .limit(10);
 
+      const challenges = challengesResponse.data as Array<{
+        id: string;
+        name: string;
+        reward_items: unknown;
+      }> | null;
+
       if (challenges) {
-        const stats = challenges.map((c: any) => ({
+        const challengesWithItems = challenges.filter(c => {
+          const items = c.reward_items;
+          return Array.isArray(items) && items.length > 0;
+        });
+
+        const stats = challengesWithItems.map((c) => ({
           challenge_id: c.id,
           challenge_name: c.name,
-          items_granted: Array.isArray(c.reward_items) ? c.reward_items.length : 0,
-          participants: c.commitment_participants?.[0]?.count || 0,
+          items_granted: Array.isArray(c.reward_items) ? (c.reward_items as unknown[]).length : 0,
+          participants: 0,
           completion_rate: 100,
         }));
         setChallengeStats(stats);
         setSummary(prev => ({
           ...prev,
-          totalChallengesWithItems: challenges.length,
+          totalChallengesWithItems: challengesWithItems.length,
           avgItemsPerChallenge: stats.length > 0 
             ? Math.round(stats.reduce((sum, s) => sum + s.items_granted, 0) / stats.length * 10) / 10
             : 0,
@@ -168,49 +170,59 @@ export function RewardAnalyticsDashboard() {
       }
 
       // 3. Buscar top performers
-      const { data: performers } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const performersResponse = await (supabase as any)
         .from("user_inventory")
-        .select(`
-          user_id,
-          profiles!inner(nickname, avatar_url)
-        `)
+        .select("user_id")
         .eq("organization_id", currentOrg.id);
 
-      if (performers) {
-        const userCounts = new Map<string, TopPerformer>();
-        performers.forEach((p: any) => {
-          const id = p.user_id;
-          const existing = userCounts.get(id);
-          if (existing) {
-            existing.items_earned++;
-          } else {
-            userCounts.set(id, {
-              user_id: id,
-              nickname: p.profiles?.nickname || "Usuário",
-              avatar_url: p.profiles?.avatar_url,
-              items_earned: 1,
-              xp_earned: 0,
-            });
-          }
+      const performers: Array<{ user_id: string }> = performersResponse.data || [];
+
+      if (performers.length > 0) {
+        const userCounts = new Map<string, number>();
+        performers.forEach((p) => {
+          userCounts.set(p.user_id, (userCounts.get(p.user_id) || 0) + 1);
         });
-        const sorted = Array.from(userCounts.values())
-          .sort((a, b) => b.items_earned - a.items_earned)
-          .slice(0, 5);
-        setTopPerformers(sorted);
+
+        // Buscar perfis dos usuários
+        const userIds = Array.from(userCounts.keys()).slice(0, 10);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const profilesResponse = await (supabase as any)
+          .from("profiles")
+          .select("id, nickname, avatar_url")
+          .in("id", userIds);
+
+        const profiles: Array<{ id: string; nickname: string; avatar_url: string | null }> = profilesResponse.data || [];
+
+        const topPerfs: TopPerformer[] = profiles.map(p => ({
+          user_id: p.id,
+          nickname: p.nickname || "Usuário",
+          avatar_url: p.avatar_url,
+          items_earned: userCounts.get(p.id) || 0,
+          xp_earned: 0,
+        })).sort((a, b) => b.items_earned - a.items_earned).slice(0, 5);
+
+        setTopPerformers(topPerfs);
       }
 
       // 4. Dados de engajamento ao longo do tempo
-      const { data: engagementRaw } = await supabase
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const engagementResponse = await (supabase as any)
         .from("user_inventory")
-        .select("acquired_at")
+        .select("purchased_at")
         .eq("organization_id", currentOrg.id)
-        .gte("acquired_at", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
+        .gte("purchased_at", thirtyDaysAgo);
+
+      const engagementRaw: Array<{ purchased_at: string | null }> = engagementResponse.data || [];
 
       if (engagementRaw) {
         const dailyCounts = new Map<string, number>();
-        engagementRaw.forEach((item: any) => {
-          const date = new Date(item.acquired_at).toISOString().split("T")[0];
-          dailyCounts.set(date, (dailyCounts.get(date) || 0) + 1);
+        engagementRaw.forEach((item) => {
+          if (item.purchased_at) {
+            const date = new Date(item.purchased_at).toISOString().split("T")[0];
+            dailyCounts.set(date, (dailyCounts.get(date) || 0) + 1);
+          }
         });
 
         const engagement: EngagementData[] = [];

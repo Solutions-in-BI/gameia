@@ -426,6 +426,44 @@ export function useChallenges(orgId: string | undefined) {
           p_commitment_id: challengeId,
         });
 
+        // Process item rewards if configured
+        const { data: fullChallenge } = await supabase
+          .from("commitments")
+          .select("reward_items, organization_id")
+          .eq("id", challengeId)
+          .single();
+
+        if (fullChallenge?.reward_items && Array.isArray(fullChallenge.reward_items) && fullChallenge.reward_items.length > 0) {
+          // Import dynamically to avoid circular deps
+          for (const rewardConfig of fullChallenge.reward_items as Array<{ item_id?: string; category?: string; unlock_mode: string }>) {
+            try {
+              const item_id = rewardConfig.item_id;
+              const unlock_mode = rewardConfig.unlock_mode || "auto_unlock";
+              
+              if (item_id && unlock_mode === "auto_unlock") {
+                // Add directly to inventory
+                await supabase.from("user_inventory").upsert({
+                  user_id: user.id,
+                  item_id: item_id,
+                  purchased_at: new Date().toISOString(),
+                  status: "active",
+                }, { onConflict: "user_id,item_id" });
+              } else if (item_id && unlock_mode === "enable_purchase") {
+                // Enable for purchase
+                await supabase.from("user_unlocked_items").upsert({
+                  user_id: user.id,
+                  item_id: item_id,
+                  source_type: "challenge",
+                  source_id: challengeId,
+                  organization_id: fullChallenge.organization_id,
+                }, { onConflict: "user_id,item_id" });
+              }
+            } catch (e) {
+              console.error("Error processing item reward:", e);
+            }
+          }
+        }
+
         toast.success("🏆 Desafio Completado!");
       } else {
         toast.success("Progresso atualizado!");
