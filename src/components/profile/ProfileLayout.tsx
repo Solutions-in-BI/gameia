@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   User, TrendingUp, Swords, ShoppingBag, 
-  History, Settings, ArrowLeft, Crown, Award
+  History, Settings, ArrowLeft, Crown, Award, StickyNote
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -17,9 +17,10 @@ import { ShopTab } from "./tabs/ShopTab";
 import { HistoryTab } from "./tabs/HistoryTab";
 import { SettingsTab } from "./tabs/SettingsTab";
 import { CertificationsTab } from "./tabs/CertificationsTab";
+import { NotesTab } from "./tabs/NotesTab";
 import { getLevelProgress } from "@/constants/levels";
 
-type TabId = "overview" | "evolution" | "arena" | "shop" | "certifications" | "history" | "settings";
+type TabId = "overview" | "evolution" | "arena" | "shop" | "certifications" | "notes" | "history" | "settings";
 
 interface Tab {
   id: TabId;
@@ -30,6 +31,7 @@ interface Tab {
 const tabs: Tab[] = [
   { id: "overview", label: "Visão Geral", icon: User },
   { id: "evolution", label: "Evolução", icon: TrendingUp },
+  { id: "notes", label: "Anotações", icon: StickyNote },
   { id: "arena", label: "Arena", icon: Swords },
   { id: "shop", label: "Loja", icon: ShoppingBag },
   { id: "certifications", label: "Certificados", icon: Award },
@@ -72,6 +74,8 @@ export function ProfileLayout() {
         return <OverviewTab />;
       case "evolution":
         return <EvolutionTab />;
+      case "notes":
+        return <NotesTab />;
       case "arena":
         return <ArenaTab />;
       case "shop":

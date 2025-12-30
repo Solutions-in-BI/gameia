@@ -5440,6 +5440,158 @@ export type Database = {
           },
         ]
       }
+      training_notes: {
+        Row: {
+          content: string
+          content_type: string
+          created_at: string
+          game_context: Json | null
+          id: string
+          is_favorite: boolean | null
+          module_id: string
+          organization_id: string | null
+          quiz_question_index: number | null
+          skill_ids: string[] | null
+          status: string
+          tags: string[] | null
+          text_selection: string | null
+          timestamp_seconds: number | null
+          title: string | null
+          training_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          content_type: string
+          created_at?: string
+          game_context?: Json | null
+          id?: string
+          is_favorite?: boolean | null
+          module_id: string
+          organization_id?: string | null
+          quiz_question_index?: number | null
+          skill_ids?: string[] | null
+          status?: string
+          tags?: string[] | null
+          text_selection?: string | null
+          timestamp_seconds?: number | null
+          title?: string | null
+          training_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          content_type?: string
+          created_at?: string
+          game_context?: Json | null
+          id?: string
+          is_favorite?: boolean | null
+          module_id?: string
+          organization_id?: string | null
+          quiz_question_index?: number | null
+          skill_ids?: string[] | null
+          status?: string
+          tags?: string[] | null
+          text_selection?: string | null
+          timestamp_seconds?: number | null
+          title?: string | null
+          training_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_notes_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "training_modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_notes_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_notes_training_id_fkey"
+            columns: ["training_id"]
+            isOneToOne: false
+            referencedRelation: "trainings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_notes_analytics: {
+        Row: {
+          avg_notes_per_user: number | null
+          created_at: string | null
+          id: string
+          module_id: string | null
+          notes_by_status: Json | null
+          organization_id: string
+          period_end: string
+          period_start: string
+          total_notes: number | null
+          training_id: string
+          unique_users: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          avg_notes_per_user?: number | null
+          created_at?: string | null
+          id?: string
+          module_id?: string | null
+          notes_by_status?: Json | null
+          organization_id: string
+          period_end: string
+          period_start: string
+          total_notes?: number | null
+          training_id: string
+          unique_users?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          avg_notes_per_user?: number | null
+          created_at?: string | null
+          id?: string
+          module_id?: string | null
+          notes_by_status?: Json | null
+          organization_id?: string
+          period_end?: string
+          period_start?: string
+          total_notes?: number | null
+          training_id?: string
+          unique_users?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_notes_analytics_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "training_modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_notes_analytics_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_notes_analytics_training_id_fkey"
+            columns: ["training_id"]
+            isOneToOne: false
+            referencedRelation: "trainings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       training_skill_impact: {
         Row: {
           created_at: string
