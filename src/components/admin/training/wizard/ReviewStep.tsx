@@ -1,16 +1,14 @@
 /**
- * ReviewStep - Step 4: Revisão final
+ * ReviewStep - Step 3: Revisão final
  */
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { 
-  Info,
   Gift,
   Award,
   Clock,
-  Target,
   Sparkles,
   Coins,
   CheckCircle2,
@@ -182,51 +180,6 @@ export function ReviewStep({
           )}
         </CardContent>
       </Card>
-
-      {/* Certificate Summary */}
-      {formData.certificate_name && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Award className="w-4 h-4 text-primary" />
-              Certificado
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <div className="text-muted-foreground">Nome</div>
-                <div className="font-medium">{formData.certificate_name}</div>
-              </div>
-              <div>
-                <div className="text-muted-foreground">Tipo</div>
-                <div className="font-medium capitalize">{formData.certificate_type}</div>
-              </div>
-              <div>
-                <div className="text-muted-foreground">Validade</div>
-                <div className="font-medium">
-                  {formData.certificate_validity_months === 0 
-                    ? "Sem validade" 
-                    : `${formData.certificate_validity_months} meses`
-                  }
-                </div>
-              </div>
-              <div>
-                <div className="text-muted-foreground">Score Mínimo</div>
-                <div className="font-medium">{formData.min_score_for_certificate}%</div>
-              </div>
-              {formData.requires_checkpoint && (
-                <div className="col-span-2">
-                  <Badge variant="secondary" className="gap-1">
-                    <CheckCircle2 className="w-3 h-3" />
-                    Requer Checkpoint
-                  </Badge>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Ready Message */}
       <div className="text-center py-4">
