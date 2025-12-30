@@ -1,92 +1,95 @@
 /**
- * CategoryFilters - Nova hierarquia de 4 camadas
- * Personalização | Vantagens | Desenvolvimento | Experiências
+ * CategoryFilters - Nova hierarquia para benefícios reais
+ * Cashback | Gift Cards | Entretenimento | Educação | Benefícios
  */
 
 import { motion } from "framer-motion";
-import { Palette, Zap, GraduationCap, Gift } from "lucide-react";
+import { DollarSign, CreditCard, Film, GraduationCap, Gift } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type CategorySection = "customization" | "advantages" | "development" | "experiences";
-export type Category = "all" | "avatar" | "frame" | "banner" | "title" | "pet" | "mascot" | "boost" | "effect" | "learning" | "experience" | "benefit" | "reward" | "gift";
+export type CategorySection = "cashback" | "giftcards" | "entertainment" | "education" | "benefits";
+export type Category = "all" | "cashback" | "pix" | "giftcard" | "cinema" | "experience" | "learning" | "course" | "benefit" | "gift" | "reward";
 export type SortOption = "rarity" | "price_asc" | "price_desc" | "name";
 
 // Section configuration with icons, labels, and descriptions
 export const SECTION_CONFIG: Record<CategorySection, {
-  icon: typeof Palette;
+  icon: typeof DollarSign;
   label: string;
   shortLabel: string;
   description: string;
   categories: { key: Category; label: string }[];
 }> = {
-  customization: {
-    icon: Palette,
-    label: "Personalização",
-    shortLabel: "Perfil",
-    description: "Destaque-se com itens exclusivos para seu perfil",
+  cashback: {
+    icon: DollarSign,
+    label: "Cashback",
+    shortLabel: "PIX",
+    description: "Converta suas moedas em dinheiro real",
     categories: [
       { key: "all", label: "Todos" },
-      { key: "avatar", label: "Avatares" },
-      { key: "frame", label: "Molduras" },
-      { key: "banner", label: "Banners" },
-      { key: "title", label: "Títulos" },
-      { key: "pet", label: "Mascotes" },
+      { key: "cashback", label: "PIX" },
     ],
   },
-  advantages: {
-    icon: Zap,
-    label: "Vantagens",
-    shortLabel: "Boosts",
-    description: "Potencialize seus ganhos temporariamente",
+  giftcards: {
+    icon: CreditCard,
+    label: "Gift Cards",
+    shortLabel: "Vouchers",
+    description: "Vouchers para apps e serviços",
     categories: [
       { key: "all", label: "Todos" },
-      { key: "boost", label: "Multiplicadores" },
-      { key: "effect", label: "Efeitos" },
+      { key: "giftcard", label: "Vale Presente" },
     ],
   },
-  development: {
+  entertainment: {
+    icon: Film,
+    label: "Entretenimento",
+    shortLabel: "Cinema",
+    description: "Cinema, shows e experiências culturais",
+    categories: [
+      { key: "all", label: "Todos" },
+      { key: "cinema", label: "Cinema" },
+      { key: "experience", label: "Experiências" },
+    ],
+  },
+  education: {
     icon: GraduationCap,
-    label: "Desenvolvimento",
+    label: "Educação",
     shortLabel: "Cursos",
     description: "Invista em conhecimento e crescimento",
     categories: [
       { key: "all", label: "Todos" },
       { key: "learning", label: "Cursos" },
+      { key: "course", label: "Treinamentos" },
     ],
   },
-  experiences: {
+  benefits: {
     icon: Gift,
-    label: "Experiências",
-    shortLabel: "Benefícios",
-    description: "Benefícios reais aprovados pelo seu gestor",
+    label: "Benefícios",
+    shortLabel: "Extras",
+    description: "Day off, presentes e benefícios corporativos",
     categories: [
       { key: "all", label: "Todos" },
-      { key: "experience", label: "Experiências" },
       { key: "benefit", label: "Benefícios" },
-      { key: "reward", label: "Recompensas" },
       { key: "gift", label: "Presentes" },
+      { key: "reward", label: "Recompensas" },
     ],
   },
 };
 
 // Section order for display
-export const SECTION_ORDER: CategorySection[] = ["customization", "advantages", "development", "experiences"];
+export const SECTION_ORDER: CategorySection[] = ["cashback", "giftcards", "entertainment", "education", "benefits"];
 
 // Category to section mapping
 export const CATEGORY_TO_SECTION: Record<string, CategorySection> = {
-  avatar: "customization",
-  frame: "customization",
-  banner: "customization",
-  title: "customization",
-  pet: "customization",
-  mascot: "customization",
-  boost: "advantages",
-  effect: "advantages",
-  learning: "development",
-  experience: "experiences",
-  benefit: "experiences",
-  reward: "experiences",
-  gift: "experiences",
+  cashback: "cashback",
+  pix: "cashback",
+  giftcard: "giftcards",
+  cinema: "entertainment",
+  experience: "entertainment",
+  learning: "education",
+  course: "education",
+  benefit: "benefits",
+  gift: "benefits",
+  reward: "benefits",
 };
 
 interface CategoryFiltersProps {
@@ -117,7 +120,7 @@ export function CategoryFilters({
     <div className="space-y-4 mb-6">
       {/* Section Tabs */}
       <div className="flex justify-center">
-        <div className="inline-flex bg-muted/50 rounded-xl p-1 gap-1">
+        <div className="inline-flex bg-muted/50 rounded-xl p-1 gap-1 flex-wrap justify-center">
           {SECTION_ORDER.map((sectionKey) => {
             const config = SECTION_CONFIG[sectionKey];
             const Icon = config.icon;
@@ -187,7 +190,7 @@ export function CategoryFilters({
             onChange={(e) => onSortChange(e.target.value as SortOption)}
             className="bg-transparent border-none text-xs font-medium text-foreground cursor-pointer focus:outline-none"
           >
-            <option value="rarity">Raridade</option>
+            <option value="rarity">Popularidade</option>
             <option value="price_asc">Menor preço</option>
             <option value="price_desc">Maior preço</option>
             <option value="name">Nome</option>
