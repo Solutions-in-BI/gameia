@@ -677,6 +677,135 @@ export type Database = {
           },
         ]
       }
+      book_application_alerts: {
+        Row: {
+          alert_type: string
+          application_id: string
+          created_at: string | null
+          id: string
+          notification_id: string | null
+          scheduled_for: string
+          sent_at: string | null
+          user_id: string
+        }
+        Insert: {
+          alert_type: string
+          application_id: string
+          created_at?: string | null
+          id?: string
+          notification_id?: string | null
+          scheduled_for: string
+          sent_at?: string | null
+          user_id: string
+        }
+        Update: {
+          alert_type?: string
+          application_id?: string
+          created_at?: string | null
+          id?: string
+          notification_id?: string | null
+          scheduled_for?: string
+          sent_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_application_alerts_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "routine_applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "book_application_alerts_notification_id_fkey"
+            columns: ["notification_id"]
+            isOneToOne: false
+            referencedRelation: "notifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      book_application_summaries: {
+        Row: {
+          ai_summary: string | null
+          avg_reflection_quality: number | null
+          common_challenges: Json | null
+          common_themes: Json | null
+          completed_late: number | null
+          completed_on_time: number | null
+          created_at: string | null
+          generated_at: string | null
+          id: string
+          key_insights: Json | null
+          module_id: string | null
+          on_time_rate: number | null
+          organization_id: string | null
+          participation_rate: number | null
+          pending: number | null
+          period_end: string
+          period_start: string
+          total_applications: number | null
+          training_id: string | null
+        }
+        Insert: {
+          ai_summary?: string | null
+          avg_reflection_quality?: number | null
+          common_challenges?: Json | null
+          common_themes?: Json | null
+          completed_late?: number | null
+          completed_on_time?: number | null
+          created_at?: string | null
+          generated_at?: string | null
+          id?: string
+          key_insights?: Json | null
+          module_id?: string | null
+          on_time_rate?: number | null
+          organization_id?: string | null
+          participation_rate?: number | null
+          pending?: number | null
+          period_end: string
+          period_start: string
+          total_applications?: number | null
+          training_id?: string | null
+        }
+        Update: {
+          ai_summary?: string | null
+          avg_reflection_quality?: number | null
+          common_challenges?: Json | null
+          common_themes?: Json | null
+          completed_late?: number | null
+          completed_on_time?: number | null
+          created_at?: string | null
+          generated_at?: string | null
+          id?: string
+          key_insights?: Json | null
+          module_id?: string | null
+          on_time_rate?: number | null
+          organization_id?: string | null
+          participation_rate?: number | null
+          pending?: number | null
+          period_end?: string
+          period_start?: string
+          total_applications?: number | null
+          training_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_application_summaries_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "book_application_summaries_training_id_fkey"
+            columns: ["training_id"]
+            isOneToOne: false
+            referencedRelation: "trainings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       certificate_criteria_configs: {
         Row: {
           certificate_type: string
@@ -4507,45 +4636,78 @@ export type Database = {
       }
       routine_applications: {
         Row: {
+          ai_feedback: string | null
+          commitment_id: string | null
+          consistency_score: number | null
           created_at: string | null
+          deadline_at: string | null
           evidence_content: string | null
           evidence_type: string | null
           evidence_url: string | null
           id: string
+          is_late: boolean | null
           manager_feedback: string | null
+          manager_viewed_at: string | null
           module_id: string
+          pdi_goal_id: string | null
+          reflection_summary: string | null
+          reminder_sent: boolean | null
+          skill_id: string | null
           status: string | null
           submitted_at: string | null
+          training_id: string | null
           user_id: string
           verified_at: string | null
           verified_by: string | null
           xp_earned: number | null
         }
         Insert: {
+          ai_feedback?: string | null
+          commitment_id?: string | null
+          consistency_score?: number | null
           created_at?: string | null
+          deadline_at?: string | null
           evidence_content?: string | null
           evidence_type?: string | null
           evidence_url?: string | null
           id?: string
+          is_late?: boolean | null
           manager_feedback?: string | null
+          manager_viewed_at?: string | null
           module_id: string
+          pdi_goal_id?: string | null
+          reflection_summary?: string | null
+          reminder_sent?: boolean | null
+          skill_id?: string | null
           status?: string | null
           submitted_at?: string | null
+          training_id?: string | null
           user_id: string
           verified_at?: string | null
           verified_by?: string | null
           xp_earned?: number | null
         }
         Update: {
+          ai_feedback?: string | null
+          commitment_id?: string | null
+          consistency_score?: number | null
           created_at?: string | null
+          deadline_at?: string | null
           evidence_content?: string | null
           evidence_type?: string | null
           evidence_url?: string | null
           id?: string
+          is_late?: boolean | null
           manager_feedback?: string | null
+          manager_viewed_at?: string | null
           module_id?: string
+          pdi_goal_id?: string | null
+          reflection_summary?: string | null
+          reminder_sent?: boolean | null
+          skill_id?: string | null
           status?: string | null
           submitted_at?: string | null
+          training_id?: string | null
           user_id?: string
           verified_at?: string | null
           verified_by?: string | null
@@ -4553,10 +4715,52 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "routine_applications_commitment_id_fkey"
+            columns: ["commitment_id"]
+            isOneToOne: false
+            referencedRelation: "commitments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "routine_applications_commitment_id_fkey"
+            columns: ["commitment_id"]
+            isOneToOne: false
+            referencedRelation: "vw_challenges_with_stats"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "routine_applications_module_id_fkey"
             columns: ["module_id"]
             isOneToOne: false
             referencedRelation: "training_modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "routine_applications_pdi_goal_id_fkey"
+            columns: ["pdi_goal_id"]
+            isOneToOne: false
+            referencedRelation: "development_goals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "routine_applications_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skill_configurations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "routine_applications_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "vw_org_skill_metrics"
+            referencedColumns: ["skill_id"]
+          },
+          {
+            foreignKeyName: "routine_applications_training_id_fkey"
+            columns: ["training_id"]
+            isOneToOne: false
+            referencedRelation: "trainings"
             referencedColumns: ["id"]
           },
         ]
@@ -6943,6 +7147,68 @@ export type Database = {
           },
         ]
       }
+      user_next_steps: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          deadline_at: string | null
+          description: string | null
+          id: string
+          is_completed: boolean | null
+          organization_id: string | null
+          priority: string | null
+          source_context: Json | null
+          source_id: string
+          source_table: string
+          step_type: string
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          deadline_at?: string | null
+          description?: string | null
+          id?: string
+          is_completed?: boolean | null
+          organization_id?: string | null
+          priority?: string | null
+          source_context?: Json | null
+          source_id: string
+          source_table: string
+          step_type: string
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          deadline_at?: string | null
+          description?: string | null
+          id?: string
+          is_completed?: boolean | null
+          organization_id?: string | null
+          priority?: string | null
+          source_context?: Json | null
+          source_id?: string
+          source_table?: string
+          step_type?: string
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_next_steps_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_preferences: {
         Row: {
           created_at: string | null
@@ -8019,6 +8285,34 @@ export type Database = {
           xp_reward: number
         }[]
       }
+      get_team_book_applications: {
+        Args: {
+          p_organization_id: string
+          p_status?: string
+          p_training_id?: string
+        }
+        Returns: {
+          application_id: string
+          completed_at: string
+          deadline_at: string
+          evidence_content: string
+          evidence_type: string
+          evidence_url: string
+          is_late: boolean
+          manager_feedback: string
+          manager_viewed_at: string
+          module_id: string
+          module_name: string
+          reflection_summary: string
+          started_at: string
+          status: string
+          training_id: string
+          training_name: string
+          user_avatar: string
+          user_id: string
+          user_name: string
+        }[]
+      }
       get_team_event_stats: {
         Args: { p_days?: number; p_team_id: string }
         Returns: {
@@ -8067,6 +8361,22 @@ export type Database = {
       get_user_insignias_progress: {
         Args: { p_user_id: string }
         Returns: Json
+      }
+      get_user_next_steps: {
+        Args: { p_user_id?: string }
+        Returns: {
+          days_remaining: number
+          deadline_at: string
+          description: string
+          id: string
+          is_overdue: boolean
+          priority: string
+          source_context: Json
+          source_id: string
+          source_table: string
+          step_type: string
+          title: string
+        }[]
       }
       get_user_role: {
         Args: { _org_id?: string; _user_id: string }
