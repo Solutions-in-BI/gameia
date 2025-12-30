@@ -92,6 +92,11 @@ export interface CreateChallengeData {
   auto_enroll?: boolean;
   max_participants?: number | null;
   icon?: string;
+  reward_items?: Array<{
+    item_id?: string;
+    category?: string;
+    unlock_mode: 'auto_unlock' | 'enable_purchase';
+  }>;
 }
 
 // Métricas internas que podem ser rastreadas automaticamente

@@ -45,6 +45,8 @@ import {
   type ChallengeRewardType,
   type CreateChallengeData,
 } from "@/hooks/useChallenges";
+import { ItemRewardsSection } from "@/components/rewards/ItemRewardsSection";
+import type { ItemRewardConfig } from "@/hooks/useItemRewards";
 
 interface CreateChallengeModalProps {
   isOpen: boolean;
@@ -55,7 +57,7 @@ interface CreateChallengeModalProps {
   canCreateGlobal?: boolean;
 }
 
-const STEPS = ["Tipo", "Detalhes", "Período", "Meta", "Recompensa"];
+const STEPS = ["Tipo", "Detalhes", "Período", "Meta", "Recompensa", "Itens"];
 
 const SCOPE_OPTIONS = [
   { value: "personal" as const, label: "Pessoal", icon: User, description: "Só você participa" },
@@ -93,6 +95,7 @@ export function CreateChallengeModal({
   const [xpReward, setXpReward] = useState(100);
   const [coinsReward, setCoinsReward] = useState(50);
   const [icon, setIcon] = useState("target");
+  const [rewardItems, setRewardItems] = useState<ItemRewardConfig[]>([]);
 
   // Template selection for personal
   const [selectedTemplate, setSelectedTemplate] = useState<number | null>(null);
@@ -110,6 +113,7 @@ export function CreateChallengeModal({
     setSuccessCriteria("");
     setXpReward(100);
     setCoinsReward(50);
+    setRewardItems([]);
   };
 
   const handleClose = () => {
@@ -141,6 +145,7 @@ export function CreateChallengeModal({
       case 2: return startsAt && endsAt && new Date(endsAt) > new Date(startsAt);
       case 3: return successCriteria.trim().length > 0 && targetValue > 0;
       case 4: return xpReward > 0 || coinsReward > 0;
+      case 5: return true; // Item rewards são opcionais
       default: return false;
     }
   };
@@ -164,6 +169,7 @@ export function CreateChallengeModal({
       coins_reward: coinsReward,
       icon,
       auto_enroll: scope === "personal",
+      reward_items: rewardItems.length > 0 ? rewardItems : undefined,
     };
 
     const result = await onCreate(data);
@@ -432,6 +438,20 @@ export function CreateChallengeModal({
                     💡 Se outros apoiarem este desafio, as recompensas serão multiplicadas!
                   </p>
                 </div>
+              </div>
+            )}
+
+            {/* Step 5: Item Rewards */}
+            {step === 5 && (
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Adicione itens da loja como recompensa (opcional)
+                </p>
+                <ItemRewardsSection
+                  rewardItems={rewardItems}
+                  setRewardItems={setRewardItems}
+                  maxItems={3}
+                />
               </div>
             )}
           </motion.div>
