@@ -49,8 +49,8 @@ const DIFFICULTY_LABELS: Record<string, string> = {
 };
 
 export function TrainingCatalogSection() {
-  const { organization } = useOrganization();
-  const { trainings, modules, isLoading, createTraining, updateTraining, deleteTraining, refetch } = useTrainings(organization?.id);
+  const { currentOrg } = useOrganization();
+  const { trainings, modules, isLoading, createTraining, updateTraining, deleteTraining } = useTrainings(currentOrg?.id);
   
   const [searchQuery, setSearchQuery] = useState("");
   const [wizardOpen, setWizardOpen] = useState(false);
@@ -67,7 +67,7 @@ export function TrainingCatalogSection() {
         await updateTraining(selectedTraining.id, data);
         toast.success("Treinamento atualizado");
       } else {
-        await createTraining({ ...data, organization_id: organization?.id } as Training);
+        await createTraining({ ...data, organization_id: currentOrg?.id } as Training);
         toast.success("Treinamento criado");
       }
       setWizardOpen(false);
@@ -89,7 +89,7 @@ export function TrainingCatalogSection() {
 
   const handleDuplicateTraining = async (training: Training) => {
     try {
-      const { id, created_at, ...data } = training;
+      const { id, ...data } = training;
       await createTraining({
         ...data,
         name: `${training.name} (Cópia)`,

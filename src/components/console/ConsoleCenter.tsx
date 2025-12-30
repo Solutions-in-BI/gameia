@@ -18,6 +18,10 @@ import { IntegrationsSettings } from "@/components/admin/settings/IntegrationsSe
 import { SSOSettings } from "@/components/admin/settings/SSOSettings";
 import { GameConfigurationHub } from "@/components/admin/games";
 import { OrgTrainingConfigSection, TrainingMetricsDashboard, TrainingReportsSection } from "./training";
+import { TrainingCatalogSection } from "./training/TrainingCatalogSection";
+import { EvolutionTemplatesSection } from "./training/EvolutionTemplatesSection";
+import { TrainingDistributionSection } from "./training/TrainingDistributionSection";
+import { TrainingRewardsSection } from "./training/TrainingRewardsSection";
 
 // Placeholder para seções ainda não migradas
 function UsersPermissionsSection() {
@@ -113,14 +117,14 @@ export function ConsoleCenter() {
       case "marketplace":
         return <MarketplaceManagement />;
       case "trainings":
-        return (
-          <div className="space-y-8">
-            <TrainingMetricsDashboard />
-            <TrainingManagement />
-            <OrgTrainingConfigSection />
-            <TrainingReportsSection />
-          </div>
-        );
+      case "trainings-catalog":
+        return <TrainingCatalogSection />;
+      case "trainings-evolution":
+        return <EvolutionTemplatesSection />;
+      case "trainings-distribution":
+        return <TrainingDistributionSection />;
+      case "trainings-rewards":
+        return <TrainingRewardsSection />;
       case "cognitive":
         return <CognitiveSection />;
       case "templates":

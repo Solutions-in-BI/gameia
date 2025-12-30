@@ -46,10 +46,10 @@ const REQUIREMENT_TYPES = [
 ];
 
 export function TrainingDistributionSection() {
-  const { organization } = useOrganization();
-  const { trainings, isLoading: trainingsLoading, updateTraining } = useTrainings(organization?.id);
-  const { configs, isLoading: configsLoading, upsertConfig } = useOrgTrainingConfig(organization?.id);
-  const { teams } = useOrgTeams(organization?.id);
+  const { currentOrg } = useOrganization();
+  const { trainings, isLoading: trainingsLoading, updateTraining } = useTrainings(currentOrg?.id);
+  const { configs, isLoading: configsLoading, upsertConfig } = useOrgTrainingConfig(currentOrg?.id);
+  const { teams } = useOrgTeams(currentOrg?.id);
   
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -147,16 +147,16 @@ export function TrainingDistributionSection() {
                             {REQUIREMENT_TYPES.find(r => r.value === config.requirement_type)?.label}
                           </Badge>
                         )}
-                        {config?.team_restriction && (
+                        {config?.team_ids && config.team_ids.length > 0 && (
                           <Badge variant="outline" className="text-xs">
                             <Users className="w-3 h-3 mr-1" />
                             Restrito
                           </Badge>
                         )}
-                        {config?.deadline && (
+                        {config?.deadline_days && (
                           <Badge variant="outline" className="text-xs">
                             <Calendar className="w-3 h-3 mr-1" />
-                            Prazo
+                            {config.deadline_days} dias
                           </Badge>
                         )}
                       </div>
@@ -219,8 +219,8 @@ export function TrainingDistributionSection() {
                         <div className="space-y-2">
                           <Label className="text-sm">Restringir por Equipe</Label>
                           <Select
-                            value={config?.team_restriction || "all"}
-                            onValueChange={(v) => handleUpdateConfig(training.id, { team_restriction: v === "all" ? null : v })}
+                            value={config?.team_ids?.[0] || "all"}
+                            onValueChange={(v) => handleUpdateConfig(training.id, { team_ids: v === "all" ? null : [v] })}
                           >
                             <SelectTrigger>
                               <SelectValue placeholder="Todas as equipes" />
@@ -242,34 +242,31 @@ export function TrainingDistributionSection() {
                         <div className="space-y-2">
                           <Label className="text-sm flex items-center gap-2">
                             <Calendar className="w-4 h-4" />
-                            Prazo para Conclusão
+                            Prazo para Conclusão (dias)
                           </Label>
                           <Input
-                            type="date"
-                            value={config?.deadline || ""}
-                            onChange={(e) => handleUpdateConfig(training.id, { deadline: e.target.value || null })}
+                            type="number"
+                            min="0"
+                            placeholder="Sem prazo"
+                            value={config?.deadline_days || ""}
+                            onChange={(e) => handleUpdateConfig(training.id, { deadline_days: e.target.value ? parseInt(e.target.value) : null })}
                           />
                         </div>
 
                         <div className="space-y-2">
                           <Label className="text-sm flex items-center gap-2">
                             <Clock className="w-4 h-4" />
-                            Recorrência
+                            Habilitado
                           </Label>
-                          <Select
-                            value={config?.recurrence || "none"}
-                            onValueChange={(v) => handleUpdateConfig(training.id, { recurrence: v === "none" ? null : v })}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Sem recorrência" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="none">Sem recorrência</SelectItem>
-                              <SelectItem value="monthly">Mensal</SelectItem>
-                              <SelectItem value="quarterly">Trimestral</SelectItem>
-                              <SelectItem value="yearly">Anual</SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <div className="flex items-center gap-2 pt-2">
+                            <Switch
+                              checked={config?.is_enabled ?? true}
+                              onCheckedChange={(v) => handleUpdateConfig(training.id, { is_enabled: v })}
+                            />
+                            <span className="text-sm text-muted-foreground">
+                              {config?.is_enabled ? "Ativo na org" : "Inativo na org"}
+                            </span>
+                          </div>
                         </div>
                       </div>
 
