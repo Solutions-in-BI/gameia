@@ -10,9 +10,7 @@ import {
   VolumeX,
   Maximize,
   CheckCircle,
-  ArrowLeft,
   ExternalLink,
-  Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -121,22 +119,8 @@ export function ContentStep({ module, onComplete, onCancel }: ContentStepProps) 
   return (
     <Card>
       <CardContent className="p-0">
-        {/* Header */}
-        <div className="p-4 border-b border-border flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={onCancel}>
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <div>
-              <h3 className="font-medium text-foreground">{module.name}</h3>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Clock className="w-3.5 h-3.5" />
-                <span>{module.time_minutes} min</span>
-              </div>
-            </div>
-          </div>
-          
-          {/* Note Button in Header */}
+        {/* Note Button - Top Right */}
+        <div className="p-4 flex justify-end">
           <NoteButton
             trainingId={module.training_id}
             moduleId={module.id}
