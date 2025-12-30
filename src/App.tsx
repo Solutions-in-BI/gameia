@@ -42,6 +42,7 @@ import TrainingsListPage from "./pages/app/TrainingsListPage";
 import TrainingDetail from "./pages/TrainingDetail";
 import ModulePlayer from "./pages/ModulePlayer";
 import Marketplace from "./pages/Marketplace";
+import TrainingEditorPage from "./pages/console/TrainingEditorPage";
 
 // Legacy redirect
 import Dashboard from "./pages/Dashboard";
@@ -123,6 +124,16 @@ const App = () => (
             element={
               <AreaGuard area="console">
                 <Console />
+              </AreaGuard>
+            }
+          />
+          
+          {/* Training Editor - Dedicated Page */}
+          <Route
+            path="/console/trainings/:id/editor"
+            element={
+              <AreaGuard area="console">
+                <TrainingEditorPage />
               </AreaGuard>
             }
           />

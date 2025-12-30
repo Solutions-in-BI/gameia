@@ -5262,22 +5262,29 @@ export type Database = {
           content_type: string | null
           created_at: string | null
           description: string | null
+          game_config: Json | null
           id: string
           is_checkpoint: boolean | null
           is_optional: boolean | null
           is_preview: boolean | null
+          is_preview_available: boolean | null
           is_required: boolean | null
+          level: number | null
           min_score: number | null
           module_key: string
           name: string
+          numbering: string | null
           order_index: number | null
+          parent_module_id: string | null
           requires_completion: boolean | null
           skill_ids: string[] | null
+          skill_impacts: Json | null
           step_config: Json | null
           step_type: string | null
           thumbnail_url: string | null
           time_minutes: number | null
           training_id: string
+          unlock_condition: Json | null
           validation_criteria: Json | null
           video_url: string | null
           xp_reward: number | null
@@ -5288,22 +5295,29 @@ export type Database = {
           content_type?: string | null
           created_at?: string | null
           description?: string | null
+          game_config?: Json | null
           id?: string
           is_checkpoint?: boolean | null
           is_optional?: boolean | null
           is_preview?: boolean | null
+          is_preview_available?: boolean | null
           is_required?: boolean | null
+          level?: number | null
           min_score?: number | null
           module_key: string
           name: string
+          numbering?: string | null
           order_index?: number | null
+          parent_module_id?: string | null
           requires_completion?: boolean | null
           skill_ids?: string[] | null
+          skill_impacts?: Json | null
           step_config?: Json | null
           step_type?: string | null
           thumbnail_url?: string | null
           time_minutes?: number | null
           training_id: string
+          unlock_condition?: Json | null
           validation_criteria?: Json | null
           video_url?: string | null
           xp_reward?: number | null
@@ -5314,27 +5328,41 @@ export type Database = {
           content_type?: string | null
           created_at?: string | null
           description?: string | null
+          game_config?: Json | null
           id?: string
           is_checkpoint?: boolean | null
           is_optional?: boolean | null
           is_preview?: boolean | null
+          is_preview_available?: boolean | null
           is_required?: boolean | null
+          level?: number | null
           min_score?: number | null
           module_key?: string
           name?: string
+          numbering?: string | null
           order_index?: number | null
+          parent_module_id?: string | null
           requires_completion?: boolean | null
           skill_ids?: string[] | null
+          skill_impacts?: Json | null
           step_config?: Json | null
           step_type?: string | null
           thumbnail_url?: string | null
           time_minutes?: number | null
           training_id?: string
+          unlock_condition?: Json | null
           validation_criteria?: Json | null
           video_url?: string | null
           xp_reward?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "training_modules_parent_module_id_fkey"
+            columns: ["parent_module_id"]
+            isOneToOne: false
+            referencedRelation: "training_modules"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "training_modules_training_id_fkey"
             columns: ["training_id"]
