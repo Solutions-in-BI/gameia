@@ -1060,6 +1060,7 @@ export type Database = {
           metric_type: string
           name: string
           organization_id: string
+          reward_items: Json | null
           reward_type: Database["public"]["Enums"]["commitment_reward_type"]
           scope: Database["public"]["Enums"]["commitment_scope"]
           source: Database["public"]["Enums"]["commitment_source"]
@@ -1090,6 +1091,7 @@ export type Database = {
           metric_type?: string
           name: string
           organization_id: string
+          reward_items?: Json | null
           reward_type?: Database["public"]["Enums"]["commitment_reward_type"]
           scope: Database["public"]["Enums"]["commitment_scope"]
           source: Database["public"]["Enums"]["commitment_source"]
@@ -1120,6 +1122,7 @@ export type Database = {
           metric_type?: string
           name?: string
           organization_id?: string
+          reward_items?: Json | null
           reward_type?: Database["public"]["Enums"]["commitment_reward_type"]
           scope?: Database["public"]["Enums"]["commitment_scope"]
           source?: Database["public"]["Enums"]["commitment_source"]
@@ -3890,6 +3893,54 @@ export type Database = {
           },
         ]
       }
+      reward_items: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          id: string
+          item_id: string | null
+          organization_id: string | null
+          source_id: string
+          source_type: string
+          unlock_mode: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          item_id?: string | null
+          organization_id?: string | null
+          source_id: string
+          source_type: string
+          unlock_mode?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          item_id?: string | null
+          organization_id?: string | null
+          source_id?: string
+          source_type?: string
+          unlock_mode?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reward_items_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reward_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reward_transactions: {
         Row: {
           amount: number | null
@@ -5207,6 +5258,7 @@ export type Database = {
           name: string
           organization_id: string | null
           required_level: string | null
+          reward_items: Json | null
           reward_rules: Json | null
           skill_ids: string[] | null
           thumbnail_url: string | null
@@ -5245,6 +5297,7 @@ export type Database = {
           name: string
           organization_id?: string | null
           required_level?: string | null
+          reward_items?: Json | null
           reward_rules?: Json | null
           skill_ids?: string[] | null
           thumbnail_url?: string | null
@@ -5283,6 +5336,7 @@ export type Database = {
           name?: string
           organization_id?: string | null
           required_level?: string | null
+          reward_items?: Json | null
           reward_rules?: Json | null
           skill_ids?: string[] | null
           thumbnail_url?: string | null
@@ -6416,6 +6470,51 @@ export type Database = {
             columns: ["training_id"]
             isOneToOne: false
             referencedRelation: "trainings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_unlocked_items: {
+        Row: {
+          id: string
+          item_id: string
+          organization_id: string | null
+          source_id: string
+          source_type: string
+          unlocked_at: string | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          item_id: string
+          organization_id?: string | null
+          source_id: string
+          source_type: string
+          unlocked_at?: string | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          item_id?: string
+          organization_id?: string | null
+          source_id?: string
+          source_type?: string
+          unlocked_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_unlocked_items_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_unlocked_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
