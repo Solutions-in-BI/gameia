@@ -121,6 +121,55 @@ export function RoutineApplicationEditor({ module, onChange }: RoutineApplicatio
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
             <Zap className="w-4 h-4" />
+            Compromisso Real
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label>Criar como Compromisso Real</Label>
+              <p className="text-xs text-muted-foreground">
+                Prazo vira responsabilidade com alertas automáticos
+              </p>
+            </div>
+            <Switch
+              checked={config.is_real_commitment !== false}
+              onCheckedChange={(checked) => updateConfig({ is_real_commitment: checked })}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label>Lembretes Automáticos</Label>
+              <p className="text-xs text-muted-foreground">
+                Enviar alertas antes do prazo e em caso de atraso
+              </p>
+            </div>
+            <Switch
+              checked={config.auto_reminders !== false}
+              onCheckedChange={(checked) => updateConfig({ auto_reminders: checked })}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label>Notificar Gestor</Label>
+              <p className="text-xs text-muted-foreground">
+                Gestor recebe notificação de conclusão e atrasos
+              </p>
+            </div>
+            <Switch
+              checked={config.notify_manager === true}
+              onCheckedChange={(checked) => updateConfig({ notify_manager: checked })}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Clock className="w-4 h-4" />
             Integrações
           </CardTitle>
         </CardHeader>

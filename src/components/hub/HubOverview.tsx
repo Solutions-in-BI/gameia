@@ -28,6 +28,7 @@ import { useNavigate } from "react-router-dom";
 import { HubCard, HubCardHeader, HubStat, HubEmptyState, HubButton, HubHeader } from "./common";
 import { DailyMissionsCard, MonthlyGoalsCard, RecommendationsCarousel, RecommendationItem } from "./overview";
 import { RewardBadge } from "@/components/rewards/RewardBadge";
+import { NextStepsPanel } from "@/components/next-steps/NextStepsPanel";
 import { useStreak } from "@/hooks/useStreak";
 import { useLevel } from "@/hooks/useLevel";
 import { useSkillProgress } from "@/hooks/useSkillProgress";
@@ -260,65 +261,9 @@ export function HubOverview({ onNavigate }: HubOverviewProps) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Próximos Passos */}
+        {/* Próximos Passos - Using new integrated panel */}
         <div className="lg:col-span-2">
-          <HubCard className="h-full">
-            <HubCardHeader 
-              title="Próximos Passos" 
-              description={pendingActions > 0 ? `${pendingActions} ações pendentes` : "Tudo em dia!"}
-              action={
-                <Badge variant="outline" className="text-xs">
-                  {pendingActions}
-                </Badge>
-              }
-            />
-            <div className="space-y-3">
-              {/* Testes Pendentes */}
-              {suggestions?.pending_tests?.slice(0, 2).map((test) => (
-                <NextStepItem
-                  key={test.test_id}
-                  icon={Brain}
-                  iconColor="text-purple-500"
-                  title={test.name}
-                  subtitle={`+${test.xp_reward} XP`}
-                  onClick={() => onNavigate("evolution")}
-                />
-              ))}
-
-              {/* Feedbacks Pendentes */}
-              {suggestions?.pending_feedbacks?.slice(0, 2).map((feedback) => (
-                <NextStepItem
-                  key={feedback.assessment_id}
-                  icon={Users}
-                  iconColor="text-blue-500"
-                  title={`Feedback: ${feedback.cycle_name}`}
-                  subtitle={feedback.relationship}
-                  onClick={() => onNavigate("evolution")}
-                />
-              ))}
-
-              {/* Metas PDI */}
-              {suggestions?.pdi_goals_due?.slice(0, 2).map((goal) => (
-                <NextStepItem
-                  key={goal.goal_id}
-                  icon={Target}
-                  iconColor="text-green-500"
-                  title={goal.title}
-                  subtitle={`${goal.progress}% concluído`}
-                  progress={goal.progress}
-                  onClick={() => onNavigate("evolution")}
-                />
-              ))}
-
-              {pendingActions === 0 && (
-                <div className="text-center py-6 text-muted-foreground">
-                  <CheckCircle2 className="w-10 h-10 mx-auto mb-2 text-gameia-success" />
-                  <p className="font-medium">Tudo em dia!</p>
-                  <p className="text-sm">Continue jogando para evoluir</p>
-                </div>
-              )}
-            </div>
-          </HubCard>
+          <NextStepsPanel maxItems={5} />
         </div>
 
         {/* Timeline Recente */}
