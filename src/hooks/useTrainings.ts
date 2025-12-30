@@ -25,6 +25,9 @@ export interface Training {
   is_onboarding: boolean;
   certificate_enabled: boolean;
   insignia_reward_id: string | null;
+  evolution_template_id: string | null;
+  evolution_snapshot: Record<string, unknown> | null;
+  importance: string | null;
 }
 
 export interface TrainingModule {
@@ -187,7 +190,7 @@ export function useTrainings(orgId?: string) {
   const updateTraining = async (id: string, training: Partial<Training>) => {
     const { data, error } = await supabase
       .from("trainings")
-      .update(training)
+      .update(training as any)
       .eq("id", id)
       .select()
       .single();
