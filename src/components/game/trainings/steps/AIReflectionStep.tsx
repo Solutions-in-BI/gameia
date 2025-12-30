@@ -157,9 +157,23 @@ export const AIReflectionStep: React.FC<AIReflectionStepProps> = ({
           });
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending message:', error);
-      toast.error('Erro ao processar sua resposta. Tente novamente.');
+      const errorMessage = error?.message || error?.error || 'Erro desconhecido';
+      
+      if (errorMessage.includes('429') || errorMessage.includes('Rate limit')) {
+        toast.error('Limite de requisições atingido. Aguarde alguns segundos e tente novamente.');
+      } else if (errorMessage.includes('402') || errorMessage.includes('Payment')) {
+        toast.error('Créditos insuficientes. Entre em contato com o administrador.');
+      } else {
+        toast.error('Erro ao processar sua resposta. Tente novamente.');
+      }
+      
+      // Add error message to chat so user knows what happened
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: 'Desculpe, ocorreu um erro ao processar sua resposta. Por favor, tente enviar novamente.' 
+      }]);
     } finally {
       setIsLoading(false);
     }

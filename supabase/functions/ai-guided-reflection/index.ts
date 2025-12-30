@@ -39,17 +39,19 @@ serve(async (req) => {
 
     const body: ReflectionRequest = await req.json();
     const {
-      chapterTitle,
-      chapterContent,
-      learningObjective,
-      contextWhyMatters,
+      chapterTitle = 'Conteúdo do módulo',
+      chapterContent = '',
+      learningObjective = 'Compreender e aplicar os conceitos',
+      contextWhyMatters = 'Para melhorar sua performance profissional',
       userResponse,
-      conversationHistory,
+      conversationHistory = [],
       pdiGoalContext,
       skillName
     } = body;
 
     console.log('Processing reflection for chapter:', chapterTitle);
+    console.log('User response:', userResponse ? 'Yes' : 'No (initial)');
+    console.log('History length:', conversationHistory.length);
 
     // Build conversation messages
     const systemPrompt = `Você é um facilitador de aprendizado do Gameia, uma plataforma de desenvolvimento profissional gamificada.
