@@ -15,7 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { NoteButton } from "@/components/notes/NoteButton";
+import { NoteButton, ModuleNotesPanel } from "@/components/notes";
 import type { EnhancedTrainingModule, StepResult } from "@/types/training";
 
 interface ContentStepProps {
@@ -228,6 +228,14 @@ export function ContentStep({ module, onComplete, onCancel }: ContentStepProps) 
             </Button>
           </div>
         )}
+
+        {/* Module Notes Panel */}
+        <div className="px-4 pb-2">
+          <ModuleNotesPanel 
+            trainingId={module.training_id} 
+            moduleId={module.id} 
+          />
+        </div>
 
         {/* Footer */}
         <div className="p-4 border-t border-border flex justify-end">
