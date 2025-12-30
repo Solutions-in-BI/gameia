@@ -35,11 +35,13 @@ import { useOrganization } from "@/hooks/useOrganization";
 interface EvolutionTemplateSectionProps {
   selectedTemplateId: string | null;
   setSelectedTemplateId: (id: string | null) => void;
+  onTemplateChange?: (template: EvolutionTemplate | null) => void;
 }
 
 export function EvolutionTemplateSection({
   selectedTemplateId,
   setSelectedTemplateId,
+  onTemplateChange,
 }: EvolutionTemplateSectionProps) {
   const { currentOrg } = useOrganization();
   const { templates, isLoading } = useEvolutionTemplates(currentOrg?.id);
@@ -50,10 +52,12 @@ export function EvolutionTemplateSection({
     if (selectedTemplateId) {
       const template = templates.find(t => t.id === selectedTemplateId);
       setSelectedTemplate(template || null);
+      onTemplateChange?.(template || null);
     } else {
       setSelectedTemplate(null);
+      onTemplateChange?.(null);
     }
-  }, [selectedTemplateId, templates]);
+  }, [selectedTemplateId, templates, onTemplateChange]);
 
   const handleTemplateChange = (value: string) => {
     if (value === "none") {

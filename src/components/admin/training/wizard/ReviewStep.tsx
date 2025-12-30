@@ -1,6 +1,6 @@
 /**
  * ReviewStep - Step 5: Revisão final completa
- * Atualizado com seções de Distribuição e Certificado
+ * Atualizado com Template, Itens e mais detalhes
  */
 
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +20,9 @@ import {
   CalendarDays,
   TrendingUp,
   FileCheck,
+  Layers,
+  Package,
+  ShoppingBag,
 } from "lucide-react";
 import type { 
   TrainingFormData, 
@@ -29,6 +32,7 @@ import type {
   CertificateFormData,
 } from "../TrainingWizard";
 import type { OrgTeam } from "@/hooks/useOrgTeams";
+import type { ItemRewardConfig } from "@/hooks/useItemRewards";
 
 interface ReviewStepProps {
   formData: TrainingFormData;
@@ -41,6 +45,11 @@ interface ReviewStepProps {
   teams: OrgTeam[];
   xpMultiplier: number;
   coinsMultiplier: number;
+  evolutionTemplateName?: string;
+  templateXp?: number;
+  templateCoins?: number;
+  overrideRewards?: boolean;
+  rewardItems?: ItemRewardConfig[];
 }
 
 const CATEGORIES: Record<string, string> = {
@@ -83,15 +92,31 @@ export function ReviewStep({
   teams,
   xpMultiplier,
   coinsMultiplier,
+  evolutionTemplateName,
+  templateXp,
+  templateCoins,
+  overrideRewards,
+  rewardItems = [],
 }: ReviewStepProps) {
   const difficulty = DIFFICULTIES[formData.difficulty];
   const requirement = REQUIREMENT_TYPES[distributionData.requirement_type];
   const selectedTeams = teams.filter(t => distributionData.team_ids.includes(t.id));
   const selectedInsignia = availableInsignias.find(i => i.id === certificateData.insignia_reward_id);
 
-  // Calculate totals
-  const estimatedXp = Math.round(formData.xp_reward * xpMultiplier);
-  const estimatedCoins = Math.round(formData.coins_reward * coinsMultiplier);
+  // Determinar fonte das recompensas
+  const hasTemplate = !!evolutionTemplateName;
+  const useTemplateValues = hasTemplate && !overrideRewards;
+  
+  // Valores base efetivos
+  const baseXp = useTemplateValues ? (templateXp || 0) : formData.xp_reward;
+  const baseCoins = useTemplateValues ? (templateCoins || 0) : formData.coins_reward;
+
+  // Calculate totals with multipliers
+  const estimatedXp = Math.round(baseXp * xpMultiplier);
+  const estimatedCoins = Math.round(baseCoins * coinsMultiplier);
+
+  // Filtrar itens de recompensa válidos
+  const validRewardItems = rewardItems.filter(item => item.item_id || item.category);
 
   return (
     <div className="space-y-4">
@@ -191,30 +216,75 @@ export function ReviewStep({
           </CardTitle>
         </CardHeader>
         <CardContent className="px-4 pb-4 space-y-3">
+          {/* Template Info */}
+          {hasTemplate && (
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-primary/5 border border-primary/20">
+              <Layers className="w-4 h-4 text-primary" />
+              <span className="text-sm">
+                Template: <strong>{evolutionTemplateName}</strong>
+                {overrideRewards && <span className="text-muted-foreground ml-1">(valores personalizados)</span>}
+              </span>
+            </div>
+          )}
+
+          {/* XP and Coins */}
           <div className="grid grid-cols-2 gap-3">
             <div className="flex items-center gap-2 p-2.5 rounded-lg bg-purple-500/5 border border-purple-500/20">
               <Sparkles className="w-4 h-4 text-purple-500" />
               <div>
                 <div className="text-base font-bold text-purple-600">{estimatedXp}</div>
-                <div className="text-xs text-muted-foreground">XP ({xpMultiplier}x)</div>
+                <div className="text-xs text-muted-foreground">
+                  XP {xpMultiplier !== 1 && `(${xpMultiplier}x)`}
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-2 p-2.5 rounded-lg bg-amber-500/5 border border-amber-500/20">
               <Coins className="w-4 h-4 text-amber-500" />
               <div>
                 <div className="text-base font-bold text-amber-600">{estimatedCoins}</div>
-                <div className="text-xs text-muted-foreground">Moedas ({coinsMultiplier}x)</div>
+                <div className="text-xs text-muted-foreground">
+                  Moedas {coinsMultiplier !== 1 && `(${coinsMultiplier}x)`}
+                </div>
               </div>
             </div>
           </div>
 
+          {/* Base values info */}
           {(xpMultiplier !== 1 || coinsMultiplier !== 1) && (
             <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/50 text-xs text-muted-foreground">
               <TrendingUp className="w-3 h-3" />
-              <span>Base: {formData.xp_reward} XP + {formData.coins_reward} moedas</span>
+              <span>
+                Base: {baseXp} XP + {baseCoins} moedas
+                {useTemplateValues && " (do template)"}
+              </span>
             </div>
           )}
 
+          {/* Item Rewards */}
+          {validRewardItems.length > 0 && (
+            <>
+              <Separator />
+              <div>
+                <div className="text-xs font-medium mb-2 flex items-center gap-2">
+                  <ShoppingBag className="w-3 h-3" />
+                  Itens da Loja ({validRewardItems.length})
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {validRewardItems.map((item, idx) => (
+                    <Badge key={idx} variant="outline" className="gap-1 text-xs">
+                      <Package className="w-3 h-3" />
+                      {item.item_id ? "Item específico" : `Categoria: ${item.category}`}
+                      <span className="text-muted-foreground">
+                        ({item.unlock_mode === 'auto_unlock' ? 'Auto' : 'Compra'})
+                      </span>
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Skill Impacts */}
           {skillImpacts.length > 0 && (
             <>
               <Separator />
@@ -239,6 +309,7 @@ export function ReviewStep({
             </>
           )}
 
+          {/* Insignia Relations */}
           {insigniaRelations.length > 0 && (
             <>
               <Separator />
