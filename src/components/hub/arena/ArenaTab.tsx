@@ -454,6 +454,71 @@ export function ArenaTab() {
         </section>
       )}
 
+      {/* Journeys Section */}
+      {showJourneys && activeJourneys.length > 0 && (
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <Route className="w-5 h-5 text-primary" />
+              Jornadas de Treinamento
+            </h3>
+            <Badge variant="outline" className="text-xs">
+              {activeJourneys.length} disponíveis
+            </Badge>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {activeJourneys.slice(0, 6).map((journey, index) => {
+              const progress = getCompletionPercentage(journey.id);
+              const userJourneyProgress = journeyUserProgress.find(p => p.journey_id === journey.id);
+              const isStarted = !!userJourneyProgress;
+              const isCompleted = userJourneyProgress?.status === 'completed';
+              
+              return (
+                <motion.div
+                  key={journey.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                >
+                  <JourneyCard
+                    id={journey.id}
+                    name={journey.name}
+                    description={journey.description || undefined}
+                    category={journey.category || "geral"}
+                    level={journey.level || "Iniciante"}
+                    trainingsCount={journey.total_trainings || 0}
+                    completedTrainings={userJourneyProgress?.trainings_completed || 0}
+                    progress={progress}
+                    xpReward={journey.bonus_xp || 0}
+                    coinsReward={journey.bonus_coins || 0}
+                    hasCertificate={journey.generates_certificate || false}
+                    hasInsignia={!!journey.bonus_insignia_id}
+                    estimatedHours={journey.total_estimated_hours || undefined}
+                    thumbnail={journey.thumbnail_url || undefined}
+                    isStarted={isStarted}
+                    isCompleted={isCompleted}
+                    isFeatured={false}
+                    onClick={() => window.location.href = `/app/journeys/${journey.id}`}
+                  />
+                </motion.div>
+              );
+            })}
+          </div>
+
+          {activeJourneys.length > 6 && (
+            <div className="text-center">
+              <HubButton
+                variant="outline"
+                onClick={() => window.location.href = "/app/journeys"}
+              >
+                Ver todas as jornadas ({activeJourneys.length})
+              </HubButton>
+            </div>
+          )}
+        </section>
+      )}
+
       {/* Games Grid */}
       {showGames && (
         <section className="space-y-4">
@@ -523,7 +588,8 @@ export function ArenaTab() {
       {filter !== "all" && 
        ((filter === "trainings" && filteredTrainings.length === 0) ||
         (filter === "cognitive" && filteredTests.length === 0) ||
-        (filter === "challenges" && activeChallenges.length === 0)) && (
+        (filter === "challenges" && activeChallenges.length === 0) ||
+        (filter === "journeys" && activeJourneys.length === 0)) && (
         <HubEmptyState
           icon={Grid3X3}
           title={`Nenhum item em "${ARENA_FILTERS.find(f => f.id === filter)?.label}"`}
