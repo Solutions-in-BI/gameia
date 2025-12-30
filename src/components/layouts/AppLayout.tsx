@@ -1,5 +1,5 @@
 /**
- * AppLayout - Layout base do aplicativo com navegação por sidebar + dropdown
+ * AppLayout - Layout base do aplicativo com navegação horizontal + dropdowns + sidebar
  */
 
 import { useState, useCallback, useMemo } from "react";
@@ -28,6 +28,7 @@ import {
   Calendar,
   UsersRound,
   PanelLeft,
+  LucideIcon,
 } from "lucide-react";
 import { useNavigate, useLocation, Link, Outlet } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -54,40 +55,67 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-// Main navigation sections
-const NAV_SECTIONS = [
-  { path: "/app", label: "Início", icon: LayoutDashboard, exact: true },
-  { path: "/app/arena", label: "Arena", icon: Swords },
-  { path: "/app/development", label: "Desenvolvimento", icon: GraduationCap },
-  { path: "/app/evolution", label: "Evolução", icon: TrendingUp },
-  { path: "/app/caminho", label: "Caminho", icon: Compass },
-];
-
 // Sub-navigation items per section
-const SECTION_SUBNAV: Record<string, SidebarItem[]> = {
-  "/app/arena": [
-    { id: "all", label: "Todos", icon: Gamepad2 },
-    { id: "games", label: "Jogos", icon: Gamepad2 },
-    { id: "challenges", label: "Desafios", icon: Target },
-    { id: "cognitive", label: "Testes", icon: Brain },
-    { id: "simulations", label: "Simulações", icon: MessageSquare },
-  ],
-  "/app/development": [
-    { id: "journeys", label: "Jornadas", icon: Route },
-    { id: "trainings", label: "Treinamentos", icon: GraduationCap },
-    { id: "certificates", label: "Certificados", icon: Award },
-  ],
-  "/app/evolution": [
-    { id: "summary", label: "Resumo", icon: BarChart3 },
-    { id: "history", label: "Histórico", icon: History },
-    { id: "challenges", label: "Desafios", icon: Target },
-    { id: "insignias", label: "Insígnias", icon: Award },
-    { id: "skills", label: "Skills", icon: Sparkles },
-    { id: "pdi", label: "PDI", icon: TrendingUp },
-    { id: "feedback", label: "Feedback 360", icon: Users },
-    { id: "1on1", label: "1:1", icon: Calendar },
-  ],
-};
+interface NavSection {
+  path: string;
+  label: string;
+  icon: LucideIcon;
+  exact?: boolean;
+  subnav?: SidebarItem[];
+}
+
+const NAV_SECTIONS: NavSection[] = [
+  { 
+    path: "/app", 
+    label: "Início", 
+    icon: LayoutDashboard, 
+    exact: true,
+    // No subnav for home
+  },
+  { 
+    path: "/app/arena", 
+    label: "Arena", 
+    icon: Swords,
+    subnav: [
+      { id: "all", label: "Todos", icon: Gamepad2 },
+      { id: "games", label: "Jogos", icon: Gamepad2 },
+      { id: "challenges", label: "Desafios", icon: Target },
+      { id: "cognitive", label: "Testes", icon: Brain },
+      { id: "simulations", label: "Simulações", icon: MessageSquare },
+    ],
+  },
+  { 
+    path: "/app/development", 
+    label: "Desenvolvimento", 
+    icon: GraduationCap,
+    subnav: [
+      { id: "journeys", label: "Jornadas", icon: Route },
+      { id: "trainings", label: "Treinamentos", icon: GraduationCap },
+      { id: "certificates", label: "Certificados", icon: Award },
+    ],
+  },
+  { 
+    path: "/app/evolution", 
+    label: "Evolução", 
+    icon: TrendingUp,
+    subnav: [
+      { id: "summary", label: "Resumo", icon: BarChart3 },
+      { id: "history", label: "Histórico", icon: History },
+      { id: "challenges", label: "Desafios", icon: Target },
+      { id: "insignias", label: "Insígnias", icon: Award },
+      { id: "skills", label: "Skills", icon: Sparkles },
+      { id: "pdi", label: "PDI", icon: TrendingUp },
+      { id: "feedback", label: "Feedback 360", icon: Users },
+      { id: "1on1", label: "1:1", icon: Calendar },
+    ],
+  },
+  { 
+    path: "/app/caminho", 
+    label: "Caminho", 
+    icon: Compass,
+    // No subnav for caminho
+  },
+];
 
 // Manager-only sub-nav item
 const MANAGER_SUBNAV_ITEM: SidebarItem = { id: "team", label: "Meu Time", icon: UsersRound };
@@ -139,13 +167,13 @@ export function AppLayout() {
 
   // Get sub-navigation items for current section
   const sidebarItems = useMemo(() => {
-    const baseItems = SECTION_SUBNAV[currentSection.path] || [];
+    const baseItems = currentSection.subnav || [];
     // Add manager item for evolution if user is admin
     if (currentSection.path === "/app/evolution" && isAdmin) {
       return [...baseItems, MANAGER_SUBNAV_ITEM];
     }
     return baseItems;
-  }, [currentSection.path, isAdmin]);
+  }, [currentSection, isAdmin]);
 
   // Get active subtab from URL search params
   const searchParams = new URLSearchParams(location.search);
@@ -157,8 +185,12 @@ export function AppLayout() {
     navigate(`${location.pathname}?${params.toString()}`, { replace: true });
   }, [navigate, location.pathname, location.search]);
 
-  const handleSectionChange = useCallback((path: string) => {
-    navigate(path);
+  const handleSectionChange = useCallback((path: string, subtab?: string) => {
+    if (subtab) {
+      navigate(`${path}?tab=${subtab}`);
+    } else {
+      navigate(path);
+    }
   }, [navigate]);
 
   const handleLogout = useCallback(async () => {
@@ -166,7 +198,11 @@ export function AppLayout() {
   }, [signOut]);
 
   const hasSidebar = sidebarItems.length > 0;
-  const CurrentSectionIcon = currentSection.icon;
+
+  const isActive = (path: string, exact = false) => {
+    if (exact) return location.pathname === path;
+    return location.pathname.startsWith(path);
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -174,60 +210,128 @@ export function AppLayout() {
       <header className="sticky top-0 z-50 w-full bg-card/80 backdrop-blur-xl border-b border-border/50">
         <div className="px-4 sm:px-6">
           <div className="flex items-center justify-between h-16 gap-4">
-            {/* Left: Logo + Section Dropdown */}
-            <div className="flex items-center gap-3">
+            {/* Left: Logo + Navigation */}
+            <div className="flex items-center gap-6">
               <Link to="/app">
                 <Logo variant="full" size="sm" className="hidden sm:flex" />
                 <Logo variant="icon" size="sm" className="sm:hidden" />
               </Link>
 
-              {/* Section Dropdown */}
-              <div className="hidden sm:block h-6 w-px bg-border" />
-              
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-sm font-medium">
-                    <CurrentSectionIcon className="w-4 h-4 text-primary" />
-                    <span>{currentSection.label}</span>
-                    <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-48 bg-popover">
+              {/* Desktop Navigation with Dropdowns */}
+              <nav className="hidden md:flex items-center">
+                <div className="flex items-center bg-muted/40 p-1 rounded-lg">
                   {NAV_SECTIONS.map((section) => {
-                    const isActive = currentSection.path === section.path;
+                    const active = isActive(section.path, section.exact);
                     const SectionIcon = section.icon;
+                    const hasSubnav = section.subnav && section.subnav.length > 0;
+
+                    // If has subnav, render dropdown
+                    if (hasSubnav) {
+                      return (
+                        <DropdownMenu key={section.path}>
+                          <DropdownMenuTrigger asChild>
+                            <button
+                              className={cn(
+                                "relative flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200",
+                                active
+                                  ? "text-primary"
+                                  : "text-muted-foreground hover:text-foreground"
+                              )}
+                            >
+                              {active && (
+                                <motion.div
+                                  layoutId="activeNavItem"
+                                  className="absolute inset-0 bg-card rounded-md shadow-sm border border-border/50"
+                                  transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
+                                />
+                              )}
+                              <span className="relative z-10 flex items-center gap-1.5">
+                                <SectionIcon className="w-4 h-4" />
+                                <span className="hidden lg:inline">{section.label}</span>
+                                <ChevronDown className="w-3 h-3 opacity-60" />
+                              </span>
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="start" className="w-48 bg-popover">
+                            {section.subnav?.map((item) => {
+                              const ItemIcon = item.icon;
+                              const isItemActive = active && activeSubtab === item.id;
+                              return (
+                                <DropdownMenuItem
+                                  key={item.id}
+                                  onClick={() => handleSectionChange(section.path, item.id)}
+                                  className={cn(
+                                    "flex items-center gap-2 cursor-pointer",
+                                    isItemActive && "bg-primary/10 text-primary"
+                                  )}
+                                >
+                                  <ItemIcon className="w-4 h-4" />
+                                  <span>{item.label}</span>
+                                  {isItemActive && (
+                                    <span className="ml-auto text-xs text-primary">✓</span>
+                                  )}
+                                </DropdownMenuItem>
+                              );
+                            })}
+                            {/* Manager item for evolution */}
+                            {section.path === "/app/evolution" && isAdmin && (
+                              <DropdownMenuItem
+                                onClick={() => handleSectionChange(section.path, "team")}
+                                className={cn(
+                                  "flex items-center gap-2 cursor-pointer",
+                                  active && activeSubtab === "team" && "bg-primary/10 text-primary"
+                                )}
+                              >
+                                <UsersRound className="w-4 h-4" />
+                                <span>Meu Time</span>
+                                {active && activeSubtab === "team" && (
+                                  <span className="ml-auto text-xs text-primary">✓</span>
+                                )}
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      );
+                    }
+
+                    // No subnav, simple link
                     return (
-                      <DropdownMenuItem
+                      <Link
                         key={section.path}
-                        onClick={() => handleSectionChange(section.path)}
+                        to={section.path}
                         className={cn(
-                          "flex items-center gap-2 cursor-pointer",
-                          isActive && "bg-primary/10 text-primary"
+                          "relative flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200",
+                          active
+                            ? "text-primary"
+                            : "text-muted-foreground hover:text-foreground"
                         )}
                       >
-                        <SectionIcon className="w-4 h-4" />
-                        <span>{section.label}</span>
-                        {isActive && (
-                          <span className="ml-auto text-xs text-primary">✓</span>
+                        {active && (
+                          <motion.div
+                            layoutId="activeNavItem"
+                            className="absolute inset-0 bg-card rounded-md shadow-sm border border-border/50"
+                            transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
+                          />
                         )}
-                      </DropdownMenuItem>
+                        <span className="relative z-10 flex items-center gap-1.5">
+                          <SectionIcon className="w-4 h-4" />
+                          <span className="hidden lg:inline">{section.label}</span>
+                        </span>
+                      </Link>
                     );
                   })}
-                </DropdownMenuContent>
-              </DropdownMenu>
+                </div>
+              </nav>
 
-              {/* Mobile: Section title + sidebar trigger */}
-              <div className="flex sm:hidden items-center gap-2">
-                {hasSidebar && (
-                  <button
-                    onClick={() => setMobileSidebarOpen(true)}
-                    className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-                  >
-                    <PanelLeft className="w-5 h-5" />
-                  </button>
-                )}
-                <span className="text-sm font-medium">{currentSection.label}</span>
-              </div>
+              {/* Mobile: Sidebar trigger */}
+              {hasSidebar && (
+                <button
+                  onClick={() => setMobileSidebarOpen(true)}
+                  className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors md:hidden"
+                >
+                  <PanelLeft className="w-5 h-5" />
+                </button>
+              )}
             </div>
 
             {/* Right Actions */}
@@ -293,16 +397,16 @@ export function AppLayout() {
                 </Link>
               )}
 
-              {/* Mobile Menu Toggle (for main sections) */}
+              {/* Mobile Menu Toggle */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors sm:hidden">
+                  <button className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors md:hidden">
                     <Menu className="w-5 h-5" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56 bg-popover">
                   {NAV_SECTIONS.map((section) => {
-                    const isActive = currentSection.path === section.path;
+                    const isActiveSection = isActive(section.path, section.exact);
                     const SectionIcon = section.icon;
                     return (
                       <DropdownMenuItem
@@ -310,7 +414,7 @@ export function AppLayout() {
                         onClick={() => handleSectionChange(section.path)}
                         className={cn(
                           "flex items-center gap-3 py-3 cursor-pointer",
-                          isActive && "bg-primary/10 text-primary"
+                          isActiveSection && "bg-primary/10 text-primary"
                         )}
                       >
                         <SectionIcon className="w-5 h-5" />
@@ -380,7 +484,7 @@ export function AppLayout() {
       <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-card border-t border-border safe-area-pb">
         <div className="flex items-center justify-around py-2 px-2">
           {NAV_SECTIONS.map((item) => {
-            const isActive = currentSection.path === item.path;
+            const active = isActive(item.path, item.exact);
             const ItemIcon = item.icon;
             return (
               <Link
@@ -388,10 +492,10 @@ export function AppLayout() {
                 to={item.path}
                 className={cn(
                   "relative flex flex-col items-center gap-1 py-2 px-3 rounded-lg transition-colors",
-                  isActive ? "text-primary" : "text-muted-foreground"
+                  active ? "text-primary" : "text-muted-foreground"
                 )}
               >
-                {isActive && (
+                {active && (
                   <motion.div
                     layoutId="mobileActiveNavItem"
                     className="absolute inset-0 bg-primary/10 rounded-lg"
@@ -422,6 +526,5 @@ export function AppLayout() {
 
 // Hook for child components to access subtab state
 export function useAppLayoutContext() {
-  // This would use React.useOutletContext but for now components manage their own state
   return null;
 }
