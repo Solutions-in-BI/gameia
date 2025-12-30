@@ -23,7 +23,7 @@ import { AlertsSection } from "./alerts";
 import { TeamAssessmentsPanel } from "./TeamAssessmentsPanel";
 import { TrainingAssignments } from "./trainings";
 import { ExperienceApprovalsPanel } from "./benefits";
-import { TeamCertificatesPanel } from "./TeamCertificatesPanel";
+import { TeamCertificatesDashboard } from "./certificates";
 import { RewardAnalyticsDashboard } from "./rewards/RewardAnalyticsDashboard";
 
 function CommitmentsSection() {
@@ -117,7 +117,7 @@ export function ManageCenter() {
       case "trainings":
         return <TrainingAssignments />;
       case "certificates":
-        return <TeamCertificatesPanel />;
+        return <TeamCertificatesDashboard />;
       case "benefits":
         return <ExperienceApprovalsPanel />;
       case "rewards":

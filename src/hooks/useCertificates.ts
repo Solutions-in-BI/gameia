@@ -281,6 +281,14 @@ export function useCertificates(userId?: string): UseCertificates {
 /**
  * Hook para buscar certificados de uma organização (visão gerencial)
  */
+export interface OrgCertificate extends CertificateWithDetails {
+  user?: {
+    id: string;
+    nickname: string;
+    avatar_url: string | null;
+  };
+}
+
 export function useOrgCertificates(orgId?: string) {
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['org-certificates', orgId],
@@ -297,17 +305,29 @@ export function useOrgCertificates(orgId?: string) {
 
       if (error) throw error;
 
+      // Transform to include user property
+      const certificates: OrgCertificate[] = (certificatesRaw || []).map((cert: any) => ({
+        ...cert,
+        user: cert.profile ? {
+          id: cert.profile.id,
+          nickname: cert.profile.nickname,
+          avatar_url: cert.profile.avatar_url,
+        } : undefined,
+        skills: [],
+        organization_name: null,
+      }));
+
       // Calculate org stats
-      const total = certificatesRaw?.length || 0;
-      const active = certificatesRaw?.filter(c => c.status === 'active').length || 0;
-      const thisMonth = certificatesRaw?.filter(c => {
+      const total = certificates.length;
+      const active = certificates.filter((c: any) => c.status === 'active').length;
+      const thisMonth = certificates.filter((c: any) => {
         const issued = new Date(c.issued_at);
         const now = new Date();
         return issued.getMonth() === now.getMonth() && issued.getFullYear() === now.getFullYear();
-      }).length || 0;
+      }).length;
 
       return {
-        certificates: certificatesRaw || [],
+        certificates,
         stats: { total, active, thisMonth },
       };
     },
