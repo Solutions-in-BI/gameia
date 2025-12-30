@@ -133,6 +133,74 @@ export type Database = {
           },
         ]
       }
+      assessment_consequences: {
+        Row: {
+          accepted_at: string | null
+          assessment_id: string
+          assessment_type: string
+          completed_at: string | null
+          consequence_type: string
+          created_at: string | null
+          description: string | null
+          dismissed_at: string | null
+          id: string
+          organization_id: string | null
+          priority: number | null
+          skill_ids: string[] | null
+          status: string | null
+          target_id: string | null
+          target_type: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          assessment_id: string
+          assessment_type: string
+          completed_at?: string | null
+          consequence_type: string
+          created_at?: string | null
+          description?: string | null
+          dismissed_at?: string | null
+          id?: string
+          organization_id?: string | null
+          priority?: number | null
+          skill_ids?: string[] | null
+          status?: string | null
+          target_id?: string | null
+          target_type?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          assessment_id?: string
+          assessment_type?: string
+          completed_at?: string | null
+          consequence_type?: string
+          created_at?: string | null
+          description?: string | null
+          dismissed_at?: string | null
+          id?: string
+          organization_id?: string | null
+          priority?: number | null
+          skill_ids?: string[] | null
+          status?: string | null
+          target_id?: string | null
+          target_type?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_consequences_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assessment_context_links: {
         Row: {
           assessment_cycle_id: string | null
@@ -242,6 +310,56 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "assessment_cycles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assessment_evolution_snapshots: {
+        Row: {
+          assessments_count: number | null
+          challenges_count: number | null
+          created_at: string | null
+          id: string
+          organization_id: string | null
+          overall_score: number | null
+          skill_scores: Json | null
+          snapshot_date: string
+          streak_days: number | null
+          trainings_count: number | null
+          user_id: string
+        }
+        Insert: {
+          assessments_count?: number | null
+          challenges_count?: number | null
+          created_at?: string | null
+          id?: string
+          organization_id?: string | null
+          overall_score?: number | null
+          skill_scores?: Json | null
+          snapshot_date?: string
+          streak_days?: number | null
+          trainings_count?: number | null
+          user_id: string
+        }
+        Update: {
+          assessments_count?: number | null
+          challenges_count?: number | null
+          created_at?: string | null
+          id?: string
+          organization_id?: string | null
+          overall_score?: number | null
+          skill_scores?: Json | null
+          snapshot_date?: string
+          streak_days?: number | null
+          trainings_count?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_evolution_snapshots_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -1571,6 +1689,139 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contextual_assessment_questions: {
+        Row: {
+          context_type: string
+          created_at: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          is_required: boolean | null
+          options: Json | null
+          organization_id: string | null
+          question_text: string
+          question_type: string
+          scale_labels: Json | null
+          scale_max: number | null
+          scale_min: number | null
+          skill_id: string | null
+        }
+        Insert: {
+          context_type: string
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_required?: boolean | null
+          options?: Json | null
+          organization_id?: string | null
+          question_text: string
+          question_type?: string
+          scale_labels?: Json | null
+          scale_max?: number | null
+          scale_min?: number | null
+          skill_id?: string | null
+        }
+        Update: {
+          context_type?: string
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_required?: boolean | null
+          options?: Json | null
+          organization_id?: string | null
+          question_text?: string
+          question_type?: string
+          scale_labels?: Json | null
+          scale_max?: number | null
+          scale_min?: number | null
+          skill_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contextual_assessment_questions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contextual_assessment_questions_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skill_configurations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contextual_assessment_questions_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "vw_org_skill_metrics"
+            referencedColumns: ["skill_id"]
+          },
+        ]
+      }
+      contextual_assessment_responses: {
+        Row: {
+          completed_at: string | null
+          context_event_id: string | null
+          context_id: string | null
+          context_type: string
+          created_at: string | null
+          id: string
+          organization_id: string | null
+          responses: Json
+          skills_impacted: string[] | null
+          time_spent_seconds: number | null
+          total_score: number | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          context_event_id?: string | null
+          context_id?: string | null
+          context_type: string
+          created_at?: string | null
+          id?: string
+          organization_id?: string | null
+          responses: Json
+          skills_impacted?: string[] | null
+          time_spent_seconds?: number | null
+          total_score?: number | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          context_event_id?: string | null
+          context_id?: string | null
+          context_type?: string
+          created_at?: string | null
+          id?: string
+          organization_id?: string | null
+          responses?: Json
+          skills_impacted?: string[] | null
+          time_spent_seconds?: number | null
+          total_score?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contextual_assessment_responses_context_event_id_fkey"
+            columns: ["context_event_id"]
+            isOneToOne: false
+            referencedRelation: "core_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contextual_assessment_responses_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -3068,6 +3319,72 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "level_configurations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      manager_assessments: {
+        Row: {
+          assessment_type: string | null
+          created_at: string | null
+          cycle_id: string | null
+          development_areas: string[] | null
+          direction_notes: string | null
+          evaluatee_id: string
+          id: string
+          manager_id: string
+          organization_id: string | null
+          recommended_actions: Json | null
+          responses: Json
+          status: string | null
+          strengths: string[] | null
+          total_score: number | null
+        }
+        Insert: {
+          assessment_type?: string | null
+          created_at?: string | null
+          cycle_id?: string | null
+          development_areas?: string[] | null
+          direction_notes?: string | null
+          evaluatee_id: string
+          id?: string
+          manager_id: string
+          organization_id?: string | null
+          recommended_actions?: Json | null
+          responses: Json
+          status?: string | null
+          strengths?: string[] | null
+          total_score?: number | null
+        }
+        Update: {
+          assessment_type?: string | null
+          created_at?: string | null
+          cycle_id?: string | null
+          development_areas?: string[] | null
+          direction_notes?: string | null
+          evaluatee_id?: string
+          id?: string
+          manager_id?: string
+          organization_id?: string | null
+          recommended_actions?: Json | null
+          responses?: Json
+          status?: string | null
+          strengths?: string[] | null
+          total_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manager_assessments_cycle_id_fkey"
+            columns: ["cycle_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_cycles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manager_assessments_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -8188,6 +8505,40 @@ export type Database = {
       distribute_challenge_rewards: {
         Args: { p_commitment_id: string }
         Returns: undefined
+      }
+      generate_assessment_consequences: {
+        Args: {
+          p_assessment_id: string
+          p_assessment_type: string
+          p_responses: Json
+          p_skill_ids?: string[]
+          p_user_id: string
+        }
+        Returns: {
+          accepted_at: string | null
+          assessment_id: string
+          assessment_type: string
+          completed_at: string | null
+          consequence_type: string
+          created_at: string | null
+          description: string | null
+          dismissed_at: string | null
+          id: string
+          organization_id: string | null
+          priority: number | null
+          skill_ids: string[] | null
+          status: string | null
+          target_id: string | null
+          target_type: string | null
+          title: string
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "assessment_consequences"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       generate_daily_missions: {
         Args: { p_user_id: string }
