@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Check, Sparkles, Target, Award } from "lucide-react";
+import { Loader2, Check, Sparkles, Target, Award, Plus, X } from "lucide-react";
 import { 
   EvolutionTemplate, 
   CATEGORY_LABELS, 
@@ -152,6 +152,87 @@ export function EvolutionTemplateEditor({
       }));
     }
   }, [formData.level, formData.importance, template]);
+
+  const maxSkillImpacts = 3;
+
+  const addSkillImpact = () => {
+    if (isReadOnly) return;
+
+    setFormData(prev => {
+      if (prev.skill_impacts.length >= maxSkillImpacts) return prev;
+      const nextSkill = allSkills.find(s => !prev.skill_impacts.some(si => si.skill_id === s.id));
+      if (!nextSkill) return prev;
+      return {
+        ...prev,
+        skill_impacts: [...prev.skill_impacts, { skill_id: nextSkill.id, weight: 50 }],
+      };
+    });
+  };
+
+  const updateSkillImpactSkill = (currentSkillId: string, nextSkillId: string) => {
+    if (isReadOnly) return;
+
+    setFormData(prev => {
+      if (prev.skill_impacts.some(si => si.skill_id === nextSkillId)) return prev;
+      return {
+        ...prev,
+        skill_impacts: prev.skill_impacts.map(si =>
+          si.skill_id === currentSkillId ? { ...si, skill_id: nextSkillId } : si
+        ),
+      };
+    });
+  };
+
+  const updateSkillImpactWeight = (skillId: string, weight: number) => {
+    if (isReadOnly) return;
+
+    setFormData(prev => ({
+      ...prev,
+      skill_impacts: prev.skill_impacts.map(si =>
+        si.skill_id === skillId ? { ...si, weight } : si
+      ),
+    }));
+  };
+
+  const removeSkillImpact = (skillId: string) => {
+    if (isReadOnly) return;
+
+    setFormData(prev => ({
+      ...prev,
+      skill_impacts: prev.skill_impacts.filter(si => si.skill_id !== skillId),
+    }));
+  };
+
+  const addInsignia = () => {
+    if (isReadOnly) return;
+
+    setFormData(prev => {
+      const nextInsignia = allInsignias.find(i => !prev.insignia_ids.includes(i.id));
+      if (!nextInsignia) return prev;
+      return { ...prev, insignia_ids: [...prev.insignia_ids, nextInsignia.id] };
+    });
+  };
+
+  const updateInsignia = (currentId: string, nextId: string) => {
+    if (isReadOnly) return;
+
+    setFormData(prev => {
+      if (prev.insignia_ids.includes(nextId)) return prev;
+      return {
+        ...prev,
+        insignia_ids: prev.insignia_ids.map(id => (id === currentId ? nextId : id)),
+      };
+    });
+  };
+
+  const removeInsignia = (insigniaId: string) => {
+    if (isReadOnly) return;
+
+    setFormData(prev => ({
+      ...prev,
+      insignia_ids: prev.insignia_ids.filter(id => id !== insigniaId),
+    }));
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -297,7 +378,7 @@ export function EvolutionTemplateEditor({
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label>Moedas Base</Label>
-                    <span className="text-sm font-medium text-amber-500">{formData.suggested_coins} 🪙</span>
+                    <span className="text-sm font-medium text-primary">{formData.suggested_coins} 🪙</span>
                   </div>
                   <Slider
                     value={[formData.suggested_coins]}
@@ -314,63 +395,199 @@ export function EvolutionTemplateEditor({
             {/* Skills and Insignias */}
             <div className="space-y-4">
               <h3 className="font-medium text-foreground">Skills e Insígnias</h3>
-              
+
               {/* Skills Impactadas */}
               <div className="p-4 bg-muted/30 rounded-xl space-y-3">
-                <div className="flex items-center gap-2 text-sm font-medium">
-                  <Target className="w-4 h-4 text-primary" />
-                  Skills Impactadas
-                </div>
-                {formData.skill_impacts.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {formData.skill_impacts.map((impact) => {
-                      const skill = allSkills.find(s => s.id === impact.skill_id);
-                      return (
-                        <Badge 
-                          key={impact.skill_id} 
-                          variant="secondary"
-                          className="flex items-center gap-1.5 px-3 py-1"
-                        >
-                          <span>{skill?.icon || '🎯'}</span>
-                          <span>{skill?.name || 'Skill'}</span>
-                          <span className="text-muted-foreground ml-1">({impact.weight}%)</span>
-                        </Badge>
-                      );
-                    })}
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <Target className="w-4 h-4 text-primary" />
+                    <span>Skills Impactadas</span>
+                    <span className="text-xs font-normal text-muted-foreground">
+                      (máx. {maxSkillImpacts})
+                    </span>
                   </div>
-                ) : (
+
+                  {!isReadOnly && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={addSkillImpact}
+                      disabled={
+                        allSkills.length === 0 ||
+                        formData.skill_impacts.length >= maxSkillImpacts ||
+                        formData.skill_impacts.length >= allSkills.length
+                      }
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      Adicionar
+                    </Button>
+                  )}
+                </div>
+
+                {allSkills.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    Carregando skills...
+                  </p>
+                ) : formData.skill_impacts.length === 0 ? (
                   <p className="text-sm text-muted-foreground">
                     Nenhuma skill configurada para este template
                   </p>
+                ) : (
+                  <div className="space-y-3">
+                    {formData.skill_impacts.map((impact) => {
+                      const skill = allSkills.find(s => s.id === impact.skill_id);
+                      return (
+                        <div
+                          key={impact.skill_id}
+                          className="rounded-lg border border-border bg-background p-3 space-y-3"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Select
+                              value={impact.skill_id}
+                              onValueChange={(v) => updateSkillImpactSkill(impact.skill_id, v)}
+                              disabled={isReadOnly}
+                            >
+                              <SelectTrigger className="flex-1">
+                                <SelectValue>
+                                  <span className="flex items-center gap-2">
+                                    <span>{skill?.icon || '🎯'}</span>
+                                    <span>{skill?.name || 'Skill'}</span>
+                                  </span>
+                                </SelectValue>
+                              </SelectTrigger>
+                              <SelectContent>
+                                {allSkills
+                                  .filter(s => s.id === impact.skill_id || !formData.skill_impacts.some(si => si.skill_id === s.id))
+                                  .map((s) => (
+                                    <SelectItem key={s.id} value={s.id}>
+                                      <span className="flex items-center gap-2">
+                                        <span>{s.icon || '🎯'}</span>
+                                        <span>{s.name}</span>
+                                      </span>
+                                    </SelectItem>
+                                  ))}
+                              </SelectContent>
+                            </Select>
+
+                            {!isReadOnly && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="h-9 w-9 text-muted-foreground hover:text-destructive"
+                                onClick={() => removeSkillImpact(impact.skill_id)}
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </div>
+
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between text-xs text-muted-foreground">
+                              <span>Peso do impacto</span>
+                              <Badge variant="secondary">{impact.weight}%</Badge>
+                            </div>
+                            <Slider
+                              value={[impact.weight]}
+                              onValueChange={([v]) => updateSkillImpactWeight(impact.skill_id, v)}
+                              min={10}
+                              max={100}
+                              step={10}
+                              disabled={isReadOnly}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 )}
               </div>
 
               {/* Insígnias Concedidas */}
               <div className="p-4 bg-muted/30 rounded-xl space-y-3">
-                <div className="flex items-center gap-2 text-sm font-medium">
-                  <Award className="w-4 h-4 text-amber-500" />
-                  Insígnias Concedidas
-                </div>
-                {formData.insignia_ids.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {formData.insignia_ids.map((insigniaId) => {
-                      const insignia = allInsignias.find(i => i.id === insigniaId);
-                      return (
-                        <Badge 
-                          key={insigniaId} 
-                          variant="outline"
-                          className="flex items-center gap-1.5 px-3 py-1 border-amber-500/30 bg-amber-500/5"
-                        >
-                          <span>{insignia?.icon || '🏅'}</span>
-                          <span>{insignia?.name || 'Insígnia'}</span>
-                        </Badge>
-                      );
-                    })}
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <Award className="w-4 h-4 text-primary" />
+                    <span>Insígnias Concedidas</span>
                   </div>
-                ) : (
+
+                  {!isReadOnly && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={addInsignia}
+                      disabled={
+                        allInsignias.length === 0 ||
+                        formData.insignia_ids.length >= allInsignias.length
+                      }
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      Adicionar
+                    </Button>
+                  )}
+                </div>
+
+                {allInsignias.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    Carregando insígnias...
+                  </p>
+                ) : formData.insignia_ids.length === 0 ? (
                   <p className="text-sm text-muted-foreground">
                     Nenhuma insígnia configurada para este template
                   </p>
+                ) : (
+                  <div className="space-y-2">
+                    {formData.insignia_ids.map((insigniaId) => {
+                      const insignia = allInsignias.find(i => i.id === insigniaId);
+                      return (
+                        <div
+                          key={insigniaId}
+                          className="flex items-center gap-2 rounded-lg border border-border bg-background p-3"
+                        >
+                          <Select
+                            value={insigniaId}
+                            onValueChange={(v) => updateInsignia(insigniaId, v)}
+                            disabled={isReadOnly}
+                          >
+                            <SelectTrigger className="flex-1">
+                              <SelectValue>
+                                <span className="flex items-center gap-2">
+                                  <span>{insignia?.icon || '🏅'}</span>
+                                  <span>{insignia?.name || 'Insígnia'}</span>
+                                </span>
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              {allInsignias
+                                .filter(i => i.id === insigniaId || !formData.insignia_ids.includes(i.id))
+                                .map((i) => (
+                                  <SelectItem key={i.id} value={i.id}>
+                                    <span className="flex items-center gap-2">
+                                      <span>{i.icon || '🏅'}</span>
+                                      <span>{i.name}</span>
+                                    </span>
+                                  </SelectItem>
+                                ))}
+                            </SelectContent>
+                          </Select>
+
+                          {!isReadOnly && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-9 w-9 text-muted-foreground hover:text-destructive"
+                              onClick={() => removeInsignia(insigniaId)}
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 )}
               </div>
             </div>
