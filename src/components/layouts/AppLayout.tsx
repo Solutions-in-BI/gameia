@@ -231,8 +231,8 @@ export function AppLayout() {
                         <DropdownMenu key={section.path}>
                           <DropdownMenuTrigger asChild>
                             <button
-                              onClick={() => {
-                                // Navigate to section on click (first subtab)
+                              onPointerDown={(e) => {
+                                // Navigate on pointer down (before dropdown captures click)
                                 if (!active) {
                                   handleSectionChange(section.path, section.subnav?.[0]?.id);
                                 }
