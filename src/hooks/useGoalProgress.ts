@@ -18,6 +18,7 @@ interface ProgressEvent {
   progress_delta: number;
   xp_earned?: number;
   metadata?: Record<string, unknown>;
+  created_at?: string;
 }
 
 interface LinkedAction {
