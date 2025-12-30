@@ -1,7 +1,7 @@
 /**
  * EvolutionTab - Tab "Evolução" do hub
  * Mostra RESULTADOS e histórico (não inicia experiências)
- * Subtabs: Resumo, Histórico, Desafios, Insígnias, Skills, PDI, Feedback, 1:1
+ * Subtabs: Resumo, Histórico, Desafios, Insígnias, Skills, PDI, Feedback, 1:1, Time (gestor)
  */
 
 import { useState } from "react";
@@ -15,10 +15,12 @@ import {
   BarChart3,
   Award,
   History,
-  Sparkles
+  Sparkles,
+  UsersRound
 } from "lucide-react";
 import { HubHeader } from "../common";
 import { EvolutionDashboard } from "@/components/evolution/EvolutionDashboard";
+import { ManagerEvolutionView } from "@/components/evolution/ManagerEvolutionView";
 import { SkillsPage } from "@/components/game/skills";
 import { PDISection } from "@/components/game/development/PDISection";
 import { Assessment360Section } from "@/components/game/development/Assessment360Section";
@@ -27,8 +29,9 @@ import { MyCognitiveProfile } from "@/components/game/development/MyCognitivePro
 import { InsigniasSubtab } from "./InsigniasSubtab";
 import { ChallengesSubtab } from "./ChallengesSubtab";
 import { HistorySubtab } from "./HistorySubtab";
+import { useOrganization } from "@/hooks/useOrganization";
 
-type EvolutionSubtab = "summary" | "history" | "challenges" | "insignias" | "skills" | "pdi" | "feedback" | "1on1";
+type EvolutionSubtab = "summary" | "history" | "challenges" | "insignias" | "skills" | "pdi" | "feedback" | "1on1" | "team";
 
 const SUBTABS = [
   { id: "summary" as const, label: "Resumo", icon: BarChart3 },
@@ -41,8 +44,14 @@ const SUBTABS = [
   { id: "1on1" as const, label: "1:1", icon: Calendar },
 ];
 
+const MANAGER_SUBTAB = { id: "team" as const, label: "Meu Time", icon: UsersRound };
+
 export function EvolutionTab() {
+  const { isAdmin } = useOrganization();
   const [subtab, setSubtab] = useState<EvolutionSubtab>("summary");
+  
+  // Gestores (admin/owner) veem a aba do time
+  const availableSubtabs = isAdmin ? [...SUBTABS, MANAGER_SUBTAB] : SUBTABS;
 
   const renderContent = () => {
     switch (subtab) {
@@ -72,6 +81,8 @@ export function EvolutionTab() {
         return <Assessment360Section />;
       case "1on1":
         return <OneOnOneSection />;
+      case "team":
+        return <ManagerEvolutionView />;
       default:
         return null;
     }
@@ -88,7 +99,7 @@ export function EvolutionTab() {
 
       {/* Subtabs */}
       <div className="flex items-center gap-1 overflow-x-auto pb-2 bg-muted/30 p-1 rounded-xl">
-        {SUBTABS.map((tab) => (
+        {availableSubtabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setSubtab(tab.id)}

@@ -81,15 +81,19 @@ export function ManagerEvolutionView() {
       setIsLoading(true);
 
       try {
-        // Buscar membros do time
-        const { data: profiles } = await supabase
-          .from("profiles")
-          .select("id, name, avatar_url, email")
+        // Buscar membros do time via organization_members + profiles
+        const { data: members } = await supabase
+          .from("organization_members")
+          .select(`
+            user_id,
+            profiles!inner(id, nickname, avatar_url)
+          `)
           .eq("organization_id", currentOrg.id)
-          .neq("id", user.id)
+          .eq("is_active", true)
+          .neq("user_id", user.id)
           .limit(20);
 
-        if (!profiles || profiles.length === 0) {
+        if (!members || members.length === 0) {
           setTeamMembers([]);
           setMetrics({ totalMembers: 0, avgWeeklyXP: 0, totalAlerts: 0, activeStreaks: 0 });
           setIsLoading(false);
@@ -102,12 +106,15 @@ export function ManagerEvolutionView() {
         // Para cada membro, buscar métricas
         const membersWithMetrics: TeamMember[] = [];
         
-        for (const profile of profiles) {
+        for (const member of members) {
+          const profile = member.profiles as unknown as { id: string; nickname: string; avatar_url: string | null };
+          const memberId = profile.id;
+          
           // XP da semana
           const { data: events } = await supabase
             .from("core_events")
             .select("xp_earned, created_at")
-            .eq("user_id", profile.id)
+            .eq("user_id", memberId)
             .gte("created_at", weekAgo.toISOString());
 
           const weeklyXP = events?.reduce((sum, e) => sum + (e.xp_earned || 0), 0) || 0;
@@ -120,7 +127,7 @@ export function ManagerEvolutionView() {
           const { data: prevEvents } = await supabase
             .from("core_events")
             .select("xp_earned")
-            .eq("user_id", profile.id)
+            .eq("user_id", memberId)
             .gte("created_at", twoWeeksAgo.toISOString())
             .lt("created_at", weekAgo.toISOString());
 
@@ -133,21 +140,21 @@ export function ManagerEvolutionView() {
           const { data: streakData } = await supabase
             .from("user_streaks")
             .select("current_streak")
-            .eq("user_id", profile.id)
+            .eq("user_id", memberId)
             .single();
 
           // Alertas
           const { count: alertCount } = await supabase
             .from("evolution_alerts")
             .select("*", { count: "exact", head: true })
-            .eq("user_id", profile.id)
+            .eq("user_id", memberId)
             .eq("is_dismissed", false);
 
           membersWithMetrics.push({
-            id: profile.id,
-            full_name: profile.name || "Sem nome",
+            id: memberId,
+            full_name: profile.nickname || "Sem nome",
             avatar_url: profile.avatar_url,
-            email: profile.email || "",
+            email: "",
             weeklyXP,
             xpChange,
             activeStreak: streakData?.current_streak || 0,
