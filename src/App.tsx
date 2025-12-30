@@ -41,6 +41,8 @@ import CaminhoPage from "./pages/app/CaminhoPage";
 import TrainingsListPage from "./pages/app/TrainingsListPage";
 import TrainingDetail from "./pages/TrainingDetail";
 import ModulePlayer from "./pages/ModulePlayer";
+import JourneyPlayerPage from "./pages/app/JourneyPlayerPage";
+import JourneyModulePlayer from "./pages/app/JourneyModulePlayer";
 import Marketplace from "./pages/Marketplace";
 import TrainingEditorPage from "./pages/console/TrainingEditorPage";
 
@@ -87,6 +89,8 @@ const App = () => (
             <Route path="trainings" element={<TrainingsListPage />} />
             <Route path="trainings/:id" element={<TrainingDetail />} />
             <Route path="trainings/:trainingId/module/:moduleId" element={<ModulePlayer />} />
+            <Route path="journeys/:journeyId" element={<JourneyPlayerPage />} />
+            <Route path="journeys/:journeyId/training/:trainingId/module/:moduleId" element={<JourneyModulePlayer />} />
             <Route path="marketplace" element={<Marketplace />} />
           </Route>
           

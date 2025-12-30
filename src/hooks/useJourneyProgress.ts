@@ -11,7 +11,7 @@ import { toast } from "sonner";
 export interface JourneyTrainingProgress {
   trainingId: string;
   trainingName: string;
-  sortOrder: number;
+  orderIndex: number;
   modulesCount: number;
   completedModules: number;
   isCompleted: boolean;
@@ -55,9 +55,14 @@ export function useJourneyProgress(journeyId?: string) {
         .from("training_journeys")
         .select("*")
         .eq("id", journeyId)
-        .single();
+        .maybeSingle();
 
       if (journeyError) throw journeyError;
+      if (!journey) {
+        setError("Jornada não encontrada");
+        setIsLoading(false);
+        return;
+      }
 
       // Buscar treinamentos da jornada
       const { data: journeyTrainings, error: jtError } = await supabase
@@ -65,18 +70,29 @@ export function useJourneyProgress(journeyId?: string) {
         .select(`
           id,
           training_id,
-          sort_order,
-          is_required,
-          trainings (
-            id,
-            name,
-            modules_count
-          )
+          order_index,
+          is_required
         `)
         .eq("journey_id", journeyId)
-        .order("sort_order");
+        .order("order_index");
 
       if (jtError) throw jtError;
+
+      // Buscar detalhes dos treinamentos separadamente
+      const trainingIds = (journeyTrainings || []).map(jt => jt.training_id);
+      let trainingsMap: Record<string, { id: string; name: string; modules_count: number }> = {};
+      
+      if (trainingIds.length > 0) {
+        const { data: trainingsData } = await supabase
+          .from("trainings")
+          .select("id, name")
+          .in("id", trainingIds);
+        
+        (trainingsData || []).forEach(t => {
+          trainingsMap[t.id] = { ...t, modules_count: 0 };
+        });
+      }
+
 
       // Buscar progresso do usuário na jornada
       const { data: userProgress, error: upError } = await supabase
@@ -89,37 +105,39 @@ export function useJourneyProgress(journeyId?: string) {
       if (upError) throw upError;
 
       // Buscar progresso do usuário em cada treinamento
-      const trainingIds = journeyTrainings?.map(jt => jt.training_id) || [];
-      
-      const { data: trainingProgress, error: tpError } = await supabase
-        .from("user_training_progress")
-        .select("*")
-        .eq("user_id", user.id)
-        .in("training_id", trainingIds);
+      let trainingProgress: any[] = [];
+      if (trainingIds.length > 0) {
+        const { data: tpData, error: tpError } = await supabase
+          .from("user_training_progress")
+          .select("*")
+          .eq("user_id", user.id)
+          .in("training_id", trainingIds);
 
-      if (tpError) throw tpError;
+        if (tpError) throw tpError;
+        trainingProgress = tpData || [];
+      }
 
       // Montar estrutura de progresso
       const trainingsProgress: JourneyTrainingProgress[] = (journeyTrainings || []).map((jt, index) => {
-        const training = jt.trainings as { id: string; name: string; modules_count: number } | null;
-        const progress = trainingProgress?.find(tp => tp.training_id === jt.training_id);
+        const training = trainingsMap[jt.training_id];
+        const tProgress = trainingProgress.find((tp: any) => tp.training_id === jt.training_id);
         
         // Verifica se o anterior está completo para determinar se está bloqueado
         const prevCompleted = index === 0 || 
-          trainingProgress?.find(tp => 
+          trainingProgress.find((tp: any) => 
             tp.training_id === journeyTrainings[index - 1]?.training_id && 
             tp.progress_percent === 100
           );
 
-        const isCompleted = progress?.progress_percent === 100;
+        const isCompleted = tProgress?.progress_percent === 100;
         const isLocked = !prevCompleted;
 
         return {
           trainingId: jt.training_id,
           trainingName: training?.name || "Treinamento",
-          sortOrder: jt.sort_order,
+          orderIndex: jt.order_index,
           modulesCount: training?.modules_count || 0,
-          completedModules: progress?.completed_modules || 0,
+          completedModules: tProgress?.current_module_index || 0,
           isCompleted,
           isLocked: isLocked && !isCompleted,
           isCurrent: !isCompleted && !isLocked,
@@ -146,7 +164,7 @@ export function useJourneyProgress(journeyId?: string) {
         completedAt: userProgress?.completed_at || null,
         trainings: trainingsProgress,
         currentTrainingId: currentTraining?.trainingId || null,
-        currentModuleId: null, // Será preenchido quando entrar no treinamento
+        currentModuleId: null,
       });
 
     } catch (err) {
