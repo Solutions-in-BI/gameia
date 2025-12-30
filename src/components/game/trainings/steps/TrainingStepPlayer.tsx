@@ -32,6 +32,10 @@ import { ArenaGameStep } from "./ArenaGameStep";
 import { CognitiveTestStep } from "./CognitiveTestStep";
 import { ReflectionStep } from "./ReflectionStep";
 import { PracticalChallengeStep } from "./PracticalChallengeStep";
+import { GuidedReadingStep } from "./GuidedReadingStep";
+import { AIReflectionStep } from "./AIReflectionStep";
+import { RoutineApplicationStep } from "./RoutineApplicationStep";
+import { ValidationStep } from "./ValidationStep";
 
 interface TrainingStepPlayerProps {
   module: EnhancedTrainingModule;
@@ -291,6 +295,38 @@ export function TrainingStepPlayer({
             module={{ ...module, step_config: { ...module.step_config, game_type: 'quiz' } }}
             onComplete={handleStepComplete}
             onCancel={() => setIsPlaying(false)}
+          />
+        );
+      
+      case 'guided_reading':
+        return (
+          <GuidedReadingStep
+            module={module as any}
+            onComplete={handleStepComplete}
+          />
+        );
+      
+      case 'ai_reflection':
+        return (
+          <AIReflectionStep
+            module={module as any}
+            onComplete={handleStepComplete}
+          />
+        );
+      
+      case 'routine_application':
+        return (
+          <RoutineApplicationStep
+            module={module as any}
+            onComplete={handleStepComplete}
+          />
+        );
+      
+      case 'validation':
+        return (
+          <ValidationStep
+            module={module as any}
+            onComplete={handleStepComplete}
           />
         );
       
