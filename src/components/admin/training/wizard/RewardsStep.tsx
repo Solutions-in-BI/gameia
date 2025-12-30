@@ -26,8 +26,11 @@ import {
   Target,
   TrendingUp,
   Calculator,
+  Gift,
 } from "lucide-react";
 import type { TrainingFormData, SkillImpact, InsigniaRelation } from "../TrainingWizard";
+import { ItemRewardsSection } from "@/components/rewards/ItemRewardsSection";
+import type { ItemRewardConfig } from "@/hooks/useItemRewards";
 
 interface RewardsStepProps {
   formData: TrainingFormData;
@@ -42,6 +45,8 @@ interface RewardsStepProps {
   setXpMultiplier: React.Dispatch<React.SetStateAction<number>>;
   coinsMultiplier: number;
   setCoinsMultiplier: React.Dispatch<React.SetStateAction<number>>;
+  rewardItems: ItemRewardConfig[];
+  setRewardItems: React.Dispatch<React.SetStateAction<ItemRewardConfig[]>>;
 }
 
 const RELATION_TYPES = [
@@ -63,6 +68,8 @@ export function RewardsStep({
   setXpMultiplier,
   coinsMultiplier,
   setCoinsMultiplier,
+  rewardItems,
+  setRewardItems,
 }: RewardsStepProps) {
   const addSkillImpact = () => {
     if (skillImpacts.length >= 3) return;
@@ -443,6 +450,19 @@ export function RewardsStep({
             })}
           </div>
         )}
+      </div>
+
+      {/* Item Rewards */}
+      <div>
+        <Label className="text-xs uppercase tracking-wide text-muted-foreground mb-3 flex items-center gap-2">
+          <Gift className="w-3 h-3" />
+          Itens da Loja como Recompensa
+        </Label>
+        <ItemRewardsSection
+          rewardItems={rewardItems}
+          setRewardItems={setRewardItems}
+          maxItems={3}
+        />
       </div>
     </div>
   );

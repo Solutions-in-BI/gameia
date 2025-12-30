@@ -29,6 +29,7 @@ export type ManageSection =
   | "trainings"
   | "certificates"
   | "benefits"
+  | "rewards"
   | "commitments"
   | "assessments"
   | "reports";
