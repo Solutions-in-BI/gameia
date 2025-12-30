@@ -36,6 +36,7 @@ import { AreaGuard } from "./components/auth/AreaGuard";
 import { AppLayout } from "./components/layouts/AppLayout";
 import OverviewPage from "./pages/app/OverviewPage";
 import ArenaPage from "./pages/app/ArenaPage";
+import DevelopmentPage from "./pages/app/DevelopmentPage";
 import EvolutionPage from "./pages/app/EvolutionPage";
 import CaminhoPage from "./pages/app/CaminhoPage";
 import TrainingsListPage from "./pages/app/TrainingsListPage";
@@ -85,6 +86,7 @@ const App = () => (
           <Route path="/app" element={<AppLayout />}>
             <Route index element={<OverviewPage />} />
             <Route path="arena" element={<ArenaPage />} />
+            <Route path="development" element={<DevelopmentPage />} />
             <Route path="evolution" element={<EvolutionPage />} />
             <Route path="caminho" element={<CaminhoPage />} />
             <Route path="trainings" element={<TrainingsListPage />} />
