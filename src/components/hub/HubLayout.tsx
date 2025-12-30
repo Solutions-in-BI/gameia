@@ -14,7 +14,7 @@ import {
   Menu,
   X,
   LogIn,
-  BookOpen,
+  GraduationCap,
   ShoppingBag,
   Coins
 } from "lucide-react";
@@ -35,15 +35,17 @@ import { NotificationsDropdown } from "@/components/notifications/NotificationsD
 import { Logo } from "@/components/common/Logo";
 import { HubOverview } from "./HubOverview";
 import { ArenaTab } from "./arena/ArenaTab";
+import { DevelopmentTab } from "./development/DevelopmentTab";
 import { EvolutionTab } from "./evolution/EvolutionTab";
 import { CaminhoTab } from "./caminho/CaminhoTab";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-export type HubTab = "overview" | "arena" | "evolution" | "caminho";
+export type HubTab = "overview" | "arena" | "development" | "evolution" | "caminho";
 
 const HUB_TABS = [
-  { id: "overview" as const, label: "Visão Geral", shortLabel: "Início", icon: LayoutDashboard },
+  { id: "overview" as const, label: "Início", shortLabel: "Início", icon: LayoutDashboard },
   { id: "arena" as const, label: "Arena", shortLabel: "Arena", icon: Swords },
+  { id: "development" as const, label: "Desenvolvimento", shortLabel: "Dev", icon: GraduationCap },
   { id: "evolution" as const, label: "Evolução", shortLabel: "Evolução", icon: TrendingUp },
   { id: "caminho" as const, label: "Caminho", shortLabel: "Caminho", icon: Compass },
 ];
@@ -117,6 +119,8 @@ export function HubLayout() {
         return <HubOverview onNavigate={handleTabChange} />;
       case "arena":
         return <ArenaTab />;
+      case "development":
+        return <DevelopmentTab />;
       case "evolution":
         return <EvolutionTab />;
       case "caminho":
