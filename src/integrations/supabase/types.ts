@@ -1703,6 +1703,74 @@ export type Database = {
           },
         ]
       }
+      evolution_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string
+          description: string | null
+          expires_at: string | null
+          id: string
+          is_dismissed: boolean | null
+          is_read: boolean | null
+          metadata: Json | null
+          organization_id: string | null
+          related_entity_id: string | null
+          related_entity_type: string | null
+          severity: string
+          suggested_action: string | null
+          suggested_action_id: string | null
+          suggested_action_type: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          is_dismissed?: boolean | null
+          is_read?: boolean | null
+          metadata?: Json | null
+          organization_id?: string | null
+          related_entity_id?: string | null
+          related_entity_type?: string | null
+          severity?: string
+          suggested_action?: string | null
+          suggested_action_id?: string | null
+          suggested_action_type?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          is_dismissed?: boolean | null
+          is_read?: boolean | null
+          metadata?: Json | null
+          organization_id?: string | null
+          related_entity_id?: string | null
+          related_entity_type?: string | null
+          severity?: string
+          suggested_action?: string | null
+          suggested_action_id?: string | null
+          suggested_action_type?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evolution_alerts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       evolution_templates: {
         Row: {
           category: string
