@@ -1,14 +1,23 @@
 /**
  * PDI Section - Individual Development Plan
  * Shows user's development plans with goals and progress tracking
+ * Enhanced with goal types, entity linking, and automatic progress
  */
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { usePDI, DevelopmentPlan, DevelopmentGoal } from "@/hooks/usePDI";
 import { useAuth } from "@/hooks/useAuth";
 import { PDISuggestionsPanel } from "./PDISuggestionsPanel";
 import { PDIInsightsPanel } from "./PDIInsightsPanel";
+import { 
+  GoalTypeSelector, 
+  LinkedEntitiesSelect, 
+  GoalLinksManager,
+  GoalProgressHistory,
+  getGoalTypeInfo,
+  type GoalType 
+} from "@/components/pdi";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -19,21 +28,25 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   Target,
   Plus,
   Calendar,
   Trophy,
-  CheckCircle2,
-  Clock,
   ArrowRight,
-  Sparkles,
   TrendingUp,
   Flag,
   MessageSquare,
+  History,
+  ChevronDown,
+  Zap,
+  Link as LinkIcon,
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 interface PDISectionProps {
   onBack?: () => void;
@@ -47,8 +60,19 @@ export function PDISection({ onBack }: PDISectionProps) {
   const [isCreatingPlan, setIsCreatingPlan] = useState(false);
   const [isCreatingGoal, setIsCreatingGoal] = useState(false);
   const [isCheckingIn, setIsCheckingIn] = useState<string | null>(null);
+  const [expandedGoal, setExpandedGoal] = useState<string | null>(null);
   const [newPlanTitle, setNewPlanTitle] = useState("");
-  const [newGoal, setNewGoal] = useState({ title: "", description: "", priority: "medium" });
+  const [newGoal, setNewGoal] = useState({
+    title: "",
+    description: "",
+    priority: "medium",
+    goal_type: "behavioral" as GoalType,
+    linked_training_ids: [] as string[],
+    linked_challenge_ids: [] as string[],
+    linked_cognitive_test_ids: [] as string[],
+    related_games: [] as string[],
+    weight: 1,
+  });
   const [checkInData, setCheckInData] = useState({ progress: 0, update: "", blockers: "" });
 
   const handleViewPlan = async (plan: DevelopmentPlan) => {
@@ -71,10 +95,26 @@ export function PDISection({ onBack }: PDISectionProps) {
       title: newGoal.title,
       description: newGoal.description,
       priority: newGoal.priority,
+      goal_type: newGoal.goal_type,
+      linked_training_ids: newGoal.linked_training_ids,
+      linked_challenge_ids: newGoal.linked_challenge_ids,
+      linked_cognitive_test_ids: newGoal.linked_cognitive_test_ids,
+      related_games: newGoal.related_games,
+      weight: newGoal.weight,
     });
     const goals = await getGoalsForPlan(selectedPlan.id);
     setPlanGoals(goals);
-    setNewGoal({ title: "", description: "", priority: "medium" });
+    setNewGoal({
+      title: "",
+      description: "",
+      priority: "medium",
+      goal_type: "behavioral",
+      linked_training_ids: [],
+      linked_challenge_ids: [],
+      linked_cognitive_test_ids: [],
+      related_games: [],
+      weight: 1,
+    });
     setIsCreatingGoal(false);
   };
 
@@ -110,6 +150,15 @@ export function PDISection({ onBack }: PDISectionProps) {
       low: "text-green-500",
     };
     return colors[priority] || colors.medium;
+  };
+
+  const hasLinkedEntities = (goal: DevelopmentGoal) => {
+    return (
+      (goal.linked_training_ids?.length || 0) > 0 ||
+      (goal.linked_challenge_ids?.length || 0) > 0 ||
+      (goal.linked_cognitive_test_ids?.length || 0) > 0 ||
+      (goal.related_games?.length || 0) > 0
+    );
   };
 
   if (myPlansLoading) {
@@ -148,47 +197,121 @@ export function PDISection({ onBack }: PDISectionProps) {
                 Nova Meta
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Criar Nova Meta</DialogTitle>
               </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label>Título</Label>
-                  <Input
-                    value={newGoal.title}
-                    onChange={(e) => setNewGoal({ ...newGoal, title: e.target.value })}
-                    placeholder="Ex: Desenvolver habilidades de liderança"
+              <Tabs defaultValue="basic" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="basic">Informações</TabsTrigger>
+                  <TabsTrigger value="links">Vincular Atividades</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="basic" className="space-y-4 mt-4">
+                  <div>
+                    <Label>Tipo de Meta</Label>
+                    <div className="mt-2">
+                      <GoalTypeSelector
+                        value={newGoal.goal_type}
+                        onChange={(v) => setNewGoal({ ...newGoal, goal_type: v })}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label>Título</Label>
+                    <Input
+                      value={newGoal.title}
+                      onChange={(e) => setNewGoal({ ...newGoal, title: e.target.value })}
+                      placeholder="Ex: Desenvolver habilidades de liderança"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label>Descrição</Label>
+                    <Textarea
+                      value={newGoal.description}
+                      onChange={(e) => setNewGoal({ ...newGoal, description: e.target.value })}
+                      placeholder="Descreva os detalhes da meta..."
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Prioridade</Label>
+                      <Select
+                        value={newGoal.priority}
+                        onValueChange={(v) => setNewGoal({ ...newGoal, priority: v })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="high">Alta</SelectItem>
+                          <SelectItem value="medium">Média</SelectItem>
+                          <SelectItem value="low">Baixa</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <Label>Peso no PDI: {newGoal.weight}x</Label>
+                      <Slider
+                        value={[newGoal.weight]}
+                        onValueChange={([v]) => setNewGoal({ ...newGoal, weight: v })}
+                        min={1}
+                        max={5}
+                        step={1}
+                        className="mt-3"
+                      />
+                    </div>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="links" className="space-y-4 mt-4">
+                  <div className="p-4 rounded-lg bg-muted/30 border border-border/50">
+                    <div className="flex items-center gap-2 text-sm text-primary mb-2">
+                      <Zap className="h-4 w-4" />
+                      <span className="font-medium">Progresso Automático</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Vincule atividades para que o progresso seja atualizado automaticamente quando você completá-las.
+                    </p>
+                  </div>
+                  
+                  <LinkedEntitiesSelect
+                    entityType="training"
+                    selectedIds={newGoal.linked_training_ids}
+                    onChange={(ids) => setNewGoal({ ...newGoal, linked_training_ids: ids })}
+                    placeholder="Vincular treinamentos..."
                   />
-                </div>
-                <div>
-                  <Label>Descrição</Label>
-                  <Textarea
-                    value={newGoal.description}
-                    onChange={(e) => setNewGoal({ ...newGoal, description: e.target.value })}
-                    placeholder="Descreva os detalhes da meta..."
+                  
+                  <LinkedEntitiesSelect
+                    entityType="challenge"
+                    selectedIds={newGoal.linked_challenge_ids}
+                    onChange={(ids) => setNewGoal({ ...newGoal, linked_challenge_ids: ids })}
+                    placeholder="Vincular desafios..."
                   />
-                </div>
-                <div>
-                  <Label>Prioridade</Label>
-                  <Select
-                    value={newGoal.priority}
-                    onValueChange={(v) => setNewGoal({ ...newGoal, priority: v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="high">Alta</SelectItem>
-                      <SelectItem value="medium">Média</SelectItem>
-                      <SelectItem value="low">Baixa</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Button onClick={handleCreateGoal} className="w-full">
-                  Criar Meta
-                </Button>
-              </div>
+                  
+                  <LinkedEntitiesSelect
+                    entityType="game"
+                    selectedIds={newGoal.related_games}
+                    onChange={(ids) => setNewGoal({ ...newGoal, related_games: ids })}
+                    placeholder="Vincular jogos..."
+                  />
+                  
+                  <LinkedEntitiesSelect
+                    entityType="cognitive_test"
+                    selectedIds={newGoal.linked_cognitive_test_ids}
+                    onChange={(ids) => setNewGoal({ ...newGoal, linked_cognitive_test_ids: ids })}
+                    placeholder="Vincular testes cognitivos..."
+                  />
+                </TabsContent>
+              </Tabs>
+              
+              <Button onClick={handleCreateGoal} className="w-full mt-4">
+                Criar Meta
+              </Button>
             </DialogContent>
           </Dialog>
         </div>
@@ -225,87 +348,137 @@ export function PDISection({ onBack }: PDISectionProps) {
               </CardContent>
             </Card>
           ) : (
-            planGoals.map((goal) => (
-              <motion.div
-                key={goal.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-              >
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-2 flex-1">
-                        <div className="flex items-center gap-2">
-                          <Flag className={`h-4 w-4 ${getPriorityColor(goal.priority)}`} />
-                          <h4 className="font-semibold">{goal.title}</h4>
-                          <Badge variant={goal.status === "completed" ? "default" : "outline"}>
-                            {goal.status === "completed" ? "Concluído" : "Em Progresso"}
-                          </Badge>
-                        </div>
-                        {goal.description && (
-                          <p className="text-sm text-muted-foreground">{goal.description}</p>
-                        )}
-                        <div className="flex items-center gap-4 mt-4">
-                          <Progress value={goal.progress} className="flex-1 max-w-xs" />
-                          <span className="text-sm font-medium">{goal.progress}%</span>
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Trophy className="h-3 w-3" />
-                            {goal.xp_reward} XP
-                          </span>
-                        </div>
-                      </div>
-                      <Dialog
-                        open={isCheckingIn === goal.id}
-                        onOpenChange={(open) => setIsCheckingIn(open ? goal.id : null)}
-                      >
-                        <DialogTrigger asChild>
-                          <Button variant="outline" size="sm">
-                            <MessageSquare className="h-4 w-4 mr-2" />
-                            Check-in
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Registrar Check-in</DialogTitle>
-                          </DialogHeader>
-                          <div className="space-y-4">
-                            <div>
-                              <Label>Novo Progresso: {checkInData.progress}%</Label>
-                              <Slider
-                                value={[checkInData.progress]}
-                                onValueChange={([v]) => setCheckInData({ ...checkInData, progress: v })}
-                                max={100}
-                                step={5}
-                                className="mt-2"
-                              />
+            planGoals.map((goal) => {
+              const goalTypeInfo = getGoalTypeInfo((goal.goal_type as GoalType) || "behavioral");
+              const GoalTypeIcon = goalTypeInfo.icon;
+              const isExpanded = expandedGoal === goal.id;
+              
+              return (
+                <motion.div
+                  key={goal.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="space-y-4">
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-2 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <div className={cn("p-1.5 rounded", goalTypeInfo.bgColor)}>
+                                <GoalTypeIcon className={cn("h-3.5 w-3.5", goalTypeInfo.color)} />
+                              </div>
+                              <Flag className={`h-4 w-4 ${getPriorityColor(goal.priority)}`} />
+                              <h4 className="font-semibold">{goal.title}</h4>
+                              <Badge variant={goal.status === "completed" ? "default" : "outline"}>
+                                {goal.status === "completed" ? "Concluído" : "Em Progresso"}
+                              </Badge>
+                              {goal.auto_progress_enabled !== false && hasLinkedEntities(goal) && (
+                                <Badge variant="secondary" className="text-xs">
+                                  <Zap className="h-3 w-3 mr-1" />
+                                  Auto
+                                </Badge>
+                              )}
                             </div>
-                            <div>
-                              <Label>O que você realizou?</Label>
-                              <Textarea
-                                value={checkInData.update}
-                                onChange={(e) => setCheckInData({ ...checkInData, update: e.target.value })}
-                                placeholder="Descreva suas realizações..."
-                              />
+                            {goal.description && (
+                              <p className="text-sm text-muted-foreground">{goal.description}</p>
+                            )}
+                            <div className="flex items-center gap-4 mt-4">
+                              <Progress value={goal.progress} className="flex-1 max-w-xs" />
+                              <span className="text-sm font-medium">{goal.progress}%</span>
+                              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Trophy className="h-3 w-3" />
+                                {goal.xp_reward} XP
+                              </span>
                             </div>
-                            <div>
-                              <Label>Bloqueios ou Desafios</Label>
-                              <Textarea
-                                value={checkInData.blockers}
-                                onChange={(e) => setCheckInData({ ...checkInData, blockers: e.target.value })}
-                                placeholder="Algum impedimento?"
-                              />
-                            </div>
-                            <Button onClick={() => handleCheckIn(goal.id)} className="w-full">
-                              Registrar Check-in
-                            </Button>
                           </div>
-                        </DialogContent>
-                      </Dialog>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))
+                          <div className="flex items-center gap-2">
+                            <Dialog
+                              open={isCheckingIn === goal.id}
+                              onOpenChange={(open) => setIsCheckingIn(open ? goal.id : null)}
+                            >
+                              <DialogTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                  <MessageSquare className="h-4 w-4 mr-2" />
+                                  Check-in
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Registrar Check-in</DialogTitle>
+                                </DialogHeader>
+                                <div className="space-y-4">
+                                  <div>
+                                    <Label>Novo Progresso: {checkInData.progress}%</Label>
+                                    <Slider
+                                      value={[checkInData.progress]}
+                                      onValueChange={([v]) => setCheckInData({ ...checkInData, progress: v })}
+                                      max={100}
+                                      step={5}
+                                      className="mt-2"
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label>O que você realizou?</Label>
+                                    <Textarea
+                                      value={checkInData.update}
+                                      onChange={(e) => setCheckInData({ ...checkInData, update: e.target.value })}
+                                      placeholder="Descreva suas realizações..."
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label>Bloqueios ou Desafios</Label>
+                                    <Textarea
+                                      value={checkInData.blockers}
+                                      onChange={(e) => setCheckInData({ ...checkInData, blockers: e.target.value })}
+                                      placeholder="Algum impedimento?"
+                                    />
+                                  </div>
+                                  <Button onClick={() => handleCheckIn(goal.id)} className="w-full">
+                                    Registrar Check-in
+                                  </Button>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+                          </div>
+                        </div>
+
+                        {/* Collapsible para vínculos e histórico */}
+                        {hasLinkedEntities(goal) && (
+                          <Collapsible open={isExpanded} onOpenChange={() => setExpandedGoal(isExpanded ? null : goal.id)}>
+                            <CollapsibleTrigger asChild>
+                              <Button variant="ghost" size="sm" className="w-full justify-between">
+                                <span className="flex items-center gap-2 text-muted-foreground">
+                                  <LinkIcon className="h-4 w-4" />
+                                  Atividades vinculadas & Histórico
+                                </span>
+                                <ChevronDown className={cn("h-4 w-4 transition-transform", isExpanded && "rotate-180")} />
+                              </Button>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent className="space-y-4 pt-4">
+                              {user && (
+                                <GoalLinksManager 
+                                  goal={goal} 
+                                  userId={user.id}
+                                />
+                              )}
+                              
+                              <div className="pt-2 border-t">
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+                                  <History className="h-4 w-4" />
+                                  <span>Histórico de Progresso</span>
+                                </div>
+                                <GoalProgressHistory goalId={goal.id} maxHeight="200px" />
+                              </div>
+                            </CollapsibleContent>
+                          </Collapsible>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              );
+            })
           )}
         </div>
       </motion.div>

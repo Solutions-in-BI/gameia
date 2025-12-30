@@ -81,26 +81,28 @@ export function GoalLinksManager({ goal, userId, compact = false }: GoalLinksMan
       if (goal.linked_training_ids?.length) {
         const { data: trainings } = await supabase
           .from("trainings")
-          .select("id, title")
+          .select("id, name")
           .in("id", goal.linked_training_ids);
 
         // Buscar progresso do usuário
         const { data: progress } = await supabase
           .from("user_training_progress")
-          .select("training_id, completed_at, progress_percentage")
+          .select("training_id, completed_at, progress_percent")
           .eq("user_id", userId)
           .in("training_id", goal.linked_training_ids);
 
-        const progressMap = new Map(progress?.map(p => [p.training_id, p]) || []);
+        const progressMap = new Map(
+          (progress || []).map((p: { training_id: string; completed_at: string | null; progress_percent: number | null }) => [p.training_id, p])
+        );
 
-        trainings?.forEach(t => {
-          const userProgress = progressMap.get(t.id);
+        (trainings || []).forEach((t: { id: string; name: string }) => {
+          const userProgress = progressMap.get(t.id) as { completed_at: string | null; progress_percent: number | null } | undefined;
           items.push({
             id: t.id,
-            name: t.title,
+            name: t.name,
             type: "training",
             completed: !!userProgress?.completed_at,
-            progress: userProgress?.progress_percentage || 0,
+            progress: userProgress?.progress_percent || 0,
             link: `/app/trainings/${t.id}`,
           });
         });
@@ -119,10 +121,12 @@ export function GoalLinksManager({ goal, userId, compact = false }: GoalLinksMan
           .eq("user_id", userId)
           .in("commitment_id", goal.linked_challenge_ids);
 
-        const participationMap = new Map(participation?.map(p => [p.commitment_id, p]) || []);
+        const participationMap = new Map(
+          (participation || []).map((p: { commitment_id: string; individual_progress: number }) => [p.commitment_id, p])
+        );
 
-        challenges?.forEach(c => {
-          const userPart = participationMap.get(c.id);
+        (challenges || []).forEach((c: { id: string; name: string; status: string }) => {
+          const userPart = participationMap.get(c.id) as { individual_progress: number } | undefined;
           items.push({
             id: c.id,
             name: c.name,
@@ -148,9 +152,9 @@ export function GoalLinksManager({ goal, userId, compact = false }: GoalLinksMan
           .in("test_id", goal.linked_cognitive_test_ids)
           .eq("status", "completed");
 
-        const completedTests = new Set(sessions?.map(s => s.test_id) || []);
+        const completedTests = new Set((sessions || []).map((s: { test_id: string }) => s.test_id));
 
-        tests?.forEach(t => {
+        (tests || []).forEach((t: { id: string; name: string }) => {
           items.push({
             id: t.id,
             name: t.name,

@@ -68,10 +68,11 @@ export function GoalProgressHistory({ goalId, maxHeight = "300px" }: GoalProgres
           {progressHistory.map((event, index) => {
             const config = SOURCE_CONFIG[event.source_type] || SOURCE_CONFIG.manual_checkin;
             const Icon = config.icon;
+            const eventDate = event.created_at;
 
             return (
               <motion.div
-                key={`${event.goal_id}-${event.created_at}-${index}`}
+                key={`${event.goal_id}-${eventDate || index}-${index}`}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.05 }}
@@ -113,13 +114,17 @@ export function GoalProgressHistory({ goalId, maxHeight = "300px" }: GoalProgres
                         <span>
                           {event.progress_before}% → {event.progress_after}%
                         </span>
-                        <span>•</span>
-                        <span>
-                          {formatDistanceToNow(new Date(event.created_at), {
-                            addSuffix: true,
-                            locale: ptBR,
-                          })}
-                        </span>
+                        {eventDate && (
+                          <>
+                            <span>•</span>
+                            <span>
+                              {formatDistanceToNow(new Date(eventDate), {
+                                addSuffix: true,
+                                locale: ptBR,
+                              })}
+                            </span>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>

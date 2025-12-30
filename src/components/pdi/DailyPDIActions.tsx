@@ -7,7 +7,7 @@ import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { 
   Sparkles, ArrowRight, BookOpen, Gamepad2, 
-  Trophy, Brain, Target, Clock, TrendingUp
+  Trophy, Brain, Target, TrendingUp
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -105,22 +105,30 @@ export function DailyPDIActions() {
 
       if (allTrainingIds.length === 0) return [];
 
-      // Buscar treinamentos
-      const { data: trainings } = await supabase
+      // Buscar treinamentos (coluna correta é "name", não "title")
+      const { data: trainings, error: trainingsError } = await supabase
         .from("trainings")
-        .select("id, title")
+        .select("id, name")
         .in("id", allTrainingIds);
 
-      // Buscar progresso do usuário
-      const { data: progress } = await supabase
+      if (trainingsError) throw trainingsError;
+
+      // Buscar progresso do usuário (coluna correta é "progress_percent")
+      const { data: progress, error: progressError } = await supabase
         .from("user_training_progress")
         .select("training_id, completed_at")
         .eq("user_id", user.id)
         .in("training_id", allTrainingIds);
 
-      const completedIds = new Set(progress?.filter(p => p.completed_at).map(p => p.training_id) || []);
+      if (progressError) throw progressError;
 
-      return trainings?.filter(t => !completedIds.has(t.id)) || [];
+      const completedIds = new Set(
+        (progress || [])
+          .filter((p: { training_id: string; completed_at: string | null }) => p.completed_at)
+          .map((p: { training_id: string }) => p.training_id)
+      );
+
+      return (trainings || []).filter((t: { id: string; name: string }) => !completedIds.has(t.id));
     },
     enabled: activeGoals.length > 0,
   });
@@ -130,7 +138,7 @@ export function DailyPDIActions() {
     const actions: RecommendedAction[] = [];
 
     // Adicionar treinamentos pendentes
-    pendingTrainings.slice(0, 2).forEach((training, index) => {
+    pendingTrainings.slice(0, 2).forEach((training: { id: string; name: string }, index: number) => {
       const relatedGoal = activeGoals.find(g => 
         g.linked_training_ids?.includes(training.id)
       );
@@ -138,7 +146,7 @@ export function DailyPDIActions() {
       actions.push({
         id: `training-${training.id}`,
         type: "training",
-        title: training.title,
+        title: training.name,
         description: "Avance neste treinamento para progredir na sua meta",
         goalTitle: relatedGoal?.title,
         link: `/app/trainings/${training.id}`,

@@ -84,40 +84,56 @@ export function LinkedEntitiesSelect({
   // Buscar entidades disponíveis
   const { data: entities = [], isLoading } = useQuery({
     queryKey: ["linked-entities", entityType, currentOrg?.id, skillId],
-    queryFn: async () => {
-      let query;
-
+    queryFn: async (): Promise<Entity[]> => {
       switch (entityType) {
-        case "training":
-          query = supabase
+        case "training": {
+          let query = supabase
             .from("trainings")
-            .select("id, title")
-            .eq("organization_id", currentOrg?.id)
-            .eq("is_published", true);
+            .select("id, name")
+            .eq("organization_id", currentOrg?.id || "")
+            .eq("is_active", true);
           
           if (skillId) {
             query = query.contains("skill_ids", [skillId]);
           }
-          break;
+          
+          const { data, error } = await query;
+          if (error) throw error;
+          return (data || []).map((item: { id: string; name: string }) => ({
+            id: item.id,
+            name: item.name,
+            type: "training" as EntityType,
+          }));
+        }
 
-        case "challenge":
-          query = supabase
+        case "challenge": {
+          const { data, error } = await supabase
             .from("commitments")
             .select("id, name")
-            .eq("organization_id", currentOrg?.id)
-            .in("status", ["active", "pending"]);
-          break;
+            .eq("organization_id", currentOrg?.id || "")
+            .in("status", ["active", "draft"]);
+          
+          if (error) throw error;
+          return (data || []).map((item: { id: string; name: string }) => ({
+            id: item.id,
+            name: item.name,
+            type: "challenge" as EntityType,
+          }));
+        }
 
-        case "cognitive_test":
-          query = supabase
+        case "cognitive_test": {
+          const { data, error } = await supabase
             .from("cognitive_tests")
             .select("id, name")
             .eq("is_active", true);
           
-          if (currentOrg?.id) {
-            query = query.or(`organization_id.eq.${currentOrg.id},organization_id.is.null`);
-          }
-          break;
+          if (error) throw error;
+          return (data || []).map((item: { id: string; name: string }) => ({
+            id: item.id,
+            name: item.name,
+            type: "cognitive_test" as EntityType,
+          }));
+        }
 
         case "game":
           // Jogos são pré-definidos no sistema
@@ -132,15 +148,6 @@ export function LinkedEntitiesSelect({
         default:
           return [];
       }
-
-      const { data, error } = await query;
-      if (error) throw error;
-
-      return (data || []).map((item: { id: string; title?: string; name?: string }) => ({
-        id: item.id,
-        name: item.title || item.name || "",
-        type: entityType,
-      }));
     },
     enabled: !!currentOrg?.id || entityType === "game",
   });

@@ -4,3 +4,4 @@ export { LinkedEntitiesSelect } from "./LinkedEntitiesSelect";
 export { GoalLinksManager } from "./GoalLinksManager";
 export { DailyPDIActions } from "./DailyPDIActions";
 export { GoalProgressHistory } from "./GoalProgressHistory";
+export { ManagerPDIOverview } from "./ManagerPDIOverview";
