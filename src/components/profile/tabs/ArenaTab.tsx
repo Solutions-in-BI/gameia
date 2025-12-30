@@ -127,7 +127,7 @@ export function ArenaTab() {
         <p className="text-muted-foreground mb-4">
           Explore jogos, treinamentos e desafios para evoluir suas skills.
         </p>
-        <Button onClick={() => navigate("/app?tab=arena")} className="gap-2">
+        <Button onClick={() => navigate("/app/arena")} className="gap-2">
           <Swords className="h-4 w-4" />
           Ir para Arena
         </Button>

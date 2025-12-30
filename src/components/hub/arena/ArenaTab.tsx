@@ -296,7 +296,7 @@ export function ArenaTab() {
             setShowChallengeDetail(true);
           }}
           onViewAllClick={() => {
-            window.location.href = "/app?tab=evolution&subtab=commitments";
+            window.location.href = "/app/evolution";
           }}
         />
       )}

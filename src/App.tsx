@@ -3,11 +3,11 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+// Marketing Pages
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
-import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
 import Pricing from "./pages/Pricing";
 import Product from "./pages/Product";
 import Services from "./pages/Services";
@@ -16,31 +16,45 @@ import Demo from "./pages/Demo";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Security from "./pages/Security";
+
+// Auth & Utility
+import Auth from "./pages/Auth";
+import Onboarding from "./pages/Onboarding";
+import Invite from "./pages/Invite";
+import CertificateVerify from "./pages/CertificateVerify";
+import NotFound from "./pages/NotFound";
+
+// Admin & Management
 import Admin from "./pages/Admin";
 import Manage from "./pages/Manage";
 import Console from "./pages/Console";
 import Profile from "./pages/Profile";
-import CertificateVerify from "./pages/CertificateVerify";
 import { AdminGuard } from "./components/auth/AdminGuard";
 import { AreaGuard } from "./components/auth/AreaGuard";
-import NotFound from "./pages/NotFound";
-import Subscription from "./pages/Subscription";
-import Onboarding from "./pages/Onboarding";
-import Invite from "./pages/Invite";
-import Trainings from "./pages/Trainings";
+
+// App Layout & Pages
+import { AppLayout } from "./components/layouts/AppLayout";
+import OverviewPage from "./pages/app/OverviewPage";
+import ArenaPage from "./pages/app/ArenaPage";
+import EvolutionPage from "./pages/app/EvolutionPage";
+import CaminhoPage from "./pages/app/CaminhoPage";
+import TrainingsListPage from "./pages/app/TrainingsListPage";
 import TrainingDetail from "./pages/TrainingDetail";
-import Marketplace from "./pages/Marketplace";
 import ModulePlayer from "./pages/ModulePlayer";
+import Marketplace from "./pages/Marketplace";
+
+// Legacy redirect
+import Dashboard from "./pages/Dashboard";
 
 // QueryClient otimizado para reduzir re-fetches desnecessários
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 20000,           // 20s antes de considerar stale
-      gcTime: 300000,             // 5min no garbage collection
-      refetchOnWindowFocus: false, // Não refetch ao focar janela
-      retry: 1,                    // Apenas 1 retry em erro
-      refetchOnMount: false,       // Não refetch ao montar se tiver cache válido
+      staleTime: 20000,
+      gcTime: 300000,
+      refetchOnWindowFocus: false,
+      retry: 1,
+      refetchOnMount: false,
     },
   },
 });
@@ -63,14 +77,21 @@ const App = () => (
           <Route path="/servicos" element={<Services />} />
           <Route path="/demo" element={<Demo />} />
           
-          {/* App Routes */}
-          <Route path="/app" element={<Dashboard />} />
+          {/* App Routes - Nested under AppLayout */}
+          <Route path="/app" element={<AppLayout />}>
+            <Route index element={<OverviewPage />} />
+            <Route path="arena" element={<ArenaPage />} />
+            <Route path="evolution" element={<EvolutionPage />} />
+            <Route path="caminho" element={<CaminhoPage />} />
+            <Route path="trainings" element={<TrainingsListPage />} />
+            <Route path="trainings/:id" element={<TrainingDetail />} />
+            <Route path="trainings/:trainingId/module/:moduleId" element={<ModulePlayer />} />
+            <Route path="marketplace" element={<Marketplace />} />
+          </Route>
+          
+          {/* Legacy redirect - keep for backwards compat */}
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/perfil" element={<Profile />} />
-          <Route path="/app/trainings" element={<Trainings />} />
-          <Route path="/app/trainings/:id" element={<TrainingDetail />} />
-          <Route path="/app/trainings/:trainingId/module/:moduleId" element={<ModulePlayer />} />
-          <Route path="/app/marketplace" element={<Marketplace />} />
           
           {/* Auth & Onboarding */}
           <Route path="/auth" element={<Auth />} />

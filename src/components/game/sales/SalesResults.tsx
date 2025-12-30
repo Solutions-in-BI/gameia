@@ -272,7 +272,7 @@ export function SalesResults({
       >
         <Button 
           variant="link" 
-          onClick={() => navigate('/app?tab=evolution')}
+          onClick={() => navigate('/app/evolution')}
           className="text-muted-foreground hover:text-primary"
         >
           <BarChart3 className="w-4 h-4 mr-2" />

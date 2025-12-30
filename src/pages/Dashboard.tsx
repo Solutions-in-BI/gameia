@@ -1,16 +1,11 @@
 /**
- * Gameia - Página Principal
- * Hub unificado: Overview, Arena, Evolução, Caminho
+ * Dashboard - Redireciona para /app
  */
 
-import { HubLayout } from "@/components/hub/HubLayout";
-import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
+import { Navigate } from "react-router-dom";
 
-const Index = () => {
-  // Ativa notificações em tempo real
-  useRealtimeNotifications();
-
-  return <HubLayout />;
+const Dashboard = () => {
+  return <Navigate to="/app" replace />;
 };
 
-export default Index;
+export default Dashboard;
