@@ -45,8 +45,8 @@ const CATEGORY_ICONS: Record<string, typeof Target> = {
 };
 
 export function EvolutionTemplatesSection() {
-  const { organization } = useOrganization();
-  const { templates, isLoading, createTemplate, updateTemplate, deleteTemplate, cloneTemplate } = useEvolutionTemplates(organization?.id);
+  const { currentOrg } = useOrganization();
+  const { templates, isLoading, createTemplate, updateTemplate, deleteTemplate, cloneTemplate } = useEvolutionTemplates(currentOrg?.id);
   
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<TemplateCategory | "all">("all");

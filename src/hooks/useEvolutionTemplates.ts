@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 
 export interface SkillImpact {
   skill_id: string;
@@ -66,6 +67,38 @@ export const IMPORTANCE_LABELS: Record<TemplateImportance, string> = {
   complementar: 'Complementar',
 };
 
+// Helper to convert DB row to typed EvolutionTemplate
+function parseTemplate(row: Record<string, unknown>): EvolutionTemplate {
+  const skillImpacts = row.skill_impacts;
+  const parsedSkillImpacts: SkillImpact[] = Array.isArray(skillImpacts) 
+    ? skillImpacts.map((s: unknown) => {
+        const item = s as Record<string, unknown>;
+        return {
+          skill_id: String(item.skill_id || ''),
+          weight: Number(item.weight || 0),
+        };
+      })
+    : [];
+
+  return {
+    id: String(row.id),
+    organization_id: row.organization_id as string | null,
+    name: String(row.name),
+    category: String(row.category),
+    level: String(row.level),
+    importance: String(row.importance),
+    skill_impacts: parsedSkillImpacts,
+    insignia_ids: (row.insignia_ids as string[]) || [],
+    generates_certificate: Boolean(row.generates_certificate),
+    certificate_min_score: Number(row.certificate_min_score || 80),
+    suggested_xp: Number(row.suggested_xp || 100),
+    suggested_coins: Number(row.suggested_coins || 50),
+    is_default: Boolean(row.is_default),
+    created_at: String(row.created_at),
+    updated_at: String(row.updated_at),
+  };
+}
+
 export function useEvolutionTemplates(orgId?: string) {
   const [templates, setTemplates] = useState<EvolutionTemplate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -90,13 +123,7 @@ export function useEvolutionTemplates(orgId?: string) {
       
       if (error) throw error;
       
-      // Parse skill_impacts from JSON
-      const parsed = (data || []).map(t => ({
-        ...t,
-        skill_impacts: Array.isArray(t.skill_impacts) ? t.skill_impacts : [],
-        insignia_ids: t.insignia_ids || [],
-      })) as EvolutionTemplate[];
-      
+      const parsed = (data || []).map(row => parseTemplate(row as Record<string, unknown>));
       setTemplates(parsed);
     } catch (error) {
       console.error("Error fetching evolution templates:", error);
@@ -142,13 +169,24 @@ export function useEvolutionTemplates(orgId?: string) {
     template: Omit<EvolutionTemplate, 'id' | 'created_at' | 'updated_at'>
   ) => {
     try {
+      const dbData = {
+        organization_id: orgId,
+        name: template.name,
+        category: template.category,
+        level: template.level,
+        importance: template.importance,
+        skill_impacts: template.skill_impacts as unknown as Json,
+        insignia_ids: template.insignia_ids,
+        generates_certificate: template.generates_certificate,
+        certificate_min_score: template.certificate_min_score,
+        suggested_xp: template.suggested_xp,
+        suggested_coins: template.suggested_coins,
+        is_default: template.is_default,
+      };
+
       const { data, error } = await supabase
         .from('evolution_templates')
-        .insert({
-          ...template,
-          organization_id: orgId,
-          skill_impacts: template.skill_impacts,
-        })
+        .insert(dbData)
         .select()
         .single();
 
@@ -167,12 +205,25 @@ export function useEvolutionTemplates(orgId?: string) {
     updates: Partial<EvolutionTemplate>
   ) => {
     try {
+      const dbUpdates: Record<string, unknown> = {
+        updated_at: new Date().toISOString(),
+      };
+      
+      if (updates.name !== undefined) dbUpdates.name = updates.name;
+      if (updates.category !== undefined) dbUpdates.category = updates.category;
+      if (updates.level !== undefined) dbUpdates.level = updates.level;
+      if (updates.importance !== undefined) dbUpdates.importance = updates.importance;
+      if (updates.skill_impacts !== undefined) dbUpdates.skill_impacts = updates.skill_impacts as unknown as Json;
+      if (updates.insignia_ids !== undefined) dbUpdates.insignia_ids = updates.insignia_ids;
+      if (updates.generates_certificate !== undefined) dbUpdates.generates_certificate = updates.generates_certificate;
+      if (updates.certificate_min_score !== undefined) dbUpdates.certificate_min_score = updates.certificate_min_score;
+      if (updates.suggested_xp !== undefined) dbUpdates.suggested_xp = updates.suggested_xp;
+      if (updates.suggested_coins !== undefined) dbUpdates.suggested_coins = updates.suggested_coins;
+      if (updates.is_default !== undefined) dbUpdates.is_default = updates.is_default;
+
       const { error } = await supabase
         .from('evolution_templates')
-        .update({
-          ...updates,
-          updated_at: new Date().toISOString(),
-        })
+        .update(dbUpdates)
         .eq('id', id);
 
       if (error) throw error;

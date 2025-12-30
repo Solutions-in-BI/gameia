@@ -31,9 +31,9 @@ import { useOrganization } from "@/hooks/useOrganization";
 import { toast } from "sonner";
 
 export function TrainingRewardsSection() {
-  const { organization } = useOrganization();
-  const { trainings, isLoading: trainingsLoading, updateTraining } = useTrainings(organization?.id);
-  const { configs, isLoading: configsLoading, upsertConfig } = useOrgTrainingConfig(organization?.id);
+  const { currentOrg } = useOrganization();
+  const { trainings, isLoading: trainingsLoading, updateTraining } = useTrainings(currentOrg?.id);
+  const { configs, isLoading: configsLoading, upsertConfig } = useOrgTrainingConfig(currentOrg?.id);
   
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
