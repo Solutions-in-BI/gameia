@@ -238,8 +238,8 @@ export default function JourneyPlayerPage() {
         <div className="text-center space-y-4">
           <Route className="w-16 h-16 text-muted-foreground mx-auto" />
           <h2 className="text-xl font-semibold">Jornada não encontrada</h2>
-          <Button onClick={() => navigate("/app/arena")}>
-            Voltar para Arena
+          <Button onClick={() => navigate("/app/development")}>
+            Voltar para Desenvolvimento
           </Button>
         </div>
       </div>
@@ -430,7 +430,7 @@ export default function JourneyPlayerPage() {
             <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate("/app/arena")}
+            onClick={() => navigate("/app/development")}
             className="gap-2"
           >
             <ArrowLeft className="w-4 h-4" />

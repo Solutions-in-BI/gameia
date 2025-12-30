@@ -3,7 +3,7 @@
  * Otimizado com queries paralelas e validação robusta
  */
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -52,14 +52,12 @@ export function useJourneyProgress(journeyId?: string) {
 
       // Queries paralelas para máxima performance
       const [journeyResult, journeyTrainingsResult, userProgressResult] = await Promise.all([
-        // Buscar jornada
         supabase
           .from("training_journeys")
           .select("*")
           .eq("id", journeyId)
           .maybeSingle(),
-        
-        // Buscar treinamentos da jornada com detalhes
+
         supabase
           .from("journey_trainings")
           .select(`
@@ -74,8 +72,7 @@ export function useJourneyProgress(journeyId?: string) {
           `)
           .eq("journey_id", journeyId)
           .order("order_index"),
-        
-        // Buscar progresso do usuário na jornada
+
         supabase
           .from("user_journey_progress")
           .select("*")
@@ -85,6 +82,9 @@ export function useJourneyProgress(journeyId?: string) {
       ]);
 
       if (journeyResult.error) throw journeyResult.error;
+      if (journeyTrainingsResult.error) throw journeyTrainingsResult.error;
+      if (userProgressResult.error) throw userProgressResult.error;
+
       if (!journeyResult.data) {
         setError("Jornada não encontrada");
         setIsLoading(false);
@@ -95,31 +95,42 @@ export function useJourneyProgress(journeyId?: string) {
       const journeyTrainings = journeyTrainingsResult.data || [];
       const userProgress = userProgressResult.data;
 
-      // Buscar progresso dos treinamentos em paralelo (se houver treinamentos)
-      const trainingIds = journeyTrainings.map(jt => jt.training_id);
-      let trainingProgress: any[] = [];
-      
-      if (trainingIds.length > 0) {
-        const { data: tpData, error: tpError } = await supabase
-          .from("user_training_progress")
-          .select("*")
-          .eq("user_id", user.id)
-          .in("training_id", trainingIds);
+      const trainingIds = journeyTrainings.map((jt) => jt.training_id);
 
-        if (tpError) throw tpError;
-        trainingProgress = tpData || [];
+      let trainingProgress: any[] = [];
+      const modulesCountByTraining: Record<string, number> = {};
+
+      if (trainingIds.length > 0) {
+        const [tpRes, modulesRes] = await Promise.all([
+          supabase
+            .from("user_training_progress")
+            .select("*")
+            .eq("user_id", user.id)
+            .in("training_id", trainingIds),
+          supabase
+            .from("training_modules")
+            .select("id, training_id")
+            .in("training_id", trainingIds),
+        ]);
+
+        if (tpRes.error) throw tpRes.error;
+        if (modulesRes.error) throw modulesRes.error;
+
+        trainingProgress = tpRes.data || [];
+        (modulesRes.data || []).forEach((m: any) => {
+          modulesCountByTraining[m.training_id] = (modulesCountByTraining[m.training_id] || 0) + 1;
+        });
       }
 
-      // Montar estrutura de progresso
       const trainingsProgress: JourneyTrainingProgress[] = journeyTrainings.map((jt, index) => {
         const training = jt.trainings as any;
         const tProgress = trainingProgress.find((tp: any) => tp.training_id === jt.training_id);
-        
-        // Verifica se o anterior está completo para determinar se está bloqueado
-        const prevCompleted = index === 0 || 
-          trainingProgress.find((tp: any) => 
-            tp.training_id === journeyTrainings[index - 1]?.training_id && 
-            tp.progress_percent === 100
+
+        const prevCompleted =
+          index === 0 ||
+          trainingProgress.find(
+            (tp: any) =>
+              tp.training_id === journeyTrainings[index - 1]?.training_id && tp.progress_percent === 100
           );
 
         const isCompleted = tProgress?.progress_percent === 100;
@@ -129,7 +140,7 @@ export function useJourneyProgress(journeyId?: string) {
           trainingId: jt.training_id,
           trainingName: training?.name || "Treinamento",
           orderIndex: jt.order_index,
-          modulesCount: 0,
+          modulesCount: modulesCountByTraining[jt.training_id] || 0,
           completedModules: tProgress?.current_module_index || 0,
           isCompleted,
           isLocked: isLocked && !isCompleted,
@@ -137,13 +148,10 @@ export function useJourneyProgress(journeyId?: string) {
         };
       });
 
-      const completedTrainings = trainingsProgress.filter(t => t.isCompleted).length;
+      const completedTrainings = trainingsProgress.filter((t) => t.isCompleted).length;
       const totalTrainings = trainingsProgress.length;
-      const progressPercent = totalTrainings > 0 
-        ? Math.round((completedTrainings / totalTrainings) * 100) 
-        : 0;
-
-      const currentTraining = trainingsProgress.find(t => t.isCurrent);
+      const progressPercent = totalTrainings > 0 ? Math.round((completedTrainings / totalTrainings) * 100) : 0;
+      const currentTraining = trainingsProgress.find((t) => t.isCurrent);
 
       setProgress({
         journeyId,
@@ -159,7 +167,6 @@ export function useJourneyProgress(journeyId?: string) {
         currentTrainingId: currentTraining?.trainingId || null,
         currentModuleId: null,
       });
-
     } catch (err) {
       console.error("Error fetching journey progress:", err);
       setError("Erro ao carregar progresso da jornada");
@@ -172,9 +179,7 @@ export function useJourneyProgress(journeyId?: string) {
     fetchProgress();
   }, [fetchProgress]);
 
-  // Iniciar jornada com validação robusta
   const startJourney = useCallback(async (): Promise<boolean> => {
-    // Validação de parâmetros antes do upsert
     if (!journeyId || journeyId.trim() === "") {
       console.error("startJourney: journeyId is missing or empty");
       toast.error("Erro: ID da jornada inválido");
@@ -190,20 +195,21 @@ export function useJourneyProgress(journeyId?: string) {
     try {
       const { error } = await supabase
         .from("user_journey_progress")
-        .upsert({
-          journey_id: journeyId,
-          user_id: user.id,
-          started_at: new Date().toISOString(),
-          progress_percent: 0,
-        }, {
-          onConflict: 'journey_id,user_id'
-        });
+        .upsert(
+          {
+            journey_id: journeyId,
+            user_id: user.id,
+            started_at: new Date().toISOString(),
+            trainings_completed: 0,
+          },
+          { onConflict: "journey_id,user_id" }
+        );
 
       if (error) {
         console.error("startJourney upsert error:", error);
         throw error;
       }
-      
+
       await fetchProgress();
       toast.success("Jornada iniciada!");
       return true;
@@ -214,64 +220,62 @@ export function useJourneyProgress(journeyId?: string) {
     }
   }, [journeyId, user, fetchProgress]);
 
-  // Completar treinamento dentro da jornada
-  const completeTraining = useCallback(async (trainingId: string) => {
-    if (!journeyId || !user || !progress) return;
+  const completeTraining = useCallback(
+    async (trainingId: string) => {
+      if (!journeyId || !user || !progress) return;
 
-    try {
-      // Atualizar progresso do treinamento
-      const { error: tpError } = await supabase
-        .from("user_training_progress")
-        .upsert({
+      try {
+        const { error: tpError } = await supabase.from("user_training_progress").upsert({
           training_id: trainingId,
           user_id: user.id,
           progress_percent: 100,
           completed_at: new Date().toISOString(),
         });
 
-      if (tpError) throw tpError;
+        if (tpError) throw tpError;
 
-      // Recalcular progresso da jornada
-      const newCompletedTrainings = progress.completedTrainings + 1;
-      const newProgressPercent = Math.round((newCompletedTrainings / progress.totalTrainings) * 100);
-      const isNowComplete = newProgressPercent === 100;
+        const newCompletedTrainings = progress.completedTrainings + 1;
+        const newProgressPercent = Math.round((newCompletedTrainings / progress.totalTrainings) * 100);
+        const isNowComplete = newProgressPercent === 100;
 
-      const { error: jpError } = await supabase
-        .from("user_journey_progress")
-        .update({
-          progress_percent: newProgressPercent,
-          current_training_index: newCompletedTrainings,
-          completed_at: isNowComplete ? new Date().toISOString() : null,
-        })
-        .eq("journey_id", journeyId)
-        .eq("user_id", user.id);
+        const { error: jpError } = await supabase
+          .from("user_journey_progress")
+          .update({
+            trainings_completed: newCompletedTrainings,
+            completed_at: isNowComplete ? new Date().toISOString() : null,
+          })
+          .eq("journey_id", journeyId)
+          .eq("user_id", user.id);
 
-      if (jpError) throw jpError;
+        if (jpError) throw jpError;
 
-      await fetchProgress();
-      
-      if (isNowComplete) {
-        toast.success("🎉 Jornada concluída! Parabéns!");
-      } else {
-        toast.success("Treinamento concluído!");
+        await fetchProgress();
+
+        if (isNowComplete) {
+          toast.success("🎉 Jornada concluída! Parabéns!");
+        } else {
+          toast.success("Treinamento concluído!");
+        }
+      } catch (err) {
+        console.error("Error completing training:", err);
+        toast.error("Erro ao completar treinamento");
       }
-    } catch (err) {
-      console.error("Error completing training:", err);
-      toast.error("Erro ao completar treinamento");
-    }
-  }, [journeyId, user, progress, fetchProgress]);
+    },
+    [journeyId, user, progress, fetchProgress]
+  );
 
-  // Verificar se pode acessar um treinamento específico
-  const canAccessTraining = useCallback((trainingId: string) => {
-    if (!progress) return false;
-    const training = progress.trainings.find(t => t.trainingId === trainingId);
-    return training && !training.isLocked;
-  }, [progress]);
+  const canAccessTraining = useCallback(
+    (trainingId: string) => {
+      if (!progress) return false;
+      const training = progress.trainings.find((t) => t.trainingId === trainingId);
+      return !!training && !training.isLocked;
+    },
+    [progress]
+  );
 
-  // Obter próximo treinamento disponível
   const getNextTraining = useCallback(() => {
     if (!progress) return null;
-    return progress.trainings.find(t => !t.isCompleted && !t.isLocked);
+    return progress.trainings.find((t) => !t.isCompleted && !t.isLocked);
   }, [progress]);
 
   return {
