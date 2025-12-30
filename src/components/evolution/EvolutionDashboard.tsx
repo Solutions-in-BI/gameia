@@ -1,9 +1,8 @@
 /**
  * EvolutionDashboard - Dashboard unificado de evolução
- * Combina skills, jogos, testes, feedback e PDI em uma visão única
+ * Hub inteligente com alertas proativos, status de saúde e CTAs claros
  */
 
-import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Brain,
@@ -19,6 +18,8 @@ import {
   CheckCircle2,
   AlertCircle,
   BarChart3,
+  Gamepad2,
+  GraduationCap,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,11 +28,15 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSkillImpact, SourceType } from "@/hooks/useSkillImpact";
 import { useSkillProgress } from "@/hooks/useSkillProgress";
+import { useEvolutionAlerts } from "@/hooks/useEvolutionAlerts";
 import { ContextualAssessmentsPanel } from "./ContextualAssessmentsPanel";
+import { EvolutionAlertsPanel } from "./EvolutionAlertsPanel";
+import { EvolutionStatusIndicator } from "./EvolutionStatusIndicator";
 import { format, formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useNavigate } from "react-router-dom";
 
-export type EvolutionTab = "overview" | "cognitive" | "assessments" | "pdi" | "one-on-one" | "profile";
+export type EvolutionTab = "overview" | "cognitive" | "assessments" | "pdi" | "one-on-one" | "profile" | "commitments";
 
 interface EvolutionDashboardProps {
   onTabChange: (tab: EvolutionTab) => void;
@@ -49,8 +54,10 @@ const SOURCE_CONFIG: Record<SourceType, { label: string; icon: typeof Brain; col
 };
 
 export function EvolutionDashboard({ onTabChange }: EvolutionDashboardProps) {
+  const navigate = useNavigate();
   const { suggestions, evolutionTimeline, suggestionsLoading, timelineLoading } = useSkillImpact();
   const { skills, isLoading: skillsLoading } = useSkillProgress();
+  const { stats: alertStats, unreadAlerts } = useEvolutionAlerts();
 
   const isLoading = suggestionsLoading || timelineLoading || skillsLoading;
 
@@ -64,10 +71,17 @@ export function EvolutionDashboard({ onTabChange }: EvolutionDashboardProps) {
   const upcomingMeetings = suggestions?.upcoming_1on1s?.length || 0;
   const weakSkillsCount = suggestions?.weak_skills?.length || 0;
 
+  // Calculate weekly stats
+  const weeklyXP = evolutionTimeline?.reduce((sum, e) => 
+    e.impact_type === "xp_gain" ? sum + (e.impact_value || 0) : sum, 0) || 0;
+  const completedThisWeek = evolutionTimeline?.length || 0;
+  const activeStreak = 0; // TODO: get from user_streaks
+
   if (isLoading) {
     return (
-      <div className="space-y-6 p-6">
+      <div className="space-y-6">
         <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-24" />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
             <Skeleton key={i} className="h-32" />
@@ -79,7 +93,7 @@ export function EvolutionDashboard({ onTabChange }: EvolutionDashboardProps) {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -88,10 +102,22 @@ export function EvolutionDashboard({ onTabChange }: EvolutionDashboardProps) {
             Minha Evolução
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Acompanhe seu desenvolvimento em tempo real
+            Acompanhe seu desenvolvimento e tome ações baseadas em dados
           </p>
         </div>
       </div>
+
+      {/* Evolution Status Indicator */}
+      <EvolutionStatusIndicator
+        activeStreak={activeStreak}
+        weeklyXP={weeklyXP}
+        pendingActions={pendingActions + alertStats.unread}
+        weakSkillsCount={weakSkillsCount}
+        completedThisWeek={completedThisWeek}
+      />
+
+      {/* Proactive Alerts Panel */}
+      <EvolutionAlertsPanel maxAlerts={3} />
 
       {/* Contextual Assessments Panel */}
       <ContextualAssessmentsPanel />

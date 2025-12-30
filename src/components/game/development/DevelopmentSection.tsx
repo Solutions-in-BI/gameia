@@ -11,7 +11,7 @@ import { PDISection } from "./PDISection";
 import { Assessment360Section } from "./Assessment360Section";
 import { OneOnOneSection } from "./OneOnOneSection";
 
-export type EvolutionTab = "overview" | "cognitive" | "assessments" | "pdi" | "one-on-one" | "profile";
+export type EvolutionTab = "overview" | "cognitive" | "assessments" | "pdi" | "one-on-one" | "profile" | "commitments";
 
 export function DevelopmentSection() {
   const [activeTab, setActiveTab] = useState<EvolutionTab>("overview");
