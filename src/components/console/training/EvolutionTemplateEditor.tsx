@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -23,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Check, Sparkles } from "lucide-react";
+import { Loader2, Check, Sparkles, Target, Award } from "lucide-react";
 import { 
   EvolutionTemplate, 
   CATEGORY_LABELS, 
@@ -33,6 +34,8 @@ import {
   TemplateLevel,
   TemplateImportance,
 } from "@/hooks/useEvolutionTemplates";
+import { useSkillProgress } from "@/hooks/useSkillProgress";
+import { useInsignias } from "@/hooks/useInsignias";
 
 interface EvolutionTemplateEditorProps {
   isOpen: boolean;
@@ -47,6 +50,9 @@ export function EvolutionTemplateEditor({
   template,
   onSave,
 }: EvolutionTemplateEditorProps) {
+  const { skills: allSkills } = useSkillProgress();
+  const { insignias: allInsignias } = useInsignias();
+  
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -305,13 +311,68 @@ export function EvolutionTemplateEditor({
               </div>
             </div>
 
-            {/* Skills and Insignias - Placeholder for future enhancement */}
-            <div className="p-4 bg-muted/30 rounded-xl">
-              <h3 className="font-medium text-foreground mb-2">Skills e Insígnias</h3>
-              <p className="text-sm text-muted-foreground">
-                A configuração de skills impactadas e insígnias concedidas estará disponível em breve. 
-                Por enquanto, estas serão definidas manualmente em cada treinamento.
-              </p>
+            {/* Skills and Insignias */}
+            <div className="space-y-4">
+              <h3 className="font-medium text-foreground">Skills e Insígnias</h3>
+              
+              {/* Skills Impactadas */}
+              <div className="p-4 bg-muted/30 rounded-xl space-y-3">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <Target className="w-4 h-4 text-primary" />
+                  Skills Impactadas
+                </div>
+                {formData.skill_impacts.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {formData.skill_impacts.map((impact) => {
+                      const skill = allSkills.find(s => s.id === impact.skill_id);
+                      return (
+                        <Badge 
+                          key={impact.skill_id} 
+                          variant="secondary"
+                          className="flex items-center gap-1.5 px-3 py-1"
+                        >
+                          <span>{skill?.icon || '🎯'}</span>
+                          <span>{skill?.name || 'Skill'}</span>
+                          <span className="text-muted-foreground ml-1">({impact.weight}%)</span>
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Nenhuma skill configurada para este template
+                  </p>
+                )}
+              </div>
+
+              {/* Insígnias Concedidas */}
+              <div className="p-4 bg-muted/30 rounded-xl space-y-3">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <Award className="w-4 h-4 text-amber-500" />
+                  Insígnias Concedidas
+                </div>
+                {formData.insignia_ids.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {formData.insignia_ids.map((insigniaId) => {
+                      const insignia = allInsignias.find(i => i.id === insigniaId);
+                      return (
+                        <Badge 
+                          key={insigniaId} 
+                          variant="outline"
+                          className="flex items-center gap-1.5 px-3 py-1 border-amber-500/30 bg-amber-500/5"
+                        >
+                          <span>{insignia?.icon || '🏅'}</span>
+                          <span>{insignia?.name || 'Insígnia'}</span>
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Nenhuma insígnia configurada para este template
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </ScrollArea>
