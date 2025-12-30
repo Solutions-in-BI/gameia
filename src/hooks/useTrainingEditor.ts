@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import type { Database } from "@/integrations/supabase/types";
 
+type TrainingModuleInsert = Database['public']['Tables']['training_modules']['Insert'];
+type TrainingModuleUpdate = Database['public']['Tables']['training_modules']['Update'];
 export interface TrainingModule {
   id: string;
   training_id: string;
@@ -144,10 +147,13 @@ export function useTrainingEditor(trainingId: string): UseTrainingEditorResult {
     );
     const maxOrder = siblings.reduce((max, m) => Math.max(max, m.order_index), -1);
 
-    const newModule = {
+    const moduleKey = `module_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    const newModule: TrainingModuleInsert = {
       training_id: trainingId,
+      module_key: moduleKey,
       name: parentId ? "Nova Etapa" : "Novo Módulo",
-      description: null as string | null,
+      description: null,
       content_type: "text",
       step_type: "content",
       order_index: maxOrder + 1,
@@ -218,9 +224,11 @@ export function useTrainingEditor(trainingId: string): UseTrainingEditorResult {
     const maxOrder = siblings.reduce((max, m) => Math.max(max, m.order_index), -1);
 
     const { id: _id, numbering: _numbering, ...rest } = original;
+    const copyModuleKey = `module_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    const insertData = {
+    const insertData: TrainingModuleInsert = {
       training_id: rest.training_id,
+      module_key: copyModuleKey,
       name: `${original.name} (cópia)`,
       description: rest.description,
       content_type: rest.content_type,
@@ -285,10 +293,30 @@ export function useTrainingEditor(trainingId: string): UseTrainingEditorResult {
       });
 
       for (const module of updates) {
-        const { id, numbering, ...data } = module;
+        const { id, numbering, ...rest } = module;
+        // Build update data with proper types
+        const updateData: TrainingModuleUpdate = {
+          name: rest.name,
+          description: rest.description,
+          content_type: rest.content_type,
+          order_index: rest.order_index,
+          xp_reward: rest.xp_reward,
+          coins_reward: rest.coins_reward,
+          time_minutes: rest.time_minutes,
+          is_required: rest.is_required,
+          is_optional: rest.is_optional,
+          is_checkpoint: rest.is_checkpoint,
+          min_score: rest.min_score,
+          step_type: rest.step_type,
+          video_url: rest.video_url,
+          parent_module_id: rest.parent_module_id,
+          level: rest.level,
+          is_preview_available: rest.is_preview_available,
+          skill_ids: rest.skill_ids,
+        };
         const { error } = await supabase
           .from("training_modules")
-          .update(data)
+          .update(updateData)
           .eq("id", id);
 
         if (error) throw error;
