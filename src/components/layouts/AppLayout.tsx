@@ -231,6 +231,12 @@ export function AppLayout() {
                         <DropdownMenu key={section.path}>
                           <DropdownMenuTrigger asChild>
                             <button
+                              onClick={() => {
+                                // Navigate to section on click (first subtab)
+                                if (!active) {
+                                  handleSectionChange(section.path, section.subnav?.[0]?.id);
+                                }
+                              }}
                               className={cn(
                                 "relative flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200",
                                 active

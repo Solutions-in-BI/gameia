@@ -5,10 +5,6 @@
  */
 
 import { useSearchParams } from "react-router-dom";
-import { 
-  TrendingUp, 
-} from "lucide-react";
-import { HubHeader } from "../common";
 import { EvolutionDashboard } from "@/components/evolution/EvolutionDashboard";
 import { ManagerEvolutionView } from "@/components/evolution/ManagerEvolutionView";
 import { SkillsPage } from "@/components/game/skills";
@@ -70,13 +66,6 @@ export function EvolutionTab() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <HubHeader
-        title="Evolução"
-        subtitle="Acompanhe seu desenvolvimento profissional"
-        icon={TrendingUp}
-      />
-
       {/* Content - No more internal subtabs, controlled by sidebar */}
       <div>{renderContent()}</div>
     </div>
