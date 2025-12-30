@@ -2,9 +2,10 @@
  * RecommendationsCarousel - Carrossel de recomendações para início
  */
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import useEmblaCarousel from "embla-carousel-react";
+import Autoplay from "embla-carousel-autoplay";
 import { 
   Play, 
   Route, 
@@ -16,9 +17,7 @@ import {
   Award,
   ArrowRight,
   Sparkles,
-  TrendingUp,
-  ChevronLeft,
-  ChevronRight
+  TrendingUp
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -86,27 +85,25 @@ export function RecommendationsCarousel({
   recommendations, 
   className 
 }: RecommendationsCarouselProps) {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ 
-    loop: true,
-    align: "start"
-  });
+  const [emblaRef, emblaApi] = useEmblaCarousel(
+    { loop: true, align: "start" },
+    [Autoplay({ delay: 5000, stopOnInteraction: false })]
+  );
   const [selectedIndex, setSelectedIndex] = useState(0);
-
-  const scrollPrev = useCallback(() => {
-    if (emblaApi) emblaApi.scrollPrev();
-  }, [emblaApi]);
-
-  const scrollNext = useCallback(() => {
-    if (emblaApi) emblaApi.scrollNext();
-  }, [emblaApi]);
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
     setSelectedIndex(emblaApi.selectedScrollSnap());
   }, [emblaApi]);
 
-  // Subscribe to scroll events
-  emblaApi?.on("select", onSelect);
+  useEffect(() => {
+    if (!emblaApi) return;
+    emblaApi.on("select", onSelect);
+    onSelect();
+    return () => {
+      emblaApi.off("select", onSelect);
+    };
+  }, [emblaApi, onSelect]);
 
   if (recommendations.length === 0) return null;
 
@@ -121,43 +118,22 @@ export function RecommendationsCarousel({
         </div>
       </div>
 
-      {/* Navigation */}
+      {/* Dots */}
       {recommendations.length > 1 && (
-        <>
-          {/* Arrows */}
-          <Button
-            variant="outline"
-            size="icon"
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm z-10 h-8 w-8"
-            onClick={scrollPrev}
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm z-10 h-8 w-8"
-            onClick={scrollNext}
-          >
-            <ChevronRight className="w-4 h-4" />
-          </Button>
-
-          {/* Dots */}
-          <div className="flex justify-center gap-2 mt-4">
-            {recommendations.map((_, index) => (
-              <button
-                key={index}
-                className={cn(
-                  "w-2 h-2 rounded-full transition-all",
-                  index === selectedIndex 
-                    ? "bg-primary w-6" 
-                    : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
-                )}
-                onClick={() => emblaApi?.scrollTo(index)}
-              />
-            ))}
-          </div>
-        </>
+        <div className="flex justify-center gap-2 mt-4">
+          {recommendations.map((_, index) => (
+            <button
+              key={index}
+              className={cn(
+                "w-2 h-2 rounded-full transition-all",
+                index === selectedIndex 
+                  ? "bg-primary w-6" 
+                  : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
+              )}
+              onClick={() => emblaApi?.scrollTo(index)}
+            />
+          ))}
+        </div>
       )}
     </div>
   );
