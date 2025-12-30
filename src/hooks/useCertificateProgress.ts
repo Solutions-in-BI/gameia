@@ -97,15 +97,15 @@ export function useCertificateProgress() {
           switch (p.certificate_type) {
             case 'training':
               actionLabel = "Ver treinamento";
-              actionPath = p.target_id ? `/app/trainings/${p.target_id}` : "/app/trainings";
+              actionPath = p.target_id ? `/app/development?tab=trainings&training=${p.target_id}` : "/app/development?tab=trainings";
               break;
             case 'journey':
               actionLabel = "Continuar jornada";
-              actionPath = p.target_id ? `/app/journeys/${p.target_id}` : "/app/caminho";
+              actionPath = p.target_id ? `/app/development?tab=journeys&journey=${p.target_id}` : "/app/development?tab=journeys";
               break;
             case 'skill':
               actionLabel = "Desenvolver skill";
-              actionPath = "/app/development";
+              actionPath = "/app/development?tab=trainings";
               break;
             case 'level':
               actionLabel = "Ver evolução";
@@ -113,7 +113,7 @@ export function useCertificateProgress() {
               break;
             case 'behavioral':
               actionLabel = "Ver avaliações";
-              actionPath = "/app/development";
+              actionPath = "/app/development?tab=trainings";
               break;
           }
 
