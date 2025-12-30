@@ -1,10 +1,9 @@
 /**
  * DevelopmentTab - Tab "Desenvolvimento" do hub
  * Aprendizado estruturado: Jornadas, Treinamentos, Certificados
- * Foco em progressão educacional e não em prática
+ * Sub-navegação via sidebar lateral (não mais tabs internas)
  */
 
-import { useState } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { 
@@ -16,8 +15,8 @@ import {
   CheckCircle2,
   Play,
   TrendingUp,
-  Sparkles
 } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import { HubHeader, HubCard, HubButton, HubEmptyState } from "../common";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -29,14 +28,9 @@ import { useOrganization } from "@/hooks/useOrganization";
 
 type DevelopmentSubtab = "journeys" | "trainings" | "certificates";
 
-const SUBTABS = [
-  { id: "journeys" as const, label: "Jornadas", icon: Route },
-  { id: "trainings" as const, label: "Treinamentos", icon: GraduationCap },
-  { id: "certificates" as const, label: "Certificados", icon: Award },
-];
-
 export function DevelopmentTab() {
-  const [subtab, setSubtab] = useState<DevelopmentSubtab>("journeys");
+  const [searchParams] = useSearchParams();
+  const subtab = (searchParams.get("tab") as DevelopmentSubtab) || "journeys";
   const { currentOrg } = useOrganization();
   
   // Data hooks
@@ -128,26 +122,7 @@ export function DevelopmentTab() {
         />
       </div>
 
-      {/* Subtabs */}
-      <div className="flex items-center gap-1 overflow-x-auto pb-2 bg-muted/30 p-1 rounded-xl">
-        {SUBTABS.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setSubtab(tab.id)}
-            className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all",
-              subtab === tab.id
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <tab.icon className="w-4 h-4" />
-            <span>{tab.label}</span>
-          </button>
-        ))}
-      </div>
-
-      {/* Content */}
+      {/* Content - No more internal subtabs, controlled by sidebar */}
       <div>{renderContent()}</div>
     </div>
   );
@@ -490,7 +465,6 @@ function TrainingsSection({
                   difficulty={(training.difficulty as "easy" | "medium" | "hard") || "medium"}
                   xpReward={training.xp_reward || 100}
                   coinsReward={training.coins_reward || 50}
-                  progress={100}
                   isCompleted
                   onClick={() => window.location.href = `/app/trainings/${training.id}`}
                 />
@@ -509,43 +483,34 @@ function CertificatesSection({ certificates }: { certificates: any[] }) {
     return (
       <HubEmptyState
         icon={Award}
-        title="Nenhum certificado conquistado"
-        description="Complete jornadas e treinamentos para obter certificados"
-        actionLabel="Ver Jornadas"
-        onAction={() => {}}
+        title="Nenhum certificado obtido"
+        description="Complete treinamentos com certificação para obtê-los"
       />
     );
   }
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {certificates.map((cert, index) => (
-          <motion.div
-            key={cert.id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05 }}
-          >
-            <HubCard className="p-4 bg-gradient-to-br from-amber-500/10 to-transparent border-amber-500/20">
-              <div className="flex items-start gap-3">
-                <div className="p-3 rounded-xl bg-amber-500/20">
-                  <Award className="w-6 h-6 text-amber-500" />
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold">{cert.name}</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Certificado de conclusão
-                  </p>
-                  <HubButton variant="outline" size="sm" className="mt-3">
-                    Ver Certificado
-                  </HubButton>
-                </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {certificates.map((cert, index) => (
+        <motion.div
+          key={cert.id}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: index * 0.03 }}
+        >
+          <HubCard className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-lg bg-amber-500/10">
+                <Award className="w-6 h-6 text-amber-500" />
               </div>
-            </HubCard>
-          </motion.div>
-        ))}
-      </div>
+              <div>
+                <h4 className="font-medium">{cert.name}</h4>
+                <p className="text-sm text-muted-foreground">Certificado obtido</p>
+              </div>
+            </div>
+          </HubCard>
+        </motion.div>
+      ))}
     </div>
   );
 }

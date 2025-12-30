@@ -1,22 +1,12 @@
 /**
  * EvolutionTab - Tab "Evolução" do hub
  * Mostra RESULTADOS e histórico (não inicia experiências)
- * Subtabs: Resumo, Histórico, Desafios, Insígnias, Skills, PDI, Feedback, 1:1, Time (gestor)
+ * Sub-navegação via sidebar lateral (não mais tabs internas)
  */
 
-import { useState } from "react";
-import { cn } from "@/lib/utils";
+import { useSearchParams } from "react-router-dom";
 import { 
   TrendingUp, 
-  Target, 
-  Users, 
-  Calendar, 
-  Brain,
-  BarChart3,
-  Award,
-  History,
-  Sparkles,
-  UsersRound
 } from "lucide-react";
 import { HubHeader } from "../common";
 import { EvolutionDashboard } from "@/components/evolution/EvolutionDashboard";
@@ -25,7 +15,6 @@ import { SkillsPage } from "@/components/game/skills";
 import { PDISection } from "@/components/game/development/PDISection";
 import { Assessment360Section } from "@/components/game/development/Assessment360Section";
 import { OneOnOneSection } from "@/components/game/development/OneOnOneSection";
-import { MyCognitiveProfile } from "@/components/game/development/MyCognitiveProfile";
 import { InsigniasSubtab } from "./InsigniasSubtab";
 import { ChallengesSubtab } from "./ChallengesSubtab";
 import { HistorySubtab } from "./HistorySubtab";
@@ -33,25 +22,16 @@ import { useOrganization } from "@/hooks/useOrganization";
 
 type EvolutionSubtab = "summary" | "history" | "challenges" | "insignias" | "skills" | "pdi" | "feedback" | "1on1" | "team";
 
-const SUBTABS = [
-  { id: "summary" as const, label: "Resumo", icon: BarChart3 },
-  { id: "history" as const, label: "Histórico", icon: History },
-  { id: "challenges" as const, label: "Desafios", icon: Target },
-  { id: "insignias" as const, label: "Insígnias", icon: Award },
-  { id: "skills" as const, label: "Skills", icon: Sparkles },
-  { id: "pdi" as const, label: "PDI", icon: TrendingUp },
-  { id: "feedback" as const, label: "Feedback 360", icon: Users },
-  { id: "1on1" as const, label: "1:1", icon: Calendar },
-];
-
-const MANAGER_SUBTAB = { id: "team" as const, label: "Meu Time", icon: UsersRound };
-
 export function EvolutionTab() {
   const { isAdmin } = useOrganization();
-  const [subtab, setSubtab] = useState<EvolutionSubtab>("summary");
-  
-  // Gestores (admin/owner) veem a aba do time
-  const availableSubtabs = isAdmin ? [...SUBTABS, MANAGER_SUBTAB] : SUBTABS;
+  const [searchParams, setSearchParams] = useSearchParams();
+  const subtab = (searchParams.get("tab") as EvolutionSubtab) || "summary";
+
+  const handleSubtabChange = (newTab: EvolutionSubtab) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("tab", newTab);
+    setSearchParams(params, { replace: true });
+  };
 
   const renderContent = () => {
     switch (subtab) {
@@ -65,7 +45,7 @@ export function EvolutionTab() {
             profile: "history",
             commitments: "challenges",
           };
-          if (mapping[tab]) setSubtab(mapping[tab]);
+          if (mapping[tab]) handleSubtabChange(mapping[tab]);
         }} />;
       case "history":
         return <HistorySubtab />;
@@ -82,7 +62,7 @@ export function EvolutionTab() {
       case "1on1":
         return <OneOnOneSection />;
       case "team":
-        return <ManagerEvolutionView />;
+        return isAdmin ? <ManagerEvolutionView /> : null;
       default:
         return null;
     }
@@ -97,26 +77,7 @@ export function EvolutionTab() {
         icon={TrendingUp}
       />
 
-      {/* Subtabs */}
-      <div className="flex items-center gap-1 overflow-x-auto pb-2 bg-muted/30 p-1 rounded-xl">
-        {availableSubtabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setSubtab(tab.id)}
-            className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all",
-              subtab === tab.id
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <tab.icon className="w-4 h-4" />
-            <span className="hidden sm:inline">{tab.label}</span>
-          </button>
-        ))}
-      </div>
-
-      {/* Content */}
+      {/* Content - No more internal subtabs, controlled by sidebar */}
       <div>{renderContent()}</div>
     </div>
   );
