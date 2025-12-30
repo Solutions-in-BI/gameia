@@ -103,7 +103,7 @@ export function EvolutionTemplateSection({
               <SelectTrigger>
                 <SelectValue placeholder="Nenhum template selecionado" />
               </SelectTrigger>
-              <SelectContent className="bg-popover">
+              <SelectContent className="bg-popover z-50">
                 <SelectItem value="none">
                   <span className="text-muted-foreground">Nenhum template</span>
                 </SelectItem>

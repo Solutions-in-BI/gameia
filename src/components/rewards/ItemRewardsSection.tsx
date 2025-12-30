@@ -155,13 +155,13 @@ export function ItemRewardsSection({
                   <div className="space-y-2">
                     <Label className="text-sm">Item</Label>
                     <Select
-                      value={reward.item_id}
+                      value={reward.item_id || ""}
                       onValueChange={(value) => updateRewardItem(index, { item_id: value })}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione um item" />
                       </SelectTrigger>
-                      <SelectContent className="bg-popover">
+                      <SelectContent className="bg-popover z-50">
                         {availableItems.map((item) => (
                           <SelectItem key={item.id} value={item.id}>
                             <span className="flex items-center gap-2">
