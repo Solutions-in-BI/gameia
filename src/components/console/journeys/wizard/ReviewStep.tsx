@@ -36,10 +36,10 @@ function ReviewItem({ label, value, icon }: ReviewItemProps) {
 }
 
 export function ReviewStep({ formData }: ReviewStepProps) {
-  const { organization } = useOrganization();
-  const { trainings } = useTrainings(organization?.id);
-  const { insignias } = useInsignias(organization?.id);
-  const { templates } = useEvolutionTemplates(organization?.id);
+  const { currentOrg } = useOrganization();
+  const { trainings } = useTrainings(currentOrg?.id);
+  const { insignias } = useInsignias();
+  const { templates } = useEvolutionTemplates(currentOrg?.id);
 
   const categoryLabel = JOURNEY_CATEGORIES.find(c => c.value === formData.category)?.label || formData.category;
   const levelLabel = JOURNEY_LEVELS.find(l => l.value === formData.level)?.label || formData.level;

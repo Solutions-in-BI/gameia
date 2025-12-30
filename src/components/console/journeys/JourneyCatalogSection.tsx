@@ -35,130 +35,10 @@ import {
 import { useTrainingJourneys, JOURNEY_CATEGORIES, JOURNEY_LEVELS, TrainingJourney } from "@/hooks/useTrainingJourneys";
 import { useOrganization } from "@/hooks/useOrganization";
 import { JourneyWizard } from "./JourneyWizard";
-import { cn } from "@/lib/utils";
-
-const LEVEL_COLORS: Record<string, string> = {
-  iniciante: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
-  intermediario: "bg-amber-500/10 text-amber-500 border-amber-500/20",
-  avancado: "bg-orange-500/10 text-orange-500 border-orange-500/20",
-  especialista: "bg-rose-500/10 text-rose-500 border-rose-500/20",
-};
-
-const IMPORTANCE_COLORS: Record<string, string> = {
-  essencial: "bg-red-500/10 text-red-500 border-red-500/20",
-  estrategico: "bg-primary/10 text-primary border-primary/20",
-  complementar: "bg-muted text-muted-foreground border-border",
-};
-
-interface JourneyCardProps {
-  journey: TrainingJourney;
-  onEdit: () => void;
-  onDelete: () => void;
-  onToggleActive: () => void;
-}
-
-function JourneyCard({ journey, onEdit, onDelete, onToggleActive }: JourneyCardProps) {
-  const levelLabel = JOURNEY_LEVELS.find(l => l.value === journey.level)?.label || journey.level;
-  const categoryLabel = JOURNEY_CATEGORIES.find(c => c.value === journey.category)?.label || journey.category;
-
-  return (
-    <Card className={cn(
-      "group hover:border-primary/30 transition-all",
-      !journey.is_active && "opacity-60"
-    )}>
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-3">
-            <div 
-              className="w-10 h-10 rounded-lg flex items-center justify-center"
-              style={{ backgroundColor: `${journey.color}20` }}
-            >
-              <Route className="h-5 w-5" style={{ color: journey.color }} />
-            </div>
-            <div className="min-w-0">
-              <CardTitle className="text-base truncate">{journey.name}</CardTitle>
-              <p className="text-xs text-muted-foreground truncate">{categoryLabel}</p>
-            </div>
-          </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100">
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={onEdit}>
-                <Pencil className="h-4 w-4 mr-2" />
-                Editar
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={onToggleActive}>
-                {journey.is_active ? (
-                  <>
-                    <EyeOff className="h-4 w-4 mr-2" />
-                    Desativar
-                  </>
-                ) : (
-                  <>
-                    <Eye className="h-4 w-4 mr-2" />
-                    Ativar
-                  </>
-                )}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={onDelete} className="text-destructive">
-                <Trash2 className="h-4 w-4 mr-2" />
-                Excluir
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {journey.description && (
-          <p className="text-sm text-muted-foreground line-clamp-2">{journey.description}</p>
-        )}
-
-        <div className="flex flex-wrap gap-1.5">
-          <Badge variant="outline" className={LEVEL_COLORS[journey.level]}>
-            {levelLabel}
-          </Badge>
-          <Badge variant="outline" className={IMPORTANCE_COLORS[journey.importance]}>
-            {journey.importance}
-          </Badge>
-          {!journey.is_active && (
-            <Badge variant="outline" className="bg-muted">Inativo</Badge>
-          )}
-        </div>
-
-        <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border">
-          <div className="text-center">
-            <p className="text-lg font-semibold text-foreground">{journey.total_trainings}</p>
-            <p className="text-xs text-muted-foreground">Treinamentos</p>
-          </div>
-          <div className="text-center">
-            <p className="text-lg font-semibold text-foreground">{journey.total_estimated_hours}h</p>
-            <p className="text-xs text-muted-foreground">Duração</p>
-          </div>
-          <div className="text-center">
-            <p className="text-lg font-semibold text-primary">{journey.total_xp + journey.bonus_xp}</p>
-            <p className="text-xs text-muted-foreground">XP Total</p>
-          </div>
-        </div>
-
-        {journey.generates_certificate && (
-          <div className="flex items-center gap-2 pt-2 border-t border-border">
-            <Award className="h-4 w-4 text-amber-500" />
-            <span className="text-xs text-muted-foreground">Gera certificado</span>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
 
 export function JourneyCatalogSection() {
-  const { organization } = useOrganization();
-  const { journeys, isLoading, deleteJourney, toggleActive } = useTrainingJourneys(organization?.id);
+  const { currentOrg } = useOrganization();
+  const { journeys, isLoading, deleteJourney, toggleActive, refetch } = useTrainingJourneys(currentOrg?.id);
   
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
@@ -274,13 +154,85 @@ export function JourneyCatalogSection() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredJourneys.map(journey => (
-            <JourneyCard
-              key={journey.id}
-              journey={journey}
-              onEdit={() => setEditingJourney(journey)}
-              onDelete={() => setDeleteConfirm(journey)}
-              onToggleActive={() => handleToggleActive(journey)}
-            />
+            <Card key={journey.id} className="group relative">
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div 
+                      className="w-10 h-10 rounded-lg flex items-center justify-center"
+                      style={{ backgroundColor: `${journey.color}20` }}
+                    >
+                      <Route className="h-5 w-5" style={{ color: journey.color }} />
+                    </div>
+                    <div>
+                      <CardTitle className="text-base line-clamp-1">{journey.name}</CardTitle>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge variant="outline" className="text-xs">{journey.category}</Badge>
+                        <Badge variant="outline" className="text-xs">{journey.level}</Badge>
+                      </div>
+                    </div>
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => setEditingJourney(journey)}>
+                        <Pencil className="h-4 w-4 mr-2" />
+                        Editar
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleToggleActive(journey)}>
+                        {journey.is_active ? (
+                          <>
+                            <EyeOff className="h-4 w-4 mr-2" />
+                            Desativar
+                          </>
+                        ) : (
+                          <>
+                            <Eye className="h-4 w-4 mr-2" />
+                            Ativar
+                          </>
+                        )}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem 
+                        onClick={() => setDeleteConfirm(journey)}
+                        className="text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Excluir
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {journey.description && (
+                  <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                    {journey.description}
+                  </p>
+                )}
+                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1">
+                    <Users className="h-3 w-3" />
+                    {journey.total_trainings} treinos
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    {journey.total_estimated_hours}h
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Award className="h-3 w-3" />
+                    {journey.total_xp} XP
+                  </span>
+                </div>
+                {!journey.is_active && (
+                  <Badge variant="secondary" className="mt-2 text-xs">Inativo</Badge>
+                )}
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}
@@ -292,6 +244,11 @@ export function JourneyCatalogSection() {
           onClose={() => {
             setShowWizard(false);
             setEditingJourney(null);
+          }}
+          onSuccess={() => {
+            setShowWizard(false);
+            setEditingJourney(null);
+            refetch();
           }}
         />
       )}

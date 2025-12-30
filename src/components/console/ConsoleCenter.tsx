@@ -20,6 +20,7 @@ import { GameConfigurationHub } from "@/components/admin/games";
 import { OrgTrainingConfigSection, TrainingMetricsDashboard, TrainingReportsSection } from "./training";
 import { TrainingCatalogSection } from "./training/TrainingCatalogSection";
 import { EvolutionTemplatesSection } from "./training/EvolutionTemplatesSection";
+import { JourneyCatalogSection } from "./journeys";
 
 // Placeholder para seções ainda não migradas
 function UsersPermissionsSection() {
@@ -117,6 +118,8 @@ export function ConsoleCenter() {
       case "trainings":
       case "trainings-catalog":
         return <TrainingCatalogSection />;
+      case "trainings-journeys":
+        return <JourneyCatalogSection />;
       case "trainings-evolution":
         return <EvolutionTemplatesSection />;
       case "cognitive":

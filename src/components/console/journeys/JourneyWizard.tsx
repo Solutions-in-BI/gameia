@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 interface JourneyWizardProps {
   journey?: TrainingJourney | null;
   onClose: () => void;
+  onSuccess: () => void;
 }
 
 export interface JourneyFormData {
@@ -64,9 +65,9 @@ const generateKey = (name: string) => {
     .substring(0, 50);
 };
 
-export function JourneyWizard({ journey, onClose }: JourneyWizardProps) {
-  const { organization } = useOrganization();
-  const { createJourney, updateJourney, fetchJourneyTrainings } = useTrainingJourneys(organization?.id);
+export function JourneyWizard({ journey, onClose, onSuccess }: JourneyWizardProps) {
+  const { currentOrg } = useOrganization();
+  const { createJourney, updateJourney, fetchJourneyTrainings } = useTrainingJourneys(currentOrg?.id);
   
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -173,7 +174,7 @@ export function JourneyWizard({ journey, onClose }: JourneyWizardProps) {
       } else {
         await createJourney(data);
       }
-      onClose();
+      onSuccess();
     } catch (error) {
       console.error("Error saving journey:", error);
     } finally {
