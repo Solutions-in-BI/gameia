@@ -241,15 +241,19 @@ export function useItemRewards() {
   const getAvailableItems = useCallback(async (
     category?: string
   ): Promise<Array<{ id: string; name: string; icon: string; category: string; price: number }>> => {
-    if (!currentOrg?.id) return [];
-
     try {
       let query = supabase
         .from("marketplace_items")
         .select("id, name, icon, category, price")
-        .eq("organization_id", currentOrg.id)
         .eq("is_active", true)
         .order("name");
+
+      // Buscar itens da organização OU itens globais (sem organization_id)
+      if (currentOrg?.id) {
+        query = query.or(`organization_id.eq.${currentOrg.id},organization_id.is.null`);
+      } else {
+        query = query.is("organization_id", null);
+      }
 
       if (category) {
         query = query.eq("category", category);
