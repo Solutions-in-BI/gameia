@@ -4,6 +4,7 @@
  * Sub-navegação via sidebar lateral (não mais tabs internas)
  */
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { 
@@ -15,16 +16,27 @@ import {
   CheckCircle2,
   Play,
   TrendingUp,
+  Download,
+  ExternalLink,
+  Calendar,
+  Search,
 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { HubCard, HubButton, HubEmptyState } from "../common";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
 import { ExperienceCard } from "@/components/arena/ExperienceCard";
 import { JourneyCard } from "@/components/arena/JourneyCard";
+import { CertificateCard } from "@/components/certificates/CertificateCard";
+import { CertificateDetailModal } from "@/components/certificates/CertificateDetailModal";
 import { useTrainings } from "@/hooks/useTrainings";
 import { useTrainingJourneys } from "@/hooks/useTrainingJourneys";
 import { useOrganization } from "@/hooks/useOrganization";
+import { useCertificates, type CertificateWithDetails } from "@/hooks/useCertificates";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { toast } from "sonner";
 
 type DevelopmentSubtab = "journeys" | "trainings" | "certificates";
 
@@ -41,6 +53,7 @@ export function DevelopmentTab() {
     getCompletionPercentage,
     isLoading: journeysLoading 
   } = useTrainingJourneys(currentOrg?.id);
+  const { certificates, stats: certStats, isLoading: certificatesLoading, downloadCertificate } = useCertificates();
 
   // Filter active journeys
   const activeJourneys = journeys.filter(j => j.is_active);
@@ -56,9 +69,6 @@ export function DevelopmentTab() {
     const progress = getTrainingProgress(t.id);
     return progress?.progress_percent === 100;
   });
-
-  // Mock certificates (would come from DB)
-  const certificates = completedTrainings.filter(t => t.certificate_enabled);
 
   const renderContent = () => {
     switch (subtab) {
@@ -77,7 +87,12 @@ export function DevelopmentTab() {
           isLoading={trainingsLoading}
         />;
       case "certificates":
-        return <CertificatesSection certificates={certificates} />;
+        return <CertificatesSection 
+          certificates={certificates} 
+          stats={certStats}
+          isLoading={certificatesLoading}
+          onDownload={downloadCertificate}
+        />;
       default:
         return null;
     }
@@ -104,7 +119,8 @@ export function DevelopmentTab() {
         <StatCard 
           icon={Award} 
           label="Certificados" 
-          value={certificates.length}
+          value={certStats.total}
+          sublabel={certStats.active > 0 ? `${certStats.active} ativos` : undefined}
           color="amber"
         />
         <StatCard 
@@ -471,7 +487,27 @@ function TrainingsSection({
 }
 
 // Certificates Section
-function CertificatesSection({ certificates }: { certificates: any[] }) {
+interface CertificatesSectionProps {
+  certificates: CertificateWithDetails[];
+  stats: { total: number; active: number; expired: number; byCategory: Record<string, number> };
+  isLoading: boolean;
+  onDownload: (certificateId: string) => Promise<string | null>;
+}
+
+function CertificatesSection({ certificates, stats, isLoading, onDownload }: CertificatesSectionProps) {
+  const [selectedCertificate, setSelectedCertificate] = useState<CertificateWithDetails | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {[1, 2, 3].map(i => (
+          <div key={i} className="h-48 bg-muted/50 rounded-xl animate-pulse" />
+        ))}
+      </div>
+    );
+  }
+
   if (certificates.length === 0) {
     return (
       <HubEmptyState
@@ -482,28 +518,142 @@ function CertificatesSection({ certificates }: { certificates: any[] }) {
     );
   }
 
+  // Filter certificates
+  const filteredCertificates = certificates.filter(cert => {
+    const name = cert.metadata?.certificate_name || cert.training?.name || "";
+    return name.toLowerCase().includes(searchQuery.toLowerCase());
+  });
+
+  // Group by category
+  const categories = Object.keys(stats.byCategory);
+
+  const handleView = (cert: CertificateWithDetails) => {
+    setSelectedCertificate(cert);
+  };
+
+  const handleDownload = async (cert: CertificateWithDetails) => {
+    const url = await onDownload(cert.id);
+    if (url) {
+      window.open(url, '_blank');
+    }
+  };
+
+  const handleShare = (cert: CertificateWithDetails) => {
+    if (cert.verification_code) {
+      const url = `${window.location.origin}/certificates/${cert.verification_code}`;
+      navigator.clipboard.writeText(url);
+      toast.success("Link copiado!", {
+        description: "O link de verificação foi copiado para a área de transferência"
+      });
+    }
+  };
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {certificates.map((cert, index) => (
-        <motion.div
-          key={cert.id}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: index * 0.03 }}
-        >
-          <HubCard className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-lg bg-amber-500/10">
-                <Award className="w-6 h-6 text-amber-500" />
-              </div>
-              <div>
-                <h4 className="font-medium">{cert.name}</h4>
-                <p className="text-sm text-muted-foreground">Certificado obtido</p>
-              </div>
+    <div className="space-y-6">
+      {/* Stats Summary */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <HubCard className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-amber-500/10">
+              <Award className="w-4 h-4 text-amber-500" />
             </div>
-          </HubCard>
-        </motion.div>
-      ))}
+            <div>
+              <p className="text-2xl font-bold">{stats.total}</p>
+              <p className="text-xs text-muted-foreground">Total</p>
+            </div>
+          </div>
+        </HubCard>
+        <HubCard className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-green-500/10">
+              <CheckCircle2 className="w-4 h-4 text-green-500" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold">{stats.active}</p>
+              <p className="text-xs text-muted-foreground">Ativos</p>
+            </div>
+          </div>
+        </HubCard>
+        <HubCard className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-amber-500/10">
+              <Clock className="w-4 h-4 text-amber-500" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold">{stats.expired}</p>
+              <p className="text-xs text-muted-foreground">Expirados</p>
+            </div>
+          </div>
+        </HubCard>
+        <HubCard className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-blue-500/10">
+              <GraduationCap className="w-4 h-4 text-blue-500" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold">{categories.length}</p>
+              <p className="text-xs text-muted-foreground">Categorias</p>
+            </div>
+          </div>
+        </HubCard>
+      </div>
+
+      {/* Search */}
+      <div className="relative max-w-md">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Input
+          placeholder="Buscar certificados..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-9"
+        />
+      </div>
+
+      {/* Categories */}
+      {categories.length > 1 && (
+        <div className="flex gap-2 flex-wrap">
+          {categories.map(category => (
+            <Badge key={category} variant="outline" className="cursor-pointer hover:bg-primary/10">
+              {category} ({stats.byCategory[category]})
+            </Badge>
+          ))}
+        </div>
+      )}
+
+      {/* Certificates Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filteredCertificates.map((cert, index) => (
+          <motion.div
+            key={cert.id}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.03 }}
+          >
+            <CertificateCard
+              certificate={cert}
+              onView={() => handleView(cert)}
+              onDownload={() => handleDownload(cert)}
+              onShare={() => handleShare(cert)}
+            />
+          </motion.div>
+        ))}
+      </div>
+
+      {filteredCertificates.length === 0 && searchQuery && (
+        <div className="text-center py-8 text-muted-foreground">
+          Nenhum certificado encontrado para "{searchQuery}"
+        </div>
+      )}
+
+      {/* Certificate Detail Modal */}
+      {selectedCertificate && (
+        <CertificateDetailModal
+          certificate={selectedCertificate}
+          isOpen={!!selectedCertificate}
+          onClose={() => setSelectedCertificate(null)}
+          onDownload={() => handleDownload(selectedCertificate)}
+        />
+      )}
     </div>
   );
 }
