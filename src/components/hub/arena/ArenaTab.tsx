@@ -35,10 +35,6 @@ import { ChallengesHighlight, ChallengeDetailModal } from "@/components/challeng
 import { ExperienceCard } from "@/components/arena/ExperienceCard";
 
 // Games
-import { SnakeGame } from "@/components/game/snake/SnakeGame";
-import { MemoryGame } from "@/components/game/memory/MemoryGame";
-import { TetrisGame } from "@/components/game/tetris/TetrisGame";
-import { DinoGame } from "@/components/game/dino/DinoGame";
 import { QuizMasterGame } from "@/components/game/enterprise/QuizMasterGame";
 import { DecisionGame } from "@/components/game/enterprise/DecisionGame";
 import { AIScenarioGame } from "@/components/game/enterprise/AIScenarioGame";
@@ -118,50 +114,6 @@ const GAMES: GameItem[] = [
     duration: "15 min",
     isNew: true,
   },
-  {
-    id: "memory",
-    name: "Jogo da Memória",
-    description: "Treine sua memória encontrando pares",
-    icon: Grid3X3,
-    category: "games",
-    skills: ["Memória", "Concentração"],
-    xpReward: 25,
-    difficulty: "easy",
-    duration: "3-5 min",
-  },
-  {
-    id: "snake",
-    name: "Snake Game",
-    description: "Clássico jogo da cobrinha",
-    icon: Gamepad2,
-    category: "games",
-    skills: ["Reflexos", "Coordenação"],
-    xpReward: 20,
-    difficulty: "medium",
-    duration: "5 min",
-  },
-  {
-    id: "tetris",
-    name: "Tetris",
-    description: "Encaixe as peças e faça linhas",
-    icon: Puzzle,
-    category: "games",
-    skills: ["Raciocínio Espacial", "Velocidade"],
-    xpReward: 30,
-    difficulty: "medium",
-    duration: "5-10 min",
-  },
-  {
-    id: "dino",
-    name: "Dino Run",
-    description: "Pule os obstáculos e sobreviva",
-    icon: Zap,
-    category: "games",
-    skills: ["Reflexos", "Timing"],
-    xpReward: 15,
-    difficulty: "easy",
-    duration: "2-5 min",
-  },
 ];
 
 const COMING_SOON_GAMES = [
@@ -212,10 +164,6 @@ export function ArenaTab() {
     
     if (type === "game") {
       switch (id) {
-        case "snake": return <SnakeGame onBack={handleBack} />;
-        case "memory": return <MemoryGame onBack={handleBack} />;
-        case "tetris": return <TetrisGame onBack={handleBack} />;
-        case "dino": return <DinoGame onBack={handleBack} />;
         case "quiz": return <QuizMasterGame onBack={handleBack} />;
         case "decisions": return <DecisionGame onBack={handleBack} />;
         case "sales": return <SalesGame onBack={handleBack} />;

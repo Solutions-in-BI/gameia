@@ -1,5 +1,6 @@
 /**
- * MarketplacePage - Redesenhado com nova hierarquia de 4 seções
+ * MarketplacePage - Central de Benefícios Reais
+ * Cashback, Gift Cards, Entretenimento, Educação, Benefícios
  */
 
 import { useState, useMemo } from "react";
@@ -25,7 +26,7 @@ type Tab = "shop" | "inventory";
 
 export function MarketplacePage({ onBack }: MarketplacePageProps) {
   const [activeTab, setActiveTab] = useState<Tab>("shop");
-  const [categorySection, setCategorySection] = useState<CategorySection>("customization");
+  const [categorySection, setCategorySection] = useState<CategorySection>("benefits");
   const [category, setCategory] = useState<Category>("all");
   const [sortBy, setSortBy] = useState<SortOption>("rarity");
   
@@ -79,8 +80,8 @@ export function MarketplacePage({ onBack }: MarketplacePageProps) {
   return (
     <div className="min-h-screen bg-background">
       <PageHeader 
-        title="Loja de Recompensas" 
-        subtitle="Troque suas moedas por benefícios"
+        title="Central de Benefícios" 
+        subtitle="Troque suas moedas por benefícios reais"
         icon={<Store className="w-5 h-5 text-primary" />}
         coins={coins}
         showCoins={isAuthenticated}
