@@ -29,7 +29,7 @@ const FALLBACK_UPCOMING: UpcomingCertificate[] = [
     progress: 75,
     remainingCriteria: ["Completar 1 treinamento", "Nota mínima 80%"],
     actionLabel: "Ver treinamentos",
-    actionPath: "/app/trainings",
+    actionPath: "/app/development?tab=trainings",
   },
   {
     id: "mock-2", 
@@ -38,7 +38,7 @@ const FALLBACK_UPCOMING: UpcomingCertificate[] = [
     progress: 60,
     remainingCriteria: ["Completar módulo 3", "Passar no quiz final"],
     actionLabel: "Continuar jornada",
-    actionPath: "/app/caminho",
+    actionPath: "/app/development?tab=journeys",
   },
 ];
 
