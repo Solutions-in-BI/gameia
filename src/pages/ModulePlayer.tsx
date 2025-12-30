@@ -370,7 +370,7 @@ export default function ModulePlayer() {
     if (hasNext && !isModuleLocked(modules[currentIndex + 1].id)) {
       navigate(`/app/trainings/${trainingId}/module/${modules[currentIndex + 1].id}`);
     } else if (!hasNext) {
-      navigate(`/trainings/${trainingId}`);
+      navigate(`/app/trainings/${trainingId}`);
     }
   };
 
@@ -546,7 +546,7 @@ export default function ModulePlayer() {
           <ContentStep
             module={enhancedModule}
             onComplete={handleStepComplete}
-            onCancel={() => navigate(`/trainings/${trainingId}`)}
+            onCancel={() => navigate(`/app/trainings/${trainingId}`)}
           />
         )}
 
@@ -555,7 +555,7 @@ export default function ModulePlayer() {
           <ArenaGameStep
             module={enhancedModule}
             onComplete={handleStepComplete}
-            onCancel={() => navigate(`/trainings/${trainingId}`)}
+            onCancel={() => navigate(`/app/trainings/${trainingId}`)}
           />
         )}
 
@@ -564,7 +564,7 @@ export default function ModulePlayer() {
           <ReflectionStep
             module={enhancedModule}
             onComplete={handleStepComplete}
-            onCancel={() => navigate(`/trainings/${trainingId}`)}
+            onCancel={() => navigate(`/app/trainings/${trainingId}`)}
             isSubmitting={isCompleting}
           />
         )}
@@ -574,7 +574,7 @@ export default function ModulePlayer() {
           <PracticalChallengeStep
             module={enhancedModule}
             onComplete={handleStepComplete}
-            onCancel={() => navigate(`/trainings/${trainingId}`)}
+            onCancel={() => navigate(`/app/trainings/${trainingId}`)}
             isSubmitting={isCompleting}
           />
         )}

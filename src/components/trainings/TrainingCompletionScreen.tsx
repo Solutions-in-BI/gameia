@@ -267,7 +267,7 @@ export function TrainingCompletionScreen({
               size="lg"
               asChild
             >
-              <Link to={`/trainings/${nextTrainingId}`}>
+              <Link to={`/app/trainings/${nextTrainingId}`}>
                 Próximo: {nextTrainingName}
                 <ChevronRight className="h-5 w-5" />
               </Link>
@@ -280,7 +280,7 @@ export function TrainingCompletionScreen({
               className="flex-1 gap-2"
               asChild
             >
-              <Link to="/trainings">
+              <Link to="/app/trainings">
                 <Home className="h-4 w-4" />
                 Voltar aos Treinamentos
               </Link>
