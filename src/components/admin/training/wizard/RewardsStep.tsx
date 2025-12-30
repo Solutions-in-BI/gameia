@@ -1,5 +1,6 @@
 /**
- * RewardsStep - Step 2: Recompensas e gamificação
+ * RewardsStep - Step 3: Recompensas e gamificação
+ * Atualizado com multiplicadores
  */
 
 import { Input } from "@/components/ui/input";
@@ -23,6 +24,8 @@ import {
   X,
   Zap,
   Target,
+  TrendingUp,
+  Calculator,
 } from "lucide-react";
 import type { TrainingFormData, SkillImpact, InsigniaRelation } from "../TrainingWizard";
 
@@ -35,6 +38,10 @@ interface RewardsStepProps {
   setInsigniaRelations: React.Dispatch<React.SetStateAction<InsigniaRelation[]>>;
   availableSkills: Array<{id: string; name: string; icon: string}>;
   availableInsignias: Array<{id: string; name: string; icon: string}>;
+  xpMultiplier: number;
+  setXpMultiplier: React.Dispatch<React.SetStateAction<number>>;
+  coinsMultiplier: number;
+  setCoinsMultiplier: React.Dispatch<React.SetStateAction<number>>;
 }
 
 const RELATION_TYPES = [
@@ -52,6 +59,10 @@ export function RewardsStep({
   setInsigniaRelations,
   availableSkills,
   availableInsignias,
+  xpMultiplier,
+  setXpMultiplier,
+  coinsMultiplier,
+  setCoinsMultiplier,
 }: RewardsStepProps) {
   const addSkillImpact = () => {
     if (skillImpacts.length >= 3) return;
@@ -86,12 +97,16 @@ export function RewardsStep({
     setInsigniaRelations(insigniaRelations.filter(ir => ir.insigniaId !== insigniaId));
   };
 
+  // Calculate estimated totals
+  const estimatedXp = Math.round(formData.xp_reward * xpMultiplier);
+  const estimatedCoins = Math.round(formData.coins_reward * coinsMultiplier);
+
   return (
     <div className="space-y-6">
-      {/* XP and Coins */}
+      {/* Base Rewards */}
       <div>
         <Label className="text-xs uppercase tracking-wide text-muted-foreground mb-3 block">
-          Recompensas por Conclusão
+          Recompensas Base
         </Label>
         <div className="grid grid-cols-2 gap-4">
           <Card>
@@ -101,7 +116,7 @@ export function RewardsStep({
                   <Sparkles className="w-5 h-5 text-purple-500" />
                 </div>
                 <div>
-                  <Label htmlFor="xp_reward" className="font-medium">XP</Label>
+                  <Label htmlFor="xp_reward" className="font-medium">XP Base</Label>
                   <p className="text-xs text-muted-foreground">Experiência</p>
                 </div>
               </div>
@@ -123,7 +138,7 @@ export function RewardsStep({
                   <Coins className="w-5 h-5 text-amber-500" />
                 </div>
                 <div>
-                  <Label htmlFor="coins_reward" className="font-medium">Moedas</Label>
+                  <Label htmlFor="coins_reward" className="font-medium">Moedas Base</Label>
                   <p className="text-xs text-muted-foreground">Para a loja</p>
                 </div>
               </div>
@@ -138,6 +153,89 @@ export function RewardsStep({
             </CardContent>
           </Card>
         </div>
+      </div>
+
+      {/* Multipliers */}
+      <div>
+        <Label className="text-xs uppercase tracking-wide text-muted-foreground mb-3 flex items-center gap-2">
+          <TrendingUp className="w-3 h-3" />
+          Multiplicadores da Organização
+        </Label>
+        <Card>
+          <CardContent className="p-4 space-y-4">
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-purple-500" />
+                    Multiplicador XP
+                  </span>
+                  <Badge variant="secondary" className="text-sm font-semibold">
+                    {xpMultiplier}x
+                  </Badge>
+                </div>
+                <Slider
+                  value={[xpMultiplier]}
+                  onValueChange={([value]) => setXpMultiplier(value)}
+                  min={0.5}
+                  max={3}
+                  step={0.1}
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>0.5x</span>
+                  <span>3x</span>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium flex items-center gap-2">
+                    <Coins className="w-4 h-4 text-amber-500" />
+                    Multiplicador Moedas
+                  </span>
+                  <Badge variant="secondary" className="text-sm font-semibold">
+                    {coinsMultiplier}x
+                  </Badge>
+                </div>
+                <Slider
+                  value={[coinsMultiplier]}
+                  onValueChange={([value]) => setCoinsMultiplier(value)}
+                  min={0.5}
+                  max={3}
+                  step={0.1}
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>0.5x</span>
+                  <span>3x</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Estimated Preview */}
+            <div className="pt-4 border-t border-border">
+              <div className="flex items-center gap-2 mb-3">
+                <Calculator className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm font-medium">Recompensa Total Estimada</span>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-purple-500/5 border border-purple-500/20">
+                  <Sparkles className="w-5 h-5 text-purple-500" />
+                  <div>
+                    <div className="text-lg font-bold text-purple-600">{estimatedXp}</div>
+                    <div className="text-xs text-muted-foreground">XP Total</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-500/5 border border-amber-500/20">
+                  <Coins className="w-5 h-5 text-amber-500" />
+                  <div>
+                    <div className="text-lg font-bold text-amber-600">{estimatedCoins}</div>
+                    <div className="text-xs text-muted-foreground">Moedas Total</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Skill Impacts */}
