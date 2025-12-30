@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { ContextualGuidanceBar } from "@/components/common/ContextualGuidanceBar";
 
 /**
  * ===========================================
@@ -17,6 +18,21 @@ export interface GameLayoutProps {
   children: ReactNode;
   maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl" | "4xl";
   onBack?: () => void;
+  /** Contexto para a barra de orientação */
+  context?: {
+    section?: string;
+    category?: string;
+    item?: string;
+  };
+  /** Skills sendo desenvolvidas */
+  skillsImpacted?: string[];
+  /** Próximo passo sugerido */
+  nextStep?: {
+    label: string;
+    href: string;
+    type: "game" | "journey" | "training" | "test";
+    icon?: React.ReactNode;
+  };
 }
 
 const maxWidthClasses = {
@@ -33,8 +49,13 @@ export function GameLayout({
   subtitle, 
   children, 
   maxWidth = "4xl",
-  onBack
+  onBack,
+  context,
+  skillsImpacted,
+  nextStep
 }: GameLayoutProps) {
+  const showGuidanceBar = context || skillsImpacted?.length || nextStep;
+
   return (
     <motion.div 
       className="min-h-screen bg-background py-6 px-4"
@@ -44,6 +65,17 @@ export function GameLayout({
       transition={{ duration: 0.3 }}
     >
       <div className={`${maxWidthClasses[maxWidth]} mx-auto`}>
+        {/* Barra de Orientação Contextual */}
+        {showGuidanceBar && (
+          <ContextualGuidanceBar
+            context={context}
+            skillsImpacted={skillsImpacted}
+            nextStep={nextStep}
+            compact
+            className="mb-4"
+          />
+        )}
+
         {/* Header do Jogo */}
         <motion.header 
           className="relative text-center mb-6"

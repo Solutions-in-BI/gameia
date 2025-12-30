@@ -10,7 +10,13 @@ import { Badge } from "@/components/ui/badge";
 
 interface ContextualGuidanceBarProps {
   /** Breadcrumb path - e.g. ["Arena", "Teste Cognitivo", "Raciocínio Lógico"] */
-  breadcrumbs: string[];
+  breadcrumbs?: string[];
+  /** Context object alternative to breadcrumbs */
+  context?: {
+    section?: string;
+    category?: string;
+    item?: string;
+  };
   /** Skills being developed */
   skillsImpacted?: string[];
   /** Next suggested step */
@@ -25,12 +31,15 @@ interface ContextualGuidanceBarProps {
 }
 
 export function ContextualGuidanceBar({
-  breadcrumbs,
+  breadcrumbs: breadcrumbsProp,
+  context,
   skillsImpacted,
   nextStep,
   compact = false,
   className
 }: ContextualGuidanceBarProps) {
+  // Build breadcrumbs from context if not provided directly
+  const breadcrumbs = breadcrumbsProp || buildContextBreadcrumbs(context || {});
   const typeIcons = {
     journey: "🎯",
     training: "📚",

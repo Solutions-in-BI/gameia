@@ -25,6 +25,7 @@ import { useJourneyProgress } from "@/hooks/useJourneyProgress";
 import { JourneySidebar } from "@/components/journeys/JourneySidebar";
 import { JourneyCompletionScreen } from "@/components/journeys/JourneyCompletionScreen";
 import { Breadcrumb, buildJourneyBreadcrumbs } from "@/components/common/Breadcrumb";
+import { ContextualGuidanceBar } from "@/components/common/ContextualGuidanceBar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -410,22 +411,23 @@ export default function JourneyPlayerPage() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="border-b bg-background px-4 py-3 flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="lg:hidden"
-            onClick={() => setSidebarOpen(true)}
-          >
-            <Menu className="w-5 h-5" />
-          </Button>
-          
-          <Breadcrumb 
-            items={buildJourneyBreadcrumbs(journey.name, journey.id)} 
-            className="flex-1"
-          />
+        <div className="border-b bg-background px-4 py-3 space-y-2">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <Menu className="w-5 h-5" />
+            </Button>
+            
+            <Breadcrumb 
+              items={buildJourneyBreadcrumbs(journey.name, journey.id)} 
+              className="flex-1"
+            />
 
-          <Button
+            <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate("/app/arena")}
@@ -434,6 +436,23 @@ export default function JourneyPlayerPage() {
             <ArrowLeft className="w-4 h-4" />
             <span className="hidden sm:inline">Sair</span>
           </Button>
+          </div>
+          
+          {/* Barra de Orientação Contextual */}
+          <ContextualGuidanceBar
+            context={{
+              section: "Desenvolvimento",
+              category: "Jornada",
+              item: journey.name
+            }}
+            skillsImpacted={[journey.category]}
+            nextStep={progress?.currentTrainingId ? {
+              label: "Continuar treinamento atual",
+              href: `/app/journeys/${journeyId}/training/${progress.currentTrainingId}/module/first`,
+              type: "training" as const,
+            } : undefined}
+            compact
+          />
         </div>
 
         {/* Content Area */}
