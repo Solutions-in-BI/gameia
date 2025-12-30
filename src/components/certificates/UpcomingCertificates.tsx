@@ -7,13 +7,23 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Award, ArrowRight, BookOpen, Route, Star, Target } from "lucide-react";
+import { Award, ArrowRight, BookOpen, Route, Star, Medal, Target, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useCertificateProgress, type UpcomingCertificate } from "@/hooks/useCertificateProgress";
+import { Skeleton } from "@/components/ui/skeleton";
 
-// Mock data - será substituído por dados reais do hook
-const UPCOMING_CERTIFICATES = [
+const TYPE_ICONS = {
+  training: BookOpen,
+  journey: Route,
+  skill: Star,
+  level: Medal,
+  behavioral: Users,
+};
+
+// Fallback mock data when no real data exists
+const FALLBACK_UPCOMING: UpcomingCertificate[] = [
   {
-    id: "1",
+    id: "mock-1",
     name: "Mestre em Comunicação",
     type: "skill",
     progress: 75,
@@ -22,7 +32,7 @@ const UPCOMING_CERTIFICATES = [
     actionPath: "/app/trainings",
   },
   {
-    id: "2", 
+    id: "mock-2", 
     name: "Jornada Vendas Iniciante",
     type: "journey",
     progress: 60,
@@ -32,18 +42,28 @@ const UPCOMING_CERTIFICATES = [
   },
 ];
 
-const TYPE_ICONS = {
-  training: BookOpen,
-  journey: Route,
-  skill: Star,
-  level: Award,
-  behavioral: Target,
-};
-
 export function UpcomingCertificates() {
   const navigate = useNavigate();
+  const { upcomingCertificates, isLoading } = useCertificateProgress();
 
-  if (UPCOMING_CERTIFICATES.length === 0) {
+  // Use real data or fallback
+  const certificates = upcomingCertificates.length > 0 ? upcomingCertificates : FALLBACK_UPCOMING;
+
+  if (isLoading) {
+    return (
+      <Card className="border-dashed border-primary/30 bg-primary/5">
+        <CardHeader className="pb-3">
+          <Skeleton className="h-6 w-48" />
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Skeleton className="h-24" />
+          <Skeleton className="h-24" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (certificates.length === 0) {
     return null;
   }
 
@@ -54,12 +74,12 @@ export function UpcomingCertificates() {
           <Target className="w-5 h-5 text-primary" />
           Próximos Certificados
           <Badge variant="secondary" className="ml-auto">
-            {UPCOMING_CERTIFICATES.length} disponíveis
+            {certificates.length} disponíveis
           </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {UPCOMING_CERTIFICATES.map((cert) => {
+        {certificates.map((cert) => {
           const TypeIcon = TYPE_ICONS[cert.type as keyof typeof TYPE_ICONS] || Award;
           
           return (

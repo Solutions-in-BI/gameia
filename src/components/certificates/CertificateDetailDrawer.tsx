@@ -2,6 +2,7 @@
  * CertificateDetailDrawer - Drawer com detalhes completos do certificado
  */
 
+import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,11 +10,12 @@ import { Separator } from "@/components/ui/separator";
 import { 
   Award, Download, Share2, ExternalLink, Calendar, CheckCircle2, 
   Clock, XCircle, Copy, BookOpen, Route, Star, Medal, Users,
-  Target, TrendingUp
+  Target, Loader2
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import type { CertificateWithDetails } from "@/hooks/useCertificates";
 
 interface CertificateDetailDrawerProps {
@@ -39,6 +41,8 @@ const STATUS_CONFIG = {
 };
 
 export function CertificateDetailDrawer({ certificate, isOpen, onClose }: CertificateDetailDrawerProps) {
+  const [isDownloading, setIsDownloading] = useState(false);
+  
   if (!certificate) return null;
 
   const certType = (certificate as any).certificate_type || "training";
@@ -51,8 +55,10 @@ export function CertificateDetailDrawer({ certificate, isOpen, onClose }: Certif
   const verificationUrl = `${window.location.origin}/certificates/${certificate.verification_code}`;
 
   const handleCopyCode = () => {
-    navigator.clipboard.writeText(certificate.verification_code);
-    toast.success("Código copiado!");
+    if (certificate.verification_code) {
+      navigator.clipboard.writeText(certificate.verification_code);
+      toast.success("Código copiado!");
+    }
   };
 
   const handleCopyLink = () => {
@@ -76,9 +82,41 @@ export function CertificateDetailDrawer({ certificate, isOpen, onClose }: Certif
     }
   };
 
-  const handleDownload = () => {
-    toast.info("Gerando PDF do certificado...");
-    // TODO: Implement PDF generation
+  const handleDownload = async () => {
+    setIsDownloading(true);
+    try {
+      toast.info("Gerando certificado...");
+      
+      const { data, error } = await supabase.functions.invoke('generate-certificate-pdf', {
+        body: { certificate_id: certificate.id }
+      });
+
+      if (error) throw error;
+
+      if (data?.html) {
+        // Open HTML in new window for printing/saving as PDF
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+          printWindow.document.write(data.html);
+          printWindow.document.close();
+          printWindow.focus();
+          
+          // Auto-trigger print dialog
+          setTimeout(() => {
+            printWindow.print();
+          }, 500);
+          
+          toast.success("Certificado gerado! Use Ctrl+P para salvar como PDF.");
+        } else {
+          toast.error("Popup bloqueado. Permita popups para baixar o certificado.");
+        }
+      }
+    } catch (error) {
+      console.error('Error downloading certificate:', error);
+      toast.error("Erro ao gerar certificado");
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   // Criteria met from certificate
@@ -218,9 +256,13 @@ export function CertificateDetailDrawer({ certificate, isOpen, onClose }: Certif
 
           {/* Actions */}
           <div className="flex gap-2 pt-4">
-            <Button className="flex-1" onClick={handleDownload}>
-              <Download className="w-4 h-4 mr-2" />
-              Baixar PDF
+            <Button className="flex-1" onClick={handleDownload} disabled={isDownloading}>
+              {isDownloading ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Download className="w-4 h-4 mr-2" />
+              )}
+              {isDownloading ? "Gerando..." : "Baixar PDF"}
             </Button>
             <Button variant="outline" onClick={handleShare}>
               <Share2 className="w-4 h-4 mr-2" />

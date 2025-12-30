@@ -20,3 +20,6 @@ verify_jwt = false
 
 [functions.ai-guided-reflection]
 verify_jwt = false
+
+[functions.generate-certificate-pdf]
+verify_jwt = false
