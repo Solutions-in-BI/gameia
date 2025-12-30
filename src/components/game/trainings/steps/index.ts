@@ -4,3 +4,7 @@ export { ArenaGameStep } from './ArenaGameStep';
 export { CognitiveTestStep } from './CognitiveTestStep';
 export { ReflectionStep } from './ReflectionStep';
 export { PracticalChallengeStep } from './PracticalChallengeStep';
+export { GuidedReadingStep } from './GuidedReadingStep';
+export { AIReflectionStep } from './AIReflectionStep';
+export { RoutineApplicationStep } from './RoutineApplicationStep';
+export { ValidationStep } from './ValidationStep';

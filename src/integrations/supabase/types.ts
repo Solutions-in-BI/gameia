@@ -2921,6 +2921,53 @@ export type Database = {
           },
         ]
       }
+      module_comprehension_scores: {
+        Row: {
+          ai_feedback: string | null
+          conversation_history: Json | null
+          created_at: string | null
+          id: string
+          insights_extracted: Json | null
+          module_id: string
+          response_depth: string | null
+          score: number
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_feedback?: string | null
+          conversation_history?: Json | null
+          created_at?: string | null
+          id?: string
+          insights_extracted?: Json | null
+          module_id: string
+          response_depth?: string | null
+          score: number
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_feedback?: string | null
+          conversation_history?: Json | null
+          created_at?: string | null
+          id?: string
+          insights_extracted?: Json | null
+          module_id?: string
+          response_depth?: string | null
+          score?: number
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "module_comprehension_scores_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "training_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       monthly_goals: {
         Row: {
           coins_reward: number
@@ -4246,6 +4293,62 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      routine_applications: {
+        Row: {
+          created_at: string | null
+          evidence_content: string | null
+          evidence_type: string | null
+          evidence_url: string | null
+          id: string
+          manager_feedback: string | null
+          module_id: string
+          status: string | null
+          submitted_at: string | null
+          user_id: string
+          verified_at: string | null
+          verified_by: string | null
+          xp_earned: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          evidence_content?: string | null
+          evidence_type?: string | null
+          evidence_url?: string | null
+          id?: string
+          manager_feedback?: string | null
+          module_id: string
+          status?: string | null
+          submitted_at?: string | null
+          user_id: string
+          verified_at?: string | null
+          verified_by?: string | null
+          xp_earned?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          evidence_content?: string | null
+          evidence_type?: string | null
+          evidence_url?: string | null
+          id?: string
+          manager_feedback?: string | null
+          module_id?: string
+          status?: string | null
+          submitted_at?: string | null
+          user_id?: string
+          verified_at?: string | null
+          verified_by?: string | null
+          xp_earned?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "routine_applications_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "training_modules"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sales_client_personas: {
         Row: {
@@ -5799,6 +5902,7 @@ export type Database = {
           allow_retry: boolean | null
           area: string | null
           bonus_rules: Json | null
+          book_metadata: Json | null
           category: string | null
           certificate_enabled: boolean | null
           certificate_min_score: number | null
@@ -5832,12 +5936,14 @@ export type Database = {
           thumbnail_url: string | null
           training_key: string
           training_status: string | null
+          training_type: string | null
           xp_reward: number | null
         }
         Insert: {
           allow_retry?: boolean | null
           area?: string | null
           bonus_rules?: Json | null
+          book_metadata?: Json | null
           category?: string | null
           certificate_enabled?: boolean | null
           certificate_min_score?: number | null
@@ -5871,12 +5977,14 @@ export type Database = {
           thumbnail_url?: string | null
           training_key: string
           training_status?: string | null
+          training_type?: string | null
           xp_reward?: number | null
         }
         Update: {
           allow_retry?: boolean | null
           area?: string | null
           bonus_rules?: Json | null
+          book_metadata?: Json | null
           category?: string | null
           certificate_enabled?: boolean | null
           certificate_min_score?: number | null
@@ -5910,6 +6018,7 @@ export type Database = {
           thumbnail_url?: string | null
           training_key?: string
           training_status?: string | null
+          training_type?: string | null
           xp_reward?: number | null
         }
         Relationships: [
