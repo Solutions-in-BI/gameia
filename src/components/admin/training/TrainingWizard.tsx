@@ -31,6 +31,7 @@ import { useOrganization } from "@/hooks/useOrganization";
 import { useOrgTeams } from "@/hooks/useOrgTeams";
 import { useInsignias } from "@/hooks/useInsignias";
 import { useOrgTrainingConfig } from "@/hooks/useOrgTrainingConfig";
+import { useSkillProgress } from "@/hooks/useSkillProgress";
 
 import { BasicInfoStep } from "./wizard/BasicInfoStep";
 import { DistributionStep } from "./wizard/DistributionStep";
@@ -114,6 +115,7 @@ export function TrainingWizard({
   const { teams } = useOrgTeams(currentOrg?.id);
   const { insignias } = useInsignias();
   const { getTrainingConfig } = useOrgTrainingConfig(currentOrg?.id);
+  const { skills: allSkills } = useSkillProgress();
   
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -292,11 +294,17 @@ export function TrainingWizard({
     }
   };
 
-  // Convert insignias for select components
+  // Convert insignias and skills for select components
   const availableInsignias = insignias.map(i => ({
     id: i.id,
     name: i.name,
     icon: i.icon,
+  }));
+
+  const availableSkills = allSkills.map(s => ({
+    id: s.id,
+    name: s.name,
+    icon: s.icon || '🎯',
   }));
 
   const renderStepContent = () => {
@@ -320,7 +328,7 @@ export function TrainingWizard({
             setSkillImpacts={setSkillImpacts}
             insigniaRelations={insigniaRelations}
             setInsigniaRelations={setInsigniaRelations}
-            availableSkills={[]}
+            availableSkills={availableSkills}
             availableInsignias={availableInsignias}
             xpMultiplier={xpMultiplier}
             setXpMultiplier={setXpMultiplier}
@@ -344,7 +352,7 @@ export function TrainingWizard({
             certificateData={certificateData}
             skillImpacts={skillImpacts}
             insigniaRelations={insigniaRelations}
-            availableSkills={[]}
+            availableSkills={availableSkills}
             availableInsignias={availableInsignias}
             teams={teams}
             xpMultiplier={xpMultiplier}
