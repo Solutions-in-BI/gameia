@@ -197,87 +197,79 @@ export function ExperienceCard({
       <motion.div
         whileHover={{ scale: 1.01 }}
         className={cn(
-          "relative overflow-hidden rounded-2xl border bg-gradient-to-br from-card to-muted/30",
-          "cursor-pointer transition-all hover:shadow-xl hover:border-primary/50",
+          "relative overflow-hidden rounded-xl border bg-gradient-to-br from-card to-muted/30",
+          "cursor-pointer transition-all hover:shadow-lg hover:border-primary/50",
           className
         )}
         onClick={onClick}
       >
-        {/* Thumbnail ou gradient */}
-        <div className="aspect-[21/9] relative">
-          {thumbnail ? (
-            <img 
-              src={thumbnail} 
-              alt={title} 
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className={cn(
-              "w-full h-full",
-              "bg-gradient-to-br from-primary/20 via-primary/10 to-transparent"
-            )} />
-          )}
-          
-          {/* Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-          
-          {/* Badge de tipo */}
-          <div className="absolute top-4 left-4">
-            <Badge className={cn(typeConfig.bgColor, typeConfig.color, "border-0")}>
-              {typeConfig.icon}
-              <span className="ml-1">{typeConfig.label}</span>
-            </Badge>
-          </div>
-
-          {/* Badge featured */}
-          {isFeatured && (
-            <div className="absolute top-4 right-4">
-              <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0">
-                ⭐ Recomendado
+        <div className="flex flex-col sm:flex-row">
+          {/* Thumbnail/Gradient - Compacto */}
+          <div className="sm:w-40 h-28 sm:h-auto relative shrink-0">
+            {thumbnail ? (
+              <img src={thumbnail} alt={title} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-primary/20 via-primary/10 to-transparent" />
+            )}
+            
+            {/* Badge de tipo */}
+            <div className="absolute top-3 left-3">
+              <Badge className={cn(typeConfig.bgColor, typeConfig.color, "border-0 text-xs")}>
+                {typeConfig.icon}
+                <span className="ml-1">{typeConfig.label}</span>
               </Badge>
             </div>
-          )}
-        </div>
 
-        {/* Conteúdo */}
-        <div className="p-5 space-y-4">
-          <div>
-            <h3 className="text-xl font-bold">{title}</h3>
-            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{description}</p>
+            {/* Badge featured mobile */}
+            {isFeatured && (
+              <div className="absolute top-3 right-3 sm:hidden">
+                <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 text-xs">
+                  ⭐ Recomendado
+                </Badge>
+              </div>
+            )}
           </div>
 
-          {/* Meta e info */}
-          <div className="flex flex-wrap items-center gap-3 text-sm">
-            {duration && (
-              <span className="flex items-center gap-1 text-muted-foreground">
-                <Clock className="w-4 h-4" />
-                {duration}
-              </span>
-            )}
-            {difficultyConfig && (
-              <Badge variant="outline" className={difficultyConfig.color}>
-                {difficultyConfig.label}
-              </Badge>
-            )}
-            {skills.slice(0, 2).map(skill => (
-              <Badge key={skill} variant="secondary" className="text-xs">
-                {skill}
-              </Badge>
-            ))}
-          </div>
+          {/* Conteúdo */}
+          <div className="flex-1 p-4 flex flex-col justify-between gap-3">
+            <div>
+              <div className="flex items-start justify-between gap-2">
+                <h3 className="text-lg font-bold line-clamp-1">{title}</h3>
+                {isFeatured && (
+                  <Badge className="hidden sm:flex bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 text-xs shrink-0">
+                    ⭐ Recomendado
+                  </Badge>
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{description}</p>
+            </div>
 
-          {/* Footer */}
-          <div className="flex items-center justify-between pt-2 border-t">
-            <RewardBadge 
-              xp={totalXp} 
-              coins={totalCoins}
-              condition={conditionText}
-              size="md"
-            />
-            <Button size="sm" className="gap-1">
-              <Play className="w-4 h-4" />
-              Iniciar
-            </Button>
+            {/* Footer */}
+            <div className="flex items-center justify-between pt-3 border-t">
+              <div className="flex items-center gap-3 text-sm">
+                {duration && (
+                  <span className="flex items-center gap-1 text-muted-foreground">
+                    <Clock className="w-3.5 h-3.5" />
+                    {duration}
+                  </span>
+                )}
+                {difficultyConfig && (
+                  <Badge variant="outline" className={cn("text-xs", difficultyConfig.color)}>
+                    {difficultyConfig.label}
+                  </Badge>
+                )}
+                <RewardBadge 
+                  xp={totalXp} 
+                  coins={totalCoins}
+                  size="sm"
+                  showCondition={false}
+                />
+              </div>
+              <Button size="sm" className="gap-1">
+                <Play className="w-4 h-4" />
+                Jogar
+              </Button>
+            </div>
           </div>
         </div>
       </motion.div>

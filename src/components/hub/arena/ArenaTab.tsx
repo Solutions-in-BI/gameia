@@ -5,6 +5,7 @@
  */
 
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Gamepad2,
@@ -125,6 +126,7 @@ const COMING_SOON_GAMES = [
 export function ArenaTab() {
   const [filter, setFilter] = useState<ArenaFilter>("all");
   const [activeExperience, setActiveExperience] = useState<ActiveExperience>(null);
+  const [, setSearchParams] = useSearchParams();
   const { skills } = useSkillProgress();
   
   // Data hooks
@@ -343,7 +345,7 @@ export function ArenaTab() {
                 </div>
               </div>
               <HubButton 
-                onClick={() => window.location.href = "/app?tab=development"}
+                onClick={() => setSearchParams({ tab: "development" })}
                 className="shrink-0"
               >
                 Ver Desenvolvimento
