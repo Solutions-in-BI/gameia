@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.update-pdi-progress]
 verify_jwt = false
+
+[functions.ai-guided-reflection]
+verify_jwt = true
