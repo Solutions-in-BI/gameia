@@ -89,15 +89,31 @@ export const RoutineApplicationStep: React.FC<RoutineApplicationStepProps> = ({
     setIsSubmitting(true);
 
     try {
+      const deadlineDate = addDays(new Date(), deadlineDays);
+      
       await supabase.from('routine_applications').upsert({
         user_id: user.id,
         module_id: module.id,
         status: 'in_progress',
         evidence_type: defaultEvidenceType,
+        deadline_at: deadlineDate.toISOString(),
+        started_at: new Date().toISOString(),
+      });
+
+      // Create next step for the user
+      await supabase.from('user_next_steps').insert({
+        user_id: user.id,
+        step_type: 'book_application',
+        source_id: module.id,
+        source_table: 'training_modules',
+        title: `Aplicar: ${module.name}`,
+        description: config.action_description || module.description,
+        deadline_at: deadlineDate.toISOString(),
+        priority: deadlineDays <= 3 ? 'high' : 'normal',
       });
 
       setStatus('in_progress');
-      toast.success('Aplicação iniciada! Você tem ' + deadlineDays + ' dias para completar.');
+      toast.success(`Aplicação iniciada! Você tem ${deadlineDays} dias para completar.`);
     } catch (error) {
       console.error('Error starting application:', error);
       toast.error('Erro ao iniciar aplicação');
