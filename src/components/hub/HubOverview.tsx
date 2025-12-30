@@ -41,10 +41,8 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import type { HubTab } from "./HubLayout";
-
 interface HubOverviewProps {
-  onNavigate: (tab: HubTab) => void;
+  onNavigate: (tab: string) => void;
 }
 
 const SOURCE_CONFIG: Record<SourceType, { label: string; icon: typeof Brain; color: string }> = {
