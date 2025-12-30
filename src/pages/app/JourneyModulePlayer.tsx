@@ -30,6 +30,10 @@ import { ContentStep } from "@/components/game/trainings/steps/ContentStep";
 import { ArenaGameStep } from "@/components/game/trainings/steps/ArenaGameStep";
 import { ReflectionStep } from "@/components/game/trainings/steps/ReflectionStep";
 import { PracticalChallengeStep } from "@/components/game/trainings/steps/PracticalChallengeStep";
+import { GuidedReadingStep } from "@/components/game/trainings/steps/GuidedReadingStep";
+import { AIReflectionStep } from "@/components/game/trainings/steps/AIReflectionStep";
+import { RoutineApplicationStep } from "@/components/game/trainings/steps/RoutineApplicationStep";
+import { ValidationStep } from "@/components/game/trainings/steps/ValidationStep";
 
 interface Module {
   id: string;
@@ -292,7 +296,9 @@ export default function JourneyModulePlayer() {
   // Build enhanced module for step components
   const enhancedModule = {
     id: currentModule.id,
+    name: currentModule.name,
     title: currentModule.name,
+    description: currentModule.description,
     content: currentModule.description || "",
     content_type: currentModule.content_type || "text",
     video_url: currentModule.video_url,
@@ -301,6 +307,7 @@ export default function JourneyModulePlayer() {
     xp_reward: currentModule.xp_reward,
     coins_reward: currentModule.coins_reward,
     sort_order: currentModule.order_index,
+    time_minutes: 10,
   };
 
   // Render step content
@@ -332,6 +339,34 @@ export default function JourneyModulePlayer() {
             onComplete={handleCompleteModule}
             onCancel={handleCancel}
             isSubmitting={isCompleting}
+          />
+        );
+      case "guided_reading":
+        return (
+          <GuidedReadingStep
+            module={enhancedModule as any}
+            onComplete={handleCompleteModule}
+          />
+        );
+      case "ai_reflection":
+        return (
+          <AIReflectionStep
+            module={enhancedModule as any}
+            onComplete={handleCompleteModule}
+          />
+        );
+      case "routine_application":
+        return (
+          <RoutineApplicationStep
+            module={enhancedModule as any}
+            onComplete={handleCompleteModule}
+          />
+        );
+      case "validation":
+        return (
+          <ValidationStep
+            module={enhancedModule as any}
+            onComplete={handleCompleteModule}
           />
         );
       case "content":

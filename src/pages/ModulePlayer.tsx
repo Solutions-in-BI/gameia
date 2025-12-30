@@ -29,6 +29,10 @@ import { ContentStep } from "@/components/game/trainings/steps/ContentStep";
 import { ArenaGameStep } from "@/components/game/trainings/steps/ArenaGameStep";
 import { ReflectionStep } from "@/components/game/trainings/steps/ReflectionStep";
 import { PracticalChallengeStep } from "@/components/game/trainings/steps/PracticalChallengeStep";
+import { GuidedReadingStep } from "@/components/game/trainings/steps/GuidedReadingStep";
+import { AIReflectionStep } from "@/components/game/trainings/steps/AIReflectionStep";
+import { RoutineApplicationStep } from "@/components/game/trainings/steps/RoutineApplicationStep";
+import { ValidationStep } from "@/components/game/trainings/steps/ValidationStep";
 
 interface Training {
   id: string;
@@ -500,7 +504,7 @@ export default function ModulePlayer() {
     if (isCurrentCompleted) return false;
     if (stepType === 'video') return canCompleteVideo;
     // Other step types handle their own completion
-    if (['content', 'text', 'pdf', 'link', 'arena_game', 'quiz', 'reflection', 'practical_challenge', 'simulation', 'cognitive_test'].includes(stepType)) {
+    if (['content', 'text', 'pdf', 'link', 'arena_game', 'quiz', 'reflection', 'practical_challenge', 'simulation', 'cognitive_test', 'guided_reading', 'ai_reflection', 'routine_application', 'validation'].includes(stepType)) {
       return false; // These have their own completion buttons
     }
     return true;
@@ -576,6 +580,38 @@ export default function ModulePlayer() {
             onComplete={handleStepComplete}
             onCancel={() => navigate(`/app/trainings/${trainingId}`)}
             isSubmitting={isCompleting}
+          />
+        )}
+
+        {/* Guided reading step (book-guided) */}
+        {stepType === "guided_reading" && enhancedModule && (
+          <GuidedReadingStep
+            module={enhancedModule as any}
+            onComplete={handleStepComplete}
+          />
+        )}
+
+        {/* AI Reflection step (book-guided) */}
+        {stepType === "ai_reflection" && enhancedModule && (
+          <AIReflectionStep
+            module={enhancedModule as any}
+            onComplete={handleStepComplete}
+          />
+        )}
+
+        {/* Routine application step (book-guided) */}
+        {stepType === "routine_application" && enhancedModule && (
+          <RoutineApplicationStep
+            module={enhancedModule as any}
+            onComplete={handleStepComplete}
+          />
+        )}
+
+        {/* Validation step (book-guided) */}
+        {stepType === "validation" && enhancedModule && (
+          <ValidationStep
+            module={enhancedModule as any}
+            onComplete={handleStepComplete}
           />
         )}
       </div>

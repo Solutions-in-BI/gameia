@@ -13,7 +13,11 @@ export type StepType =
   | 'cognitive_test' // Teste cognitivo
   | 'practical_challenge' // Desafio prático
   | 'simulation'   // Simulação/cenário
-  | 'reflection';  // Checkpoint de reflexão
+  | 'reflection'   // Checkpoint de reflexão
+  | 'guided_reading' // Leitura guiada (livros)
+  | 'ai_reflection'  // Reflexão com IA
+  | 'routine_application' // Aplicação na rotina
+  | 'validation';  // Validação final
 
 export interface StepConfig {
   // For content
