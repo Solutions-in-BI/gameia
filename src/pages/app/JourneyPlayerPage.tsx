@@ -66,6 +66,7 @@ export default function JourneyPlayerPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showCompletion, setShowCompletion] = useState(false);
+  const [isStarting, setIsStarting] = useState(false);
 
   // Fetch journey data
   useEffect(() => {
@@ -185,12 +186,23 @@ export default function JourneyPlayerPage() {
 
   // Handle start journey
   const handleStartJourney = async () => {
+    setIsStarting(true);
     const success = await startJourney();
-    if (success && trainingsWithModules.length > 0 && trainingsWithModules[0].modules.length > 0) {
-      const firstTraining = trainingsWithModules[0];
-      const firstModule = firstTraining.modules[0];
-      navigate(`/app/journeys/${journeyId}/training/${firstTraining.id}/module/${firstModule.id}`);
+    
+    if (success) {
+      // Allow data to refresh
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      if (trainingsWithModules.length > 0 && trainingsWithModules[0].modules.length > 0) {
+        const firstTraining = trainingsWithModules[0];
+        const firstModule = firstTraining.modules[0];
+        navigate(`/app/journeys/${journeyId}/training/${firstTraining.id}/module/${firstModule.id}`);
+      } else {
+        // Fallback: reload to show updated state
+        window.location.reload();
+      }
     }
+    setIsStarting(false);
   };
 
   // Show completion screen
@@ -319,9 +331,9 @@ export default function JourneyPlayerPage() {
             </div>
 
             {/* Start Button */}
-            <Button size="lg" onClick={handleStartJourney} className="gap-2 mt-4">
+            <Button size="lg" onClick={handleStartJourney} disabled={isStarting} className="gap-2 mt-4">
               <Play className="w-5 h-5" />
-              Iniciar Jornada
+              {isStarting ? "Iniciando..." : "Iniciar Jornada"}
             </Button>
           </motion.div>
 
