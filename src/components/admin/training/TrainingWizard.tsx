@@ -123,6 +123,10 @@ export function TrainingWizard({
   const [insigniaRelations, setInsigniaRelations] = useState<InsigniaRelation[]>([]);
   const [rewardItems, setRewardItems] = useState<Array<{item_id?: string; category?: string; unlock_mode: 'auto_unlock' | 'enable_purchase'}>>([]);
   const [evolutionTemplateId, setEvolutionTemplateId] = useState<string | null>(null);
+  const [selectedTemplateName, setSelectedTemplateName] = useState<string | undefined>(undefined);
+  const [templateXp, setTemplateXp] = useState<number | undefined>(undefined);
+  const [templateCoins, setTemplateCoins] = useState<number | undefined>(undefined);
+  const [overrideRewards, setOverrideRewards] = useState(false);
   
   // Multipliers state
   const [xpMultiplier, setXpMultiplier] = useState(1);
@@ -340,6 +344,12 @@ export function TrainingWizard({
             setRewardItems={setRewardItems}
             evolutionTemplateId={evolutionTemplateId}
             setEvolutionTemplateId={setEvolutionTemplateId}
+            onTemplateInfoChange={(name, xp, coins, override) => {
+              setSelectedTemplateName(name);
+              setTemplateXp(xp);
+              setTemplateCoins(coins);
+              setOverrideRewards(override);
+            }}
           />
         );
       case 4:
@@ -363,6 +373,11 @@ export function TrainingWizard({
             teams={teams}
             xpMultiplier={xpMultiplier}
             coinsMultiplier={coinsMultiplier}
+            evolutionTemplateName={selectedTemplateName}
+            templateXp={templateXp}
+            templateCoins={templateCoins}
+            overrideRewards={overrideRewards}
+            rewardItems={rewardItems}
           />
         );
       default:

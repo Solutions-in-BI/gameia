@@ -1,9 +1,9 @@
 /**
  * RewardsStep - Step 3: Recompensas e gamificação
- * Reorganizado: Template prioritário, skills/insígnias como config avançada
+ * Reorganizado: Template como fonte principal, override opcional
  */
 
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -35,12 +35,15 @@ import {
   Calculator,
   ChevronDown,
   Settings2,
+  Edit3,
+  Info,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { TrainingFormData, SkillImpact, InsigniaRelation } from "../TrainingWizard";
 import { ItemRewardsSection } from "@/components/rewards/ItemRewardsSection";
 import { EvolutionTemplateSection } from "@/components/rewards/EvolutionTemplateSection";
 import type { ItemRewardConfig } from "@/hooks/useItemRewards";
+import type { EvolutionTemplate } from "@/hooks/useEvolutionTemplates";
 
 interface RewardsStepProps {
   formData: TrainingFormData;
@@ -59,6 +62,8 @@ interface RewardsStepProps {
   setRewardItems: React.Dispatch<React.SetStateAction<ItemRewardConfig[]>>;
   evolutionTemplateId: string | null;
   setEvolutionTemplateId: React.Dispatch<React.SetStateAction<string | null>>;
+  // Callbacks para informar o pai sobre template selecionado
+  onTemplateInfoChange?: (templateName: string | undefined, xp: number | undefined, coins: number | undefined, override: boolean) => void;
 }
 
 const RELATION_TYPES = [
@@ -84,8 +89,43 @@ export function RewardsStep({
   setRewardItems,
   evolutionTemplateId,
   setEvolutionTemplateId,
+  onTemplateInfoChange,
 }: RewardsStepProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [overrideRewards, setOverrideRewards] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<EvolutionTemplate | null>(null);
+
+  // Callback para receber o template selecionado
+  const handleTemplateChange = useCallback((template: EvolutionTemplate | null) => {
+    setSelectedTemplate(template);
+    // Quando um template é selecionado, desabilitar override por padrão
+    if (template) {
+      setOverrideRewards(false);
+    }
+  }, []);
+
+  // Notificar o pai sobre mudanças no template/override
+  useEffect(() => {
+    onTemplateInfoChange?.(
+      selectedTemplate?.name,
+      selectedTemplate?.suggested_xp,
+      selectedTemplate?.suggested_coins,
+      overrideRewards
+    );
+  }, [selectedTemplate, overrideRewards, onTemplateInfoChange]);
+
+  // Calcular recompensas efetivas (template ou override)
+  const effectiveXp = !selectedTemplate || overrideRewards
+    ? formData.xp_reward
+    : selectedTemplate.suggested_xp || 0;
+
+  const effectiveCoins = !selectedTemplate || overrideRewards
+    ? formData.coins_reward
+    : selectedTemplate.suggested_coins || 0;
+
+  // Calculate estimated totals with multipliers
+  const estimatedXp = Math.round(effectiveXp * xpMultiplier);
+  const estimatedCoins = Math.round(effectiveCoins * coinsMultiplier);
 
   const addSkillImpact = () => {
     if (skillImpacts.length >= 3) return;
@@ -120,71 +160,158 @@ export function RewardsStep({
     setInsigniaRelations(insigniaRelations.filter(ir => ir.insigniaId !== insigniaId));
   };
 
-  // Calculate estimated totals
-  const estimatedXp = Math.round(formData.xp_reward * xpMultiplier);
-  const estimatedCoins = Math.round(formData.coins_reward * coinsMultiplier);
+  // Preencher campos com valores do template
+  const fillFromTemplate = () => {
+    if (selectedTemplate) {
+      setFormData(prev => ({
+        ...prev,
+        xp_reward: selectedTemplate.suggested_xp || 0,
+        coins_reward: selectedTemplate.suggested_coins || 0,
+      }));
+    }
+  };
 
   return (
     <div className="space-y-6">
-      {/* 1. Evolution Template - PRIORITÁRIO */}
+      {/* 1. Evolution Template - FONTE PRINCIPAL */}
       <EvolutionTemplateSection
         selectedTemplateId={evolutionTemplateId}
         setSelectedTemplateId={setEvolutionTemplateId}
+        onTemplateChange={handleTemplateChange}
       />
 
-      {/* 2. Base Rewards */}
-      <div>
-        <Label className="text-xs uppercase tracking-wide text-muted-foreground mb-3 block">
-          Recompensas Base
-        </Label>
-        <div className="grid grid-cols-2 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 rounded-lg bg-purple-500/10">
-                  <Sparkles className="w-5 h-5 text-purple-500" />
-                </div>
-                <div>
-                  <Label htmlFor="xp_reward" className="font-medium">XP Base</Label>
-                  <p className="text-xs text-muted-foreground">Experiência</p>
-                </div>
+      {/* 2. Override Rewards - Apenas quando template selecionado */}
+      {selectedTemplate && (
+        <div className="space-y-4">
+          <div 
+            className="flex items-center gap-3 p-3 rounded-lg border border-border bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors"
+            onClick={() => setOverrideRewards(!overrideRewards)}
+          >
+            <Checkbox 
+              checked={overrideRewards} 
+              onCheckedChange={(checked) => setOverrideRewards(!!checked)}
+              onClick={(e) => e.stopPropagation()}
+            />
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <Edit3 className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm font-medium">Personalizar recompensas</span>
               </div>
-              <Input
-                id="xp_reward"
-                type="number"
-                min="0"
-                value={formData.xp_reward}
-                onChange={(e) => setFormData(prev => ({ ...prev, xp_reward: parseInt(e.target.value) || 0 }))}
-                className="text-lg font-semibold"
-              />
-            </CardContent>
-          </Card>
+              <p className="text-xs text-muted-foreground">
+                Sobrescreve os valores sugeridos pelo template ({selectedTemplate.suggested_xp} XP, {selectedTemplate.suggested_coins} moedas)
+              </p>
+            </div>
+          </div>
 
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 rounded-lg bg-amber-500/10">
-                  <Coins className="w-5 h-5 text-amber-500" />
+          {overrideRewards && (
+            <Card className="border-primary/20 bg-primary/5">
+              <CardContent className="p-4 space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs uppercase tracking-wide text-muted-foreground">
+                    Recompensas Personalizadas
+                  </Label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={fillFromTemplate}
+                  >
+                    <Info className="w-3 h-3 mr-1" />
+                    Usar valores do template
+                  </Button>
                 </div>
-                <div>
-                  <Label htmlFor="coins_reward" className="font-medium">Moedas Base</Label>
-                  <p className="text-xs text-muted-foreground">Para a loja</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-purple-500" />
+                      <Label htmlFor="xp_reward" className="text-sm">XP Base</Label>
+                    </div>
+                    <Input
+                      id="xp_reward"
+                      type="number"
+                      min="0"
+                      value={formData.xp_reward}
+                      onChange={(e) => setFormData(prev => ({ ...prev, xp_reward: parseInt(e.target.value) || 0 }))}
+                      className="text-lg font-semibold"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Coins className="w-4 h-4 text-amber-500" />
+                      <Label htmlFor="coins_reward" className="text-sm">Moedas Base</Label>
+                    </div>
+                    <Input
+                      id="coins_reward"
+                      type="number"
+                      min="0"
+                      value={formData.coins_reward}
+                      onChange={(e) => setFormData(prev => ({ ...prev, coins_reward: parseInt(e.target.value) || 0 }))}
+                      className="text-lg font-semibold"
+                    />
+                  </div>
                 </div>
-              </div>
-              <Input
-                id="coins_reward"
-                type="number"
-                min="0"
-                value={formData.coins_reward}
-                onChange={(e) => setFormData(prev => ({ ...prev, coins_reward: parseInt(e.target.value) || 0 }))}
-                className="text-lg font-semibold"
-              />
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
         </div>
-      </div>
+      )}
 
-      {/* 3. Multipliers */}
+      {/* 3. Base Rewards - Apenas quando NÃO há template */}
+      {!selectedTemplate && (
+        <div>
+          <Label className="text-xs uppercase tracking-wide text-muted-foreground mb-3 block">
+            Recompensas Base
+          </Label>
+          <div className="grid grid-cols-2 gap-4">
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="p-2 rounded-lg bg-purple-500/10">
+                    <Sparkles className="w-5 h-5 text-purple-500" />
+                  </div>
+                  <div>
+                    <Label htmlFor="xp_reward_base" className="font-medium">XP Base</Label>
+                    <p className="text-xs text-muted-foreground">Experiência</p>
+                  </div>
+                </div>
+                <Input
+                  id="xp_reward_base"
+                  type="number"
+                  min="0"
+                  value={formData.xp_reward}
+                  onChange={(e) => setFormData(prev => ({ ...prev, xp_reward: parseInt(e.target.value) || 0 }))}
+                  className="text-lg font-semibold"
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="p-2 rounded-lg bg-amber-500/10">
+                    <Coins className="w-5 h-5 text-amber-500" />
+                  </div>
+                  <div>
+                    <Label htmlFor="coins_reward_base" className="font-medium">Moedas Base</Label>
+                    <p className="text-xs text-muted-foreground">Para a loja</p>
+                  </div>
+                </div>
+                <Input
+                  id="coins_reward_base"
+                  type="number"
+                  min="0"
+                  value={formData.coins_reward}
+                  onChange={(e) => setFormData(prev => ({ ...prev, coins_reward: parseInt(e.target.value) || 0 }))}
+                  className="text-lg font-semibold"
+                />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
+
+      {/* 4. Multipliers */}
       <div>
         <Label className="text-xs uppercase tracking-wide text-muted-foreground mb-3 flex items-center gap-2">
           <TrendingUp className="w-3 h-3" />
@@ -251,30 +378,40 @@ export function RewardsStep({
                   <Sparkles className="w-5 h-5 text-purple-500" />
                   <div>
                     <div className="text-lg font-bold text-purple-600">{estimatedXp}</div>
-                    <div className="text-xs text-muted-foreground">XP Total</div>
+                    <div className="text-xs text-muted-foreground">
+                      XP Total {selectedTemplate && !overrideRewards && <span>(do template)</span>}
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-500/5 border border-amber-500/20">
                   <Coins className="w-5 h-5 text-amber-500" />
                   <div>
                     <div className="text-lg font-bold text-amber-600">{estimatedCoins}</div>
-                    <div className="text-xs text-muted-foreground">Moedas Total</div>
+                    <div className="text-xs text-muted-foreground">
+                      Moedas Total {selectedTemplate && !overrideRewards && <span>(do template)</span>}
+                    </div>
                   </div>
                 </div>
               </div>
+              {(xpMultiplier !== 1 || coinsMultiplier !== 1) && (
+                <div className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
+                  <Info className="w-3 h-3" />
+                  Base: {effectiveXp} XP × {xpMultiplier}x = {estimatedXp} | {effectiveCoins} moedas × {coinsMultiplier}x = {estimatedCoins}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* 4. Item Rewards */}
+      {/* 5. Item Rewards */}
       <ItemRewardsSection
         rewardItems={rewardItems}
         setRewardItems={setRewardItems}
         maxItems={3}
       />
 
-      {/* 5. Advanced Configuration - Skills & Insignias */}
+      {/* 6. Advanced Configuration - Skills & Insignias */}
       <div className="pt-2">
         <div 
           className="flex items-center gap-3 p-3 rounded-lg border border-border bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors"
@@ -435,74 +572,76 @@ export function RewardsStep({
                   </Button>
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {insigniaRelations.map((relation) => {
                     const insignia = availableInsignias.find(i => i.id === relation.insigniaId);
                     return (
-                      <div 
-                        key={relation.insigniaId}
-                        className="flex items-center gap-3 p-3 rounded-lg border border-border bg-card"
-                      >
-                        <Select
-                          value={relation.insigniaId}
-                          onValueChange={(value) => {
-                            setInsigniaRelations(insigniaRelations.map(ir =>
-                              ir.insigniaId === relation.insigniaId ? { ...ir, insigniaId: value } : ir
-                            ));
-                          }}
-                        >
-                          <SelectTrigger className="flex-1">
-                            <SelectValue>
-                              <span className="flex items-center gap-2">
-                                <span>{insignia?.icon}</span>
-                                <span>{insignia?.name}</span>
-                              </span>
-                            </SelectValue>
-                          </SelectTrigger>
-                          <SelectContent className="bg-popover z-50">
-                            {availableInsignias
-                              .filter(i => i.id === relation.insigniaId || !insigniaRelations.some(ir => ir.insigniaId === i.id))
-                              .map((i) => (
-                                <SelectItem key={i.id} value={i.id}>
-                                  <span className="flex items-center gap-2">
-                                    <span>{i.icon}</span>
-                                    <span>{i.name}</span>
-                                  </span>
-                                </SelectItem>
-                              ))}
-                          </SelectContent>
-                        </Select>
+                      <Card key={relation.insigniaId}>
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <Select
+                                value={relation.insigniaId}
+                                onValueChange={(value) => {
+                                  setInsigniaRelations(insigniaRelations.map(ir =>
+                                    ir.insigniaId === relation.insigniaId ? { ...ir, insigniaId: value } : ir
+                                  ));
+                                }}
+                              >
+                                <SelectTrigger className="w-40">
+                                  <SelectValue>
+                                    <span className="flex items-center gap-2">
+                                      <span>{insignia?.icon}</span>
+                                      <span>{insignia?.name}</span>
+                                    </span>
+                                  </SelectValue>
+                                </SelectTrigger>
+                                <SelectContent className="bg-popover z-50">
+                                  {availableInsignias
+                                    .filter(i => i.id === relation.insigniaId || !insigniaRelations.some(ir => ir.insigniaId === i.id))
+                                    .map((i) => (
+                                      <SelectItem key={i.id} value={i.id}>
+                                        <span className="flex items-center gap-2">
+                                          <span>{i.icon}</span>
+                                          <span>{i.name}</span>
+                                        </span>
+                                      </SelectItem>
+                                    ))}
+                                </SelectContent>
+                              </Select>
 
-                        <Select
-                          value={relation.relationType}
-                          onValueChange={(value) => {
-                            setInsigniaRelations(insigniaRelations.map(ir =>
-                              ir.insigniaId === relation.insigniaId ? { ...ir, relationType: value } : ir
-                            ));
-                          }}
-                        >
-                          <SelectTrigger className="w-36">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent className="bg-popover z-50">
-                            {RELATION_TYPES.map((type) => (
-                              <SelectItem key={type.value} value={type.value}>
-                                {type.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                          onClick={() => removeInsigniaRelation(relation.insigniaId)}
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                      </div>
+                              <Select
+                                value={relation.relationType}
+                                onValueChange={(value) => {
+                                  setInsigniaRelations(insigniaRelations.map(ir =>
+                                    ir.insigniaId === relation.insigniaId ? { ...ir, relationType: value } : ir
+                                  ));
+                                }}
+                              >
+                                <SelectTrigger className="w-36">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className="bg-popover z-50">
+                                  {RELATION_TYPES.map((type) => (
+                                    <SelectItem key={type.value} value={type.value}>
+                                      {type.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                              onClick={() => removeInsigniaRelation(relation.insigniaId)}
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
                     );
                   })}
                 </div>
