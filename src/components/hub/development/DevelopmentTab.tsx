@@ -21,7 +21,7 @@ import {
   Medal,
   Users,
 } from "lucide-react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { HubCard, HubButton, HubEmptyState } from "../common";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -43,6 +43,7 @@ type DevelopmentSubtab = "journeys" | "trainings" | "certificates";
 
 export function DevelopmentTab() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const subtab = (searchParams.get("tab") as DevelopmentSubtab) || "journeys";
   const { currentOrg } = useOrganization();
   
@@ -71,6 +72,15 @@ export function DevelopmentTab() {
     return progress?.progress_percent === 100;
   });
 
+  // Navigation handlers
+  const handleJourneyClick = (journeyId: string) => {
+    navigate(`/app/journeys/${journeyId}`);
+  };
+
+  const handleTrainingClick = (trainingId: string) => {
+    navigate(`/app/trainings/${trainingId}`);
+  };
+
   const renderContent = () => {
     switch (subtab) {
       case "journeys":
@@ -80,12 +90,14 @@ export function DevelopmentTab() {
           journeyUserProgress={journeyUserProgress}
           getCompletionPercentage={getCompletionPercentage}
           isLoading={journeysLoading}
+          onJourneyClick={handleJourneyClick}
         />;
       case "trainings":
         return <TrainingsSection 
           trainings={trainings}
           getTrainingProgress={getTrainingProgress}
           isLoading={trainingsLoading}
+          onTrainingClick={handleTrainingClick}
         />;
       case "certificates":
         return <CertificatesSection 
@@ -187,13 +199,15 @@ function JourneysSection({
   inProgressJourneys,
   journeyUserProgress, 
   getCompletionPercentage,
-  isLoading 
+  isLoading,
+  onJourneyClick
 }: {
   journeys: any[];
   inProgressJourneys: any[];
   journeyUserProgress: any[];
   getCompletionPercentage: (id: string) => number;
   isLoading: boolean;
+  onJourneyClick: (journeyId: string) => void;
 }) {
   if (isLoading) {
     return (
@@ -238,7 +252,7 @@ function JourneysSection({
                 >
                   <HubCard 
                     className="p-4 border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent cursor-pointer hover:border-primary/40 transition-colors"
-                    onClick={() => window.location.href = `/app/journeys/${journey.id}`}
+                    onClick={() => onJourneyClick(journey.id)}
                   >
                     <div className="space-y-3">
                       <div className="flex items-start justify-between">
@@ -314,7 +328,7 @@ function JourneysSection({
                   isStarted={isStarted}
                   isCompleted={isCompleted}
                   isFeatured={false}
-                  onClick={() => window.location.href = `/app/journeys/${journey.id}`}
+                  onClick={() => onJourneyClick(journey.id)}
                 />
               </motion.div>
             );
@@ -329,11 +343,13 @@ function JourneysSection({
 function TrainingsSection({ 
   trainings, 
   getTrainingProgress,
-  isLoading 
+  isLoading,
+  onTrainingClick
 }: {
   trainings: any[];
   getTrainingProgress: (id: string) => any;
   isLoading: boolean;
+  onTrainingClick: (trainingId: string) => void;
 }) {
   if (isLoading) {
     return (
@@ -403,7 +419,7 @@ function TrainingsSection({
                     xpReward={training.xp_reward || 100}
                     coinsReward={training.coins_reward || 50}
                     progress={progress?.progress_percent}
-                    onClick={() => window.location.href = `/app/trainings/${training.id}`}
+                    onClick={() => onTrainingClick(training.id)}
                   />
                 </motion.div>
               );
@@ -439,7 +455,7 @@ function TrainingsSection({
                   difficulty={(training.difficulty as "easy" | "medium" | "hard") || "medium"}
                   xpReward={training.xp_reward || 100}
                   coinsReward={training.coins_reward || 50}
-                  onClick={() => window.location.href = `/app/trainings/${training.id}`}
+                  onClick={() => onTrainingClick(training.id)}
                 />
               </motion.div>
             ))}
@@ -475,7 +491,7 @@ function TrainingsSection({
                   xpReward={training.xp_reward || 100}
                   coinsReward={training.coins_reward || 50}
                   isCompleted
-                  onClick={() => window.location.href = `/app/trainings/${training.id}`}
+                  onClick={() => onTrainingClick(training.id)}
                 />
               </motion.div>
             ))}

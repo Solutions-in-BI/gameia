@@ -3,7 +3,8 @@
  * Layout 2 colunas estilo Hotmart/Kiwify
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { toast } from "sonner";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { 
@@ -190,16 +191,14 @@ export default function JourneyPlayerPage() {
     const success = await startJourney();
     
     if (success) {
-      // Allow data to refresh
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
+      // Navigate immediately if we have modules
       if (trainingsWithModules.length > 0 && trainingsWithModules[0].modules.length > 0) {
         const firstTraining = trainingsWithModules[0];
         const firstModule = firstTraining.modules[0];
         navigate(`/app/journeys/${journeyId}/training/${firstTraining.id}/module/${firstModule.id}`);
       } else {
-        // Fallback: reload to show updated state
-        window.location.reload();
+        // No modules available - show message and stay on page
+        toast.info("Esta jornada ainda não possui módulos disponíveis.");
       }
     }
     setIsStarting(false);
@@ -458,11 +457,15 @@ export default function JourneyPlayerPage() {
               item: journey.name
             }}
             skillsImpacted={[journey.category]}
-            nextStep={progress?.currentTrainingId ? {
-              label: "Continuar treinamento atual",
-              href: `/app/journeys/${journeyId}/training/${progress.currentTrainingId}/module/first`,
-              type: "training" as const,
-            } : undefined}
+            nextStep={progress?.currentTrainingId ? (() => {
+              const currentTraining = trainingsWithModules.find(t => t.id === progress.currentTrainingId);
+              const firstModuleId = currentTraining?.modules[0]?.id;
+              return firstModuleId ? {
+                label: "Continuar treinamento atual",
+                href: `/app/journeys/${journeyId}/training/${progress.currentTrainingId}/module/${firstModuleId}`,
+                type: "training" as const,
+              } : undefined;
+            })() : undefined}
             compact
           />
         </div>
