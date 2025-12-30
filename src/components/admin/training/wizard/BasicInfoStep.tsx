@@ -86,6 +86,43 @@ export function BasicInfoStep({ formData, setFormData }: BasicInfoStepProps) {
 
   return (
     <div className="space-y-6">
+      {/* Training Type */}
+      <div className="space-y-2">
+        <Label>Tipo de Treinamento *</Label>
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={() => setFormData(prev => ({ ...prev, training_type: 'traditional' }))}
+            className={`p-4 rounded-lg border-2 text-left transition-all ${
+              formData.training_type !== 'book_guided'
+                ? 'border-primary bg-primary/5'
+                : 'border-border hover:border-primary/50'
+            }`}
+          >
+            <div className="text-2xl mb-2">📚</div>
+            <div className="font-medium">Tradicional</div>
+            <p className="text-xs text-muted-foreground">
+              Vídeos, textos, quizzes e jogos
+            </p>
+          </button>
+          <button
+            type="button"
+            onClick={() => setFormData(prev => ({ ...prev, training_type: 'book_guided' }))}
+            className={`p-4 rounded-lg border-2 text-left transition-all ${
+              formData.training_type === 'book_guided'
+                ? 'border-primary bg-primary/5'
+                : 'border-border hover:border-primary/50'
+            }`}
+          >
+            <div className="text-2xl mb-2">📖</div>
+            <div className="font-medium">Guiado por Livro</div>
+            <p className="text-xs text-muted-foreground">
+              Leitura + reflexão IA + aplicação prática
+            </p>
+          </button>
+        </div>
+      </div>
+
       {/* Name */}
       <div className="space-y-2">
         <Label htmlFor="name">Nome do Treinamento *</Label>

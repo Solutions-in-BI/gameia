@@ -21,11 +21,18 @@ import {
   Handshake,
   MessageSquare,
   MousePointerClick,
+  BookOpen,
+  Sparkles,
+  ClipboardCheck,
 } from "lucide-react";
 import type { TrainingModule } from "@/hooks/useTrainingEditor";
 import { ContentEditor } from "./editors/ContentEditor";
 import { QuizEditor } from "./editors/QuizEditor";
 import { GameEditor } from "./editors/GameEditor";
+import { GuidedReadingEditor } from "./editors/GuidedReadingEditor";
+import { AIReflectionEditor } from "./editors/AIReflectionEditor";
+import { RoutineApplicationEditor } from "./editors/RoutineApplicationEditor";
+import { ValidationEditor } from "./editors/ValidationEditor";
 
 const STEP_TYPES = [
   { value: "content", label: "Conteúdo", icon: FileText, description: "Texto, vídeo, PDF ou link" },
@@ -36,6 +43,11 @@ const STEP_TYPES = [
   { value: "practical_challenge", label: "Desafio", icon: Target, description: "Desafio prático" },
   { value: "commitment", label: "Compromisso", icon: Handshake, description: "Compromisso pessoal" },
   { value: "reflection", label: "Reflexão", icon: MessageSquare, description: "Checkpoint de reflexão" },
+  // New book-guided types
+  { value: "guided_reading", label: "Leitura Guiada", icon: BookOpen, description: "Leitura com contexto" },
+  { value: "ai_reflection", label: "Reflexão IA", icon: Sparkles, description: "Reflexão guiada por IA" },
+  { value: "routine_application", label: "Aplicação Prática", icon: Target, description: "Aplicação na rotina" },
+  { value: "validation", label: "Validação", icon: ClipboardCheck, description: "Validação de aprendizado" },
 ];
 
 interface StepEditorProps {
@@ -138,6 +150,15 @@ function renderEditor(module: TrainingModule, onChange: (data: Partial<TrainingM
       return <CommitmentPlaceholder />;
     case "reflection":
       return <ReflectionPlaceholder />;
+    // New book-guided types
+    case "guided_reading":
+      return <GuidedReadingEditor module={module} onChange={onChange} />;
+    case "ai_reflection":
+      return <AIReflectionEditor module={module} onChange={onChange} />;
+    case "routine_application":
+      return <RoutineApplicationEditor module={module} onChange={onChange} />;
+    case "validation":
+      return <ValidationEditor module={module} onChange={onChange} />;
     default:
       return <ContentEditor module={module} onChange={onChange} />;
   }
