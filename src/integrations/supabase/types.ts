@@ -1700,6 +1700,68 @@ export type Database = {
           },
         ]
       }
+      evolution_templates: {
+        Row: {
+          category: string
+          certificate_min_score: number | null
+          created_at: string | null
+          generates_certificate: boolean | null
+          id: string
+          importance: string
+          insignia_ids: string[] | null
+          is_default: boolean | null
+          level: string
+          name: string
+          organization_id: string | null
+          skill_impacts: Json
+          suggested_coins: number | null
+          suggested_xp: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          category: string
+          certificate_min_score?: number | null
+          created_at?: string | null
+          generates_certificate?: boolean | null
+          id?: string
+          importance: string
+          insignia_ids?: string[] | null
+          is_default?: boolean | null
+          level: string
+          name: string
+          organization_id?: string | null
+          skill_impacts?: Json
+          suggested_coins?: number | null
+          suggested_xp?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string
+          certificate_min_score?: number | null
+          created_at?: string | null
+          generates_certificate?: boolean | null
+          id?: string
+          importance?: string
+          insignia_ids?: string[] | null
+          is_default?: boolean | null
+          level?: string
+          name?: string
+          organization_id?: string | null
+          skill_impacts?: Json
+          suggested_coins?: number | null
+          suggested_xp?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evolution_templates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       experience_requests: {
         Row: {
           completed_at: string | null
@@ -5133,8 +5195,11 @@ export type Database = {
           difficulty: string | null
           display_order: number | null
           estimated_hours: number | null
+          evolution_snapshot: Json | null
+          evolution_template_id: string | null
           icon: string | null
           id: string
+          importance: string | null
           insignia_reward_id: string | null
           is_active: boolean | null
           is_onboarding: boolean | null
@@ -5168,8 +5233,11 @@ export type Database = {
           difficulty?: string | null
           display_order?: number | null
           estimated_hours?: number | null
+          evolution_snapshot?: Json | null
+          evolution_template_id?: string | null
           icon?: string | null
           id?: string
+          importance?: string | null
           insignia_reward_id?: string | null
           is_active?: boolean | null
           is_onboarding?: boolean | null
@@ -5203,8 +5271,11 @@ export type Database = {
           difficulty?: string | null
           display_order?: number | null
           estimated_hours?: number | null
+          evolution_snapshot?: Json | null
+          evolution_template_id?: string | null
           icon?: string | null
           id?: string
+          importance?: string | null
           insignia_reward_id?: string | null
           is_active?: boolean | null
           is_onboarding?: boolean | null
@@ -5220,6 +5291,13 @@ export type Database = {
           xp_reward?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "trainings_evolution_template_id_fkey"
+            columns: ["evolution_template_id"]
+            isOneToOne: false
+            referencedRelation: "evolution_templates"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "trainings_insignia_reward_id_fkey"
             columns: ["insignia_reward_id"]
