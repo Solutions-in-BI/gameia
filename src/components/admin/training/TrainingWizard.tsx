@@ -122,6 +122,7 @@ export function TrainingWizard({
   const [skillImpacts, setSkillImpacts] = useState<SkillImpact[]>([]);
   const [insigniaRelations, setInsigniaRelations] = useState<InsigniaRelation[]>([]);
   const [rewardItems, setRewardItems] = useState<Array<{item_id?: string; category?: string; unlock_mode: 'auto_unlock' | 'enable_purchase'}>>([]);
+  const [evolutionTemplateId, setEvolutionTemplateId] = useState<string | null>(null);
   
   // Multipliers state
   const [xpMultiplier, setXpMultiplier] = useState(1);
@@ -337,6 +338,8 @@ export function TrainingWizard({
             setCoinsMultiplier={setCoinsMultiplier}
             rewardItems={rewardItems}
             setRewardItems={setRewardItems}
+            evolutionTemplateId={evolutionTemplateId}
+            setEvolutionTemplateId={setEvolutionTemplateId}
           />
         );
       case 4:

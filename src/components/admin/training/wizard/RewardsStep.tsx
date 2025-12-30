@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import type { TrainingFormData, SkillImpact, InsigniaRelation } from "../TrainingWizard";
 import { ItemRewardsSection } from "@/components/rewards/ItemRewardsSection";
+import { EvolutionTemplateSection } from "@/components/rewards/EvolutionTemplateSection";
 import type { ItemRewardConfig } from "@/hooks/useItemRewards";
 
 interface RewardsStepProps {
@@ -47,6 +48,8 @@ interface RewardsStepProps {
   setCoinsMultiplier: React.Dispatch<React.SetStateAction<number>>;
   rewardItems: ItemRewardConfig[];
   setRewardItems: React.Dispatch<React.SetStateAction<ItemRewardConfig[]>>;
+  evolutionTemplateId: string | null;
+  setEvolutionTemplateId: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
 const RELATION_TYPES = [
@@ -70,6 +73,8 @@ export function RewardsStep({
   setCoinsMultiplier,
   rewardItems,
   setRewardItems,
+  evolutionTemplateId,
+  setEvolutionTemplateId,
 }: RewardsStepProps) {
   const addSkillImpact = () => {
     if (skillImpacts.length >= 3) return;
@@ -452,18 +457,18 @@ export function RewardsStep({
         )}
       </div>
 
+      {/* Evolution Template */}
+      <EvolutionTemplateSection
+        selectedTemplateId={evolutionTemplateId}
+        setSelectedTemplateId={setEvolutionTemplateId}
+      />
+
       {/* Item Rewards */}
-      <div>
-        <Label className="text-xs uppercase tracking-wide text-muted-foreground mb-3 flex items-center gap-2">
-          <Gift className="w-3 h-3" />
-          Itens da Loja como Recompensa
-        </Label>
-        <ItemRewardsSection
-          rewardItems={rewardItems}
-          setRewardItems={setRewardItems}
-          maxItems={3}
-        />
-      </div>
+      <ItemRewardsSection
+        rewardItems={rewardItems}
+        setRewardItems={setRewardItems}
+        maxItems={3}
+      />
     </div>
   );
 }

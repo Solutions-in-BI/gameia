@@ -97,6 +97,7 @@ export interface CreateChallengeData {
     category?: string;
     unlock_mode: 'auto_unlock' | 'enable_purchase';
   }>;
+  evolution_template_id?: string;
 }
 
 // Métricas internas que podem ser rastreadas automaticamente
