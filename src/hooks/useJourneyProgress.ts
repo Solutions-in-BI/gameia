@@ -201,6 +201,7 @@ export function useJourneyProgress(journeyId?: string) {
             user_id: user.id,
             started_at: new Date().toISOString(),
             trainings_completed: 0,
+            status: 'in_progress',
           },
           { onConflict: "journey_id,user_id" }
         );
