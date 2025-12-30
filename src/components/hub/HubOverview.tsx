@@ -1,9 +1,9 @@
 /**
- * HubOverview - Tab "Visão Geral" do hub
- * Continuar experiência, recomendações com regras de recompensa, ações rápidas
+ * HubOverview - Tab "Início" do hub
+ * Recomendação principal única + resumo rápido
  */
 
-import { useState } from "react";
+import { useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   Play,
@@ -20,13 +20,14 @@ import {
   Users,
   Brain,
   ListChecks,
-  ShoppingBag,
-  GraduationCap,
   ChevronRight,
+  Route,
+  GraduationCap,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { HubCard, HubCardHeader, HubStat, HubEmptyState, HubButton, HubHeader } from "./common";
 import { DailyMissionsCard, MonthlyGoalsCard } from "./overview";
+import { PrimaryRecommendation } from "./overview/PrimaryRecommendation";
 import { RewardBadge } from "@/components/rewards/RewardBadge";
 import { useStreak } from "@/hooks/useStreak";
 import { useLevel } from "@/hooks/useLevel";
@@ -37,10 +38,13 @@ import { useDailyMissions } from "@/hooks/useDailyMissions";
 import { useInsignias } from "@/hooks/useInsignias";
 import { useTrainings } from "@/hooks/useTrainings";
 import { useCognitiveTests } from "@/hooks/useCognitiveTests";
+import { useTrainingJourneys } from "@/hooks/useTrainingJourneys";
+import { useOrganization } from "@/hooks/useOrganization";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
+
 interface HubOverviewProps {
   onNavigate: (tab: string) => void;
 }
@@ -66,11 +70,15 @@ export function HubOverview({ onNavigate }: HubOverviewProps) {
   const { insignias } = useInsignias();
   const { trainings, getInProgressTrainings } = useTrainings();
   const { tests, mySessions } = useCognitiveTests();
+  const { currentOrg } = useOrganization();
+  const { journeys, userProgress: journeyUserProgress, getCompletionPercentage } = useTrainingJourneys(currentOrg?.id);
 
   const trailStats = getOverallStats();
   
   // Find skill with highest level as "skill em foco"
   const topSkill = skills.length > 0 ? skills[0] : null;
+  // Find skill with lowest level as "skill a desenvolver"
+  const weakestSkill = skills.length > 0 ? skills[skills.length - 1] : null;
   
   // Insignias stats
   const unlockedInsignias = insignias.filter(i => i.isUnlocked).length;
@@ -78,6 +86,13 @@ export function HubOverview({ onNavigate }: HubOverviewProps) {
   // Get in-progress training
   const inProgressTrainings = getInProgressTrainings();
   const continueTraining = inProgressTrainings[0];
+
+  // Get in-progress journey
+  const inProgressJourneys = journeys.filter(j => {
+    const progress = journeyUserProgress.find(p => p.journey_id === j.id);
+    return progress && progress.status === 'in_progress';
+  });
+  const continueJourney = inProgressJourneys[0];
 
   // Get pending cognitive test
   const pendingTest = tests.find(t => 
@@ -91,12 +106,103 @@ export function HubOverview({ onNavigate }: HubOverviewProps) {
     (suggestions.pdi_goals_due?.length || 0)
   ) : 0;
 
+  // Determine PRIMARY RECOMMENDATION (single focus)
+  const primaryRecommendation = useMemo(() => {
+    // Priority 1: In-progress journey
+    if (continueJourney) {
+      const progress = getCompletionPercentage(continueJourney.id);
+      const userProgress = journeyUserProgress.find(p => p.journey_id === continueJourney.id);
+      return {
+        type: "journey" as const,
+        title: continueJourney.name,
+        subtitle: `${userProgress?.trainings_completed || 0}/${continueJourney.total_trainings} módulos concluídos`,
+        description: continueJourney.description || undefined,
+        reason: weakestSkill ? `Para evoluir em ${weakestSkill.name}` : "Continue de onde parou",
+        progress,
+        reward: {
+          xp: continueJourney.bonus_xp || 500,
+          coins: continueJourney.bonus_coins || 100,
+          certificate: continueJourney.generates_certificate,
+        },
+        skills: [continueJourney.category],
+        thumbnail: continueJourney.thumbnail_url || undefined,
+        onClick: () => navigate(`/app/journeys/${continueJourney.id}`),
+      };
+    }
+
+    // Priority 2: In-progress training
+    if (continueTraining) {
+      return {
+        type: "training" as const,
+        title: continueTraining.name,
+        subtitle: "Treinamento em andamento",
+        description: continueTraining.description || undefined,
+        reason: "Continue de onde parou",
+        progress: 30, // Would need actual progress
+        reward: {
+          xp: continueTraining.xp_reward || 100,
+          coins: continueTraining.coins_reward || 50,
+        },
+        skills: [continueTraining.category],
+        thumbnail: continueTraining.thumbnail_url || undefined,
+        onClick: () => navigate(`/app/trainings/${continueTraining.id}`),
+      };
+    }
+
+    // Priority 3: Recommended test based on weak skill
+    if (pendingTest) {
+      return {
+        type: "test" as const,
+        title: pendingTest.name,
+        subtitle: "Teste Cognitivo Recomendado",
+        description: pendingTest.description || "Avalie suas habilidades cognitivas",
+        reason: "Descubra seu potencial",
+        reward: {
+          xp: pendingTest.xp_reward || 100,
+        },
+        skills: [pendingTest.test_type],
+        onClick: () => onNavigate("arena"),
+      };
+    }
+
+    // Priority 4: First available journey
+    const availableJourney = journeys.find(j => j.is_active);
+    if (availableJourney) {
+      return {
+        type: "journey" as const,
+        title: availableJourney.name,
+        subtitle: `${availableJourney.total_trainings} módulos`,
+        description: availableJourney.description || undefined,
+        reason: "Comece uma nova jornada",
+        reward: {
+          xp: availableJourney.bonus_xp || 500,
+          coins: availableJourney.bonus_coins || 100,
+          certificate: availableJourney.generates_certificate,
+        },
+        skills: [availableJourney.category],
+        thumbnail: availableJourney.thumbnail_url || undefined,
+        onClick: () => navigate(`/app/journeys/${availableJourney.id}`),
+      };
+    }
+
+    // Fallback: Go to Arena
+    return {
+      type: "game" as const,
+      title: "Explore a Arena",
+      subtitle: "Jogos que desenvolvem suas skills",
+      description: "Pratique com jogos e testes que evoluem suas competências",
+      reason: "Comece sua jornada",
+      reward: { xp: 50 },
+      onClick: () => onNavigate("arena"),
+    };
+  }, [continueJourney, continueTraining, pendingTest, journeys, weakestSkill, journeyUserProgress, getCompletionPercentage, navigate, onNavigate]);
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <HubHeader
-        title="Painel"
-        subtitle="Seu hub de desenvolvimento e jogos"
+        title="Início"
+        subtitle="Seu próximo passo para evoluir"
         icon={Sparkles}
       />
 
@@ -132,109 +238,19 @@ export function HubOverview({ onNavigate }: HubOverviewProps) {
         />
       </div>
 
-      {/* Quick Actions */}
-      <HubCard>
-        <HubCardHeader title="Ações Rápidas" description="Continue de onde parou" />
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <QuickActionButton
-            icon={Play}
-            label="Arena"
-            description="Jogos e experiências"
-            gradient="from-primary to-primary-glow"
-            onClick={() => onNavigate("arena")}
-          />
-          <QuickActionButton
-            icon={GraduationCap}
-            label="Treinamentos"
-            description="Na Arena"
-            gradient="from-blue-500 to-blue-600"
-            onClick={() => onNavigate("arena")}
-          />
-          <QuickActionButton
-            icon={ShoppingBag}
-            label="Loja"
-            description="Gastar moedas"
-            gradient="from-purple-500 to-purple-600"
-            onClick={() => navigate("/app/marketplace")}
-          />
-          <QuickActionButton
-            icon={TrendingUp}
-            label="Evolução"
-            description="Seu progresso"
-            gradient="from-secondary to-gameia-teal"
-            onClick={() => onNavigate("evolution")}
-          />
-        </div>
-      </HubCard>
-
-      {/* Continuar Experiência + Recomendado */}
-      {(continueTraining || pendingTest) && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Continuar Treinamento */}
-          {continueTraining && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <HubCard 
-                className="cursor-pointer group border-blue-500/30 bg-gradient-to-br from-blue-500/5 to-transparent"
-                onClick={() => navigate(`/app/trainings/${continueTraining.id}`)}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-xl bg-blue-500/10 flex items-center justify-center shrink-0">
-                    <GraduationCap className="w-7 h-7 text-blue-500" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <Badge variant="outline" className="text-xs text-blue-500 mb-1">
-                      Continuar
-                    </Badge>
-                    <h3 className="font-semibold text-foreground truncate">{continueTraining.name}</h3>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Progress value={30} className="h-1.5 flex-1" />
-                      <span className="text-xs text-muted-foreground">30%</span>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
-                </div>
-              </HubCard>
-            </motion.div>
-          )}
-
-          {/* Teste Recomendado */}
-          {pendingTest && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-            >
-              <HubCard 
-                className="cursor-pointer group border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 to-transparent"
-                onClick={() => onNavigate("arena")}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0">
-                    <Brain className="w-7 h-7 text-emerald-500" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <Badge variant="outline" className="text-xs text-emerald-500 mb-1">
-                      Recomendado
-                    </Badge>
-                    <h3 className="font-semibold text-foreground truncate">{pendingTest.name}</h3>
-                    <div className="flex items-center gap-2 mt-1">
-                      <RewardBadge 
-                        xp={pendingTest.xp_reward || 100} 
-                        condition="70%+ de acerto"
-                        size="sm"
-                      />
-                    </div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
-                </div>
-              </HubCard>
-            </motion.div>
-          )}
-        </div>
-      )}
+      {/* PRIMARY RECOMMENDATION - Single focused action */}
+      <PrimaryRecommendation
+        type={primaryRecommendation.type}
+        title={primaryRecommendation.title}
+        subtitle={primaryRecommendation.subtitle}
+        description={primaryRecommendation.description}
+        reason={primaryRecommendation.reason}
+        progress={primaryRecommendation.progress}
+        reward={primaryRecommendation.reward}
+        skills={primaryRecommendation.skills}
+        thumbnail={primaryRecommendation.thumbnail}
+        onClick={primaryRecommendation.onClick}
+      />
 
       {/* Missions and Goals Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
