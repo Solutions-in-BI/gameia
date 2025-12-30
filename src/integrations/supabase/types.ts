@@ -677,6 +677,217 @@ export type Database = {
           },
         ]
       }
+      certificate_criteria_configs: {
+        Row: {
+          certificate_type: string
+          coins_reward: number | null
+          color: string | null
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          insignia_id: string | null
+          is_active: boolean | null
+          min_challenges_completed: number | null
+          min_completion_rate: number | null
+          min_feedback_score: number | null
+          min_games_participated: number | null
+          min_score: number | null
+          name: string
+          organization_id: string | null
+          require_360_assessment: boolean | null
+          required_journey_ids: string[] | null
+          required_training_ids: string[] | null
+          requires_manager_approval: boolean | null
+          target_id: string | null
+          unlocks: Json | null
+          updated_at: string | null
+          validity_months: number | null
+          xp_reward: number | null
+        }
+        Insert: {
+          certificate_type: string
+          coins_reward?: number | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          insignia_id?: string | null
+          is_active?: boolean | null
+          min_challenges_completed?: number | null
+          min_completion_rate?: number | null
+          min_feedback_score?: number | null
+          min_games_participated?: number | null
+          min_score?: number | null
+          name: string
+          organization_id?: string | null
+          require_360_assessment?: boolean | null
+          required_journey_ids?: string[] | null
+          required_training_ids?: string[] | null
+          requires_manager_approval?: boolean | null
+          target_id?: string | null
+          unlocks?: Json | null
+          updated_at?: string | null
+          validity_months?: number | null
+          xp_reward?: number | null
+        }
+        Update: {
+          certificate_type?: string
+          coins_reward?: number | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          insignia_id?: string | null
+          is_active?: boolean | null
+          min_challenges_completed?: number | null
+          min_completion_rate?: number | null
+          min_feedback_score?: number | null
+          min_games_participated?: number | null
+          min_score?: number | null
+          name?: string
+          organization_id?: string | null
+          require_360_assessment?: boolean | null
+          required_journey_ids?: string[] | null
+          required_training_ids?: string[] | null
+          requires_manager_approval?: boolean | null
+          target_id?: string | null
+          unlocks?: Json | null
+          updated_at?: string | null
+          validity_months?: number | null
+          xp_reward?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certificate_criteria_configs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      certificate_progress: {
+        Row: {
+          certificate_type: string
+          challenges_completed: number | null
+          completion_rate: number | null
+          config_id: string | null
+          created_at: string | null
+          current_score: number | null
+          eligibility_checked_at: string | null
+          feedback_score: number | null
+          games_participated: number | null
+          has_360_assessment: boolean | null
+          id: string
+          is_eligible: boolean | null
+          journeys_completed: string[] | null
+          organization_id: string | null
+          target_id: string | null
+          trainings_completed: string[] | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          certificate_type: string
+          challenges_completed?: number | null
+          completion_rate?: number | null
+          config_id?: string | null
+          created_at?: string | null
+          current_score?: number | null
+          eligibility_checked_at?: string | null
+          feedback_score?: number | null
+          games_participated?: number | null
+          has_360_assessment?: boolean | null
+          id?: string
+          is_eligible?: boolean | null
+          journeys_completed?: string[] | null
+          organization_id?: string | null
+          target_id?: string | null
+          trainings_completed?: string[] | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          certificate_type?: string
+          challenges_completed?: number | null
+          completion_rate?: number | null
+          config_id?: string | null
+          created_at?: string | null
+          current_score?: number | null
+          eligibility_checked_at?: string | null
+          feedback_score?: number | null
+          games_participated?: number | null
+          has_360_assessment?: boolean | null
+          id?: string
+          is_eligible?: boolean | null
+          journeys_completed?: string[] | null
+          organization_id?: string | null
+          target_id?: string | null
+          trainings_completed?: string[] | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certificate_progress_config_id_fkey"
+            columns: ["config_id"]
+            isOneToOne: false
+            referencedRelation: "certificate_criteria_configs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "certificate_progress_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      certificate_unlock_rules: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          organization_id: string | null
+          required_certificate_type: string
+          required_source_id: string | null
+          unlocks_id: string
+          unlocks_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          organization_id?: string | null
+          required_certificate_type: string
+          required_source_id?: string | null
+          unlocks_id: string
+          unlocks_type: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          organization_id?: string | null
+          required_certificate_type?: string
+          required_source_id?: string | null
+          unlocks_id?: string
+          unlocks_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certificate_unlock_rules_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       challenge_supporters: {
         Row: {
           coins_staked: number
@@ -5321,47 +5532,86 @@ export type Database = {
       }
       training_certificates: {
         Row: {
+          approved_at: string | null
+          approved_by: string | null
           certificate_number: string
+          certificate_type: string | null
+          criteria_met: Json | null
+          evolution_event_id: string | null
           expires_at: string | null
           final_score: number | null
           id: string
           insignia_id: string | null
           issued_at: string | null
+          level_achieved: string | null
+          manager_notes: string | null
           metadata: Json | null
+          organization_id: string | null
           pdf_url: string | null
+          pdi_impact: Json | null
+          requires_manager_approval: boolean | null
           skills_validated: string[] | null
+          source_id: string | null
+          source_type: string | null
           status: string | null
           training_id: string
+          unlocks: Json | null
           user_id: string
           verification_code: string | null
         }
         Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
           certificate_number: string
+          certificate_type?: string | null
+          criteria_met?: Json | null
+          evolution_event_id?: string | null
           expires_at?: string | null
           final_score?: number | null
           id?: string
           insignia_id?: string | null
           issued_at?: string | null
+          level_achieved?: string | null
+          manager_notes?: string | null
           metadata?: Json | null
+          organization_id?: string | null
           pdf_url?: string | null
+          pdi_impact?: Json | null
+          requires_manager_approval?: boolean | null
           skills_validated?: string[] | null
+          source_id?: string | null
+          source_type?: string | null
           status?: string | null
           training_id: string
+          unlocks?: Json | null
           user_id: string
           verification_code?: string | null
         }
         Update: {
+          approved_at?: string | null
+          approved_by?: string | null
           certificate_number?: string
+          certificate_type?: string | null
+          criteria_met?: Json | null
+          evolution_event_id?: string | null
           expires_at?: string | null
           final_score?: number | null
           id?: string
           insignia_id?: string | null
           issued_at?: string | null
+          level_achieved?: string | null
+          manager_notes?: string | null
           metadata?: Json | null
+          organization_id?: string | null
           pdf_url?: string | null
+          pdi_impact?: Json | null
+          requires_manager_approval?: boolean | null
           skills_validated?: string[] | null
+          source_id?: string | null
+          source_type?: string | null
           status?: string | null
           training_id?: string
+          unlocks?: Json | null
           user_id?: string
           verification_code?: string | null
         }
@@ -7575,6 +7825,14 @@ export type Database = {
         }
         Returns: Json
       }
+      approve_certificate: {
+        Args: {
+          p_approved: boolean
+          p_certificate_id: string
+          p_notes?: string
+        }
+        Returns: Json
+      }
       calculate_criterion_progress: {
         Args: { p_criterion_id: string; p_user_id: string }
         Returns: Json
@@ -7595,10 +7853,16 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: Json
       }
-      check_certificate_eligibility: {
-        Args: { p_training_id: string; p_user_id: string }
-        Returns: Json
-      }
+      check_certificate_eligibility:
+        | {
+            Args: {
+              p_certificate_type: string
+              p_target_id?: string
+              p_user_id: string
+            }
+            Returns: Json
+          }
+        | { Args: { p_training_id: string; p_user_id: string }; Returns: Json }
       check_insignia_criteria: {
         Args: { p_insignia_id: string; p_user_id: string }
         Returns: Json
@@ -7835,6 +8099,17 @@ export type Database = {
       }
       issue_certificate: {
         Args: { p_training_id: string; p_user_id: string }
+        Returns: Json
+      }
+      issue_certificate_v2: {
+        Args: {
+          p_certificate_type: string
+          p_final_score?: number
+          p_skip_eligibility_check?: boolean
+          p_source_id?: string
+          p_training_id?: string
+          p_user_id: string
+        }
         Returns: Json
       }
       list_org_invites: {
