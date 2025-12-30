@@ -34,6 +34,19 @@ export interface DevelopmentGoal {
   manager_notes: string | null;
   xp_reward: number;
   created_at: string;
+  // New fields for automatic progress tracking
+  goal_type: string | null;
+  linked_training_ids: string[] | null;
+  linked_challenge_ids: string[] | null;
+  linked_cognitive_test_ids: string[] | null;
+  linked_insignia_ids: string[] | null;
+  related_games: string[] | null;
+  auto_progress_enabled: boolean | null;
+  auto_challenges_enabled: boolean | null;
+  challenge_config: Record<string, unknown> | null;
+  last_auto_update: string | null;
+  stagnant_since: string | null;
+  weight: number | null;
 }
 
 export interface GoalCheckIn {
@@ -157,6 +170,13 @@ export function usePDI() {
           skill_id: goal.skill_id,
           target_date: goal.target_date,
           priority: goal.priority,
+          goal_type: goal.goal_type,
+          linked_training_ids: goal.linked_training_ids,
+          linked_challenge_ids: goal.linked_challenge_ids,
+          linked_cognitive_test_ids: goal.linked_cognitive_test_ids,
+          related_games: goal.related_games,
+          auto_progress_enabled: goal.auto_progress_enabled ?? true,
+          weight: goal.weight,
         })
         .select()
         .single();
@@ -185,6 +205,13 @@ export function usePDI() {
           priority: updates.priority,
           target_date: updates.target_date,
           manager_notes: updates.manager_notes,
+          goal_type: updates.goal_type,
+          linked_training_ids: updates.linked_training_ids,
+          linked_challenge_ids: updates.linked_challenge_ids,
+          linked_cognitive_test_ids: updates.linked_cognitive_test_ids,
+          related_games: updates.related_games,
+          auto_progress_enabled: updates.auto_progress_enabled,
+          weight: updates.weight,
         })
         .eq("id", id)
         .select()
