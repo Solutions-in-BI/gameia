@@ -5,12 +5,11 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { 
   Route, 
   ArrowLeft, 
-  Menu, 
-  X,
+  Menu,
   Play,
   ChevronRight,
   GraduationCap,
@@ -28,9 +27,8 @@ import { JourneyCompletionScreen } from "@/components/journeys/JourneyCompletion
 import { Breadcrumb, buildJourneyBreadcrumbs } from "@/components/common/Breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
 
 interface Journey {
   id: string;
@@ -38,10 +36,10 @@ interface Journey {
   description: string | null;
   category: string;
   level: string;
-  xp_reward: number;
-  coins_reward: number;
-  certificate_enabled: boolean;
-  insignia_id: string | null;
+  bonus_xp: number;
+  bonus_coins: number;
+  generates_certificate: boolean;
+  bonus_insignia_id: string | null;
   thumbnail_url: string | null;
 }
 
@@ -51,8 +49,8 @@ interface TrainingWithModules {
   description: string | null;
   modules: {
     id: string;
-    title: string;
-    sort_order: number;
+    name: string;
+    order_index: number;
   }[];
 }
 
@@ -77,11 +75,15 @@ export default function JourneyPlayerPage() {
         // Fetch journey
         const { data: journeyData, error: journeyError } = await supabase
           .from("training_journeys")
-          .select("*")
+          .select("id, name, description, category, level, bonus_xp, bonus_coins, generates_certificate, bonus_insignia_id, thumbnail_url")
           .eq("id", journeyId)
-          .single();
+          .maybeSingle();
 
         if (journeyError) throw journeyError;
+        if (!journeyData) {
+          setIsLoading(false);
+          return;
+        }
         setJourney(journeyData);
 
         // Fetch journey trainings with modules
@@ -89,20 +91,20 @@ export default function JourneyPlayerPage() {
           .from("journey_trainings")
           .select(`
             training_id,
-            sort_order,
+            order_index,
             trainings (
               id,
               name,
               description,
               training_modules (
                 id,
-                title,
-                sort_order
+                name,
+                order_index
               )
             )
           `)
           .eq("journey_id", journeyId)
-          .order("sort_order");
+          .order("order_index");
 
         if (jtError) throw jtError;
 
@@ -113,11 +115,11 @@ export default function JourneyPlayerPage() {
             name: training?.name || "Treinamento",
             description: training?.description || null,
             modules: (training?.training_modules || [])
-              .sort((a: any, b: any) => a.sort_order - b.sort_order)
+              .sort((a: any, b: any) => a.order_index - b.order_index)
               .map((m: any) => ({
                 id: m.id,
-                title: m.title,
-                sort_order: m.sort_order,
+                name: m.name,
+                order_index: m.order_index,
               })),
           };
         });
@@ -154,11 +156,11 @@ export default function JourneyPlayerPage() {
         (progressData.completedModules / progressData.modulesCount) * 100 : 0,
       modules: training.modules.map((module, mIndex) => ({
         id: module.id,
-        title: module.title,
-        isCompleted: false, // TODO: Get from user_module_progress
-        isLocked: mIndex > 0, // TODO: Proper lock logic
+        title: module.name,
+        isCompleted: false,
+        isLocked: mIndex > 0,
         isCurrent: mIndex === 0 && progressData?.isCurrent,
-        duration: "5 min", // TODO: Get from module data
+        duration: "5 min",
       })),
     };
   });
@@ -173,7 +175,6 @@ export default function JourneyPlayerPage() {
   // Handle training click
   const handleTrainingClick = (trainingId: string) => {
     if (canAccessTraining(trainingId)) {
-      // Find first module of training
       const training = trainingsWithModules.find(t => t.id === trainingId);
       if (training && training.modules.length > 0) {
         navigate(`/app/journeys/${journeyId}/training/${trainingId}/module/${training.modules[0].id}`);
@@ -184,7 +185,6 @@ export default function JourneyPlayerPage() {
   // Handle start journey
   const handleStartJourney = async () => {
     await startJourney();
-    // Navigate to first module of first training
     if (trainingsWithModules.length > 0 && trainingsWithModules[0].modules.length > 0) {
       const firstTraining = trainingsWithModules[0];
       const firstModule = firstTraining.modules[0];
@@ -201,15 +201,14 @@ export default function JourneyPlayerPage() {
         category={journey.category}
         level={journey.level}
         trainingsCompleted={progress?.completedTrainings || 0}
-        totalXpEarned={journey.xp_reward}
-        totalCoinsEarned={journey.coins_reward}
+        totalXpEarned={journey.bonus_xp}
+        totalCoinsEarned={journey.bonus_coins}
         rewards={[
-          { type: "xp", label: "XP", value: journey.xp_reward },
-          { type: "coins", label: "Moedas", value: journey.coins_reward },
-          ...(journey.certificate_enabled ? [{ type: "certificate" as const, label: "Certificado" }] : []),
-          ...(journey.insignia_id ? [{ type: "insignia" as const, label: "Insígnia" }] : []),
+          { type: "xp", label: "XP", value: journey.bonus_xp },
+          { type: "coins", label: "Moedas", value: journey.bonus_coins },
+          ...(journey.generates_certificate ? [{ type: "certificate" as const, label: "Certificado" }] : []),
+          ...(journey.bonus_insignia_id ? [{ type: "insignia" as const, label: "Insígnia" }] : []),
         ]}
-        hasCertificate={journey.certificate_enabled}
       />
     );
   }
@@ -221,7 +220,6 @@ export default function JourneyPlayerPage() {
         <div className="w-80 border-r p-4 space-y-4 hidden lg:block">
           <Skeleton className="h-20 w-full" />
           <Skeleton className="h-8 w-full" />
-          <Skeleton className="h-12 w-full" />
           <Skeleton className="h-12 w-full" />
           <Skeleton className="h-12 w-full" />
         </div>
@@ -299,19 +297,19 @@ export default function JourneyPlayerPage() {
             <div className="flex items-center justify-center gap-3 flex-wrap">
               <div className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-amber-500/10 text-amber-600">
                 <Star className="w-4 h-4" />
-                <span className="font-medium">{journey.xp_reward} XP</span>
+                <span className="font-medium">{journey.bonus_xp} XP</span>
               </div>
               <div className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-yellow-500/10 text-yellow-600">
                 <Coins className="w-4 h-4" />
-                <span className="font-medium">{journey.coins_reward} moedas</span>
+                <span className="font-medium">{journey.bonus_coins} moedas</span>
               </div>
-              {journey.certificate_enabled && (
+              {journey.generates_certificate && (
                 <div className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-blue-500/10 text-blue-600">
                   <Award className="w-4 h-4" />
                   <span className="font-medium">Certificado</span>
                 </div>
               )}
-              {journey.insignia_id && (
+              {journey.bonus_insignia_id && (
                 <div className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-purple-500/10 text-purple-600">
                   <Trophy className="w-4 h-4" />
                   <span className="font-medium">Insígnia</span>
@@ -372,10 +370,10 @@ export default function JourneyPlayerPage() {
           completedTrainings={progress?.completedTrainings || 0}
           totalTrainings={progress?.totalTrainings || 0}
           trainings={sidebarTrainings}
-          xpReward={journey.xp_reward}
-          coinsReward={journey.coins_reward}
-          hasCertificate={journey.certificate_enabled}
-          hasInsignia={!!journey.insignia_id}
+          xpReward={journey.bonus_xp}
+          coinsReward={journey.bonus_coins}
+          hasCertificate={journey.generates_certificate}
+          hasInsignia={!!journey.bonus_insignia_id}
           currentTrainingId={progress?.currentTrainingId || undefined}
           onModuleClick={handleModuleClick}
           onTrainingClick={handleTrainingClick}
@@ -392,10 +390,10 @@ export default function JourneyPlayerPage() {
             completedTrainings={progress?.completedTrainings || 0}
             totalTrainings={progress?.totalTrainings || 0}
             trainings={sidebarTrainings}
-            xpReward={journey.xp_reward}
-            coinsReward={journey.coins_reward}
-            hasCertificate={journey.certificate_enabled}
-            hasInsignia={!!journey.insignia_id}
+            xpReward={journey.bonus_xp}
+            coinsReward={journey.bonus_coins}
+            hasCertificate={journey.generates_certificate}
+            hasInsignia={!!journey.bonus_insignia_id}
             currentTrainingId={progress?.currentTrainingId || undefined}
             onModuleClick={(tid, mid) => {
               handleModuleClick(tid, mid);
@@ -438,7 +436,7 @@ export default function JourneyPlayerPage() {
           </Button>
         </div>
 
-        {/* Content Area - Welcome/Continue Screen */}
+        {/* Content Area */}
         <div className="flex-1 overflow-y-auto p-6">
           <div className="max-w-2xl mx-auto text-center space-y-6 py-12">
             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">

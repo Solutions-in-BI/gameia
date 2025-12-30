@@ -32,8 +32,10 @@ import { useChallenges, Challenge } from "@/hooks/useChallenges";
 import { useOrganization } from "@/hooks/useOrganization";
 import { useTrainings } from "@/hooks/useTrainings";
 import { useCognitiveTests } from "@/hooks/useCognitiveTests";
+import { useTrainingJourneys } from "@/hooks/useTrainingJourneys";
 import { ChallengesHighlight, ChallengeDetailModal } from "@/components/challenges";
 import { ExperienceCard } from "@/components/arena/ExperienceCard";
+import { JourneyCard } from "@/components/arena/JourneyCard";
 import { RewardBadge } from "@/components/rewards/RewardBadge";
 
 // Games
@@ -49,7 +51,9 @@ import { ComingSoonGame } from "@/components/game/enterprise/ComingSoonGame";
 import { CognitiveTestPlayer } from "@/components/game/development/CognitiveTestPlayer";
 
 // Types
-type ArenaFilter = "all" | "games" | "challenges" | "trainings" | "cognitive" | "simulations";
+import { Route } from "lucide-react";
+
+type ArenaFilter = "all" | "games" | "challenges" | "trainings" | "journeys" | "cognitive" | "simulations";
 type ActiveExperience = { type: string; id: string } | null;
 
 const ARENA_FILTERS: { id: ArenaFilter; label: string; icon: React.ElementType }[] = [
@@ -57,6 +61,7 @@ const ARENA_FILTERS: { id: ArenaFilter; label: string; icon: React.ElementType }
   { id: "games", label: "Jogos", icon: Gamepad2 },
   { id: "challenges", label: "Desafios", icon: Target },
   { id: "trainings", label: "Treinamentos", icon: GraduationCap },
+  { id: "journeys", label: "Jornadas", icon: Route },
   { id: "cognitive", label: "Testes", icon: Brain },
   { id: "simulations", label: "Simulações", icon: MessageSquare },
 ];
@@ -184,6 +189,7 @@ export function ArenaTab() {
   const { activeChallenges, getSupporters } = useChallenges(currentOrg?.id);
   const { trainings, getTrainingProgress } = useTrainings(currentOrg?.id);
   const { tests, mySessions } = useCognitiveTests();
+  const { journeys, userProgress: journeyUserProgress, getCompletionPercentage } = useTrainingJourneys(currentOrg?.id);
   
   const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
   const [showChallengeDetail, setShowChallengeDetail] = useState(false);
@@ -256,8 +262,12 @@ export function ArenaTab() {
 
   const showGames = filter === "all" || filter === "games" || filter === "simulations";
   const showTrainings = filter === "all" || filter === "trainings";
+  const showJourneys = filter === "all" || filter === "journeys";
   const showTests = filter === "all" || filter === "cognitive";
   const showChallenges = filter === "all" || filter === "challenges";
+
+  // Filter active journeys
+  const activeJourneys = journeys.filter(j => j.is_active);
 
   return (
     <div className="space-y-6">

@@ -12,18 +12,18 @@ import {
   ChevronLeft,
   ChevronRight,
   CheckCircle2,
-  Play
+  Route
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useJourneyProgress } from "@/hooks/useJourneyProgress";
+import { usePlayerRewards } from "@/hooks/usePlayerRewards";
 import { JourneySidebar } from "@/components/journeys/JourneySidebar";
 import { Breadcrumb, buildJourneyBreadcrumbs } from "@/components/common/Breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { usePlayerRewards } from "@/hooks/usePlayerRewards";
 
 // Import step components
 import { ContentStep } from "@/components/game/trainings/steps/ContentStep";
@@ -33,15 +33,15 @@ import { PracticalChallengeStep } from "@/components/game/trainings/steps/Practi
 
 interface Module {
   id: string;
-  title: string;
-  content: string | null;
+  name: string;
+  description: string | null;
   content_type: string | null;
   video_url: string | null;
   step_type: string | null;
   step_config: any;
   xp_reward: number;
   coins_reward: number;
-  sort_order: number;
+  order_index: number;
 }
 
 interface Training {
@@ -53,10 +53,10 @@ interface Training {
 interface Journey {
   id: string;
   name: string;
-  xp_reward: number;
-  coins_reward: number;
-  certificate_enabled: boolean;
-  insignia_id: string | null;
+  bonus_xp: number;
+  bonus_coins: number;
+  generates_certificate: boolean;
+  bonus_insignia_id: string | null;
 }
 
 export default function JourneyModulePlayer() {
@@ -70,8 +70,7 @@ export default function JourneyModulePlayer() {
   const { awardRewards } = usePlayerRewards();
   const { 
     progress: journeyProgress, 
-    completeTraining,
-    canAccessTraining 
+    completeTraining 
   } = useJourneyProgress(journeyId);
 
   const [journey, setJourney] = useState<Journey | null>(null);
@@ -94,9 +93,9 @@ export default function JourneyModulePlayer() {
         // Fetch journey
         const { data: journeyData } = await supabase
           .from("training_journeys")
-          .select("id, name, xp_reward, coins_reward, certificate_enabled, insignia_id")
+          .select("id, name, bonus_xp, bonus_coins, generates_certificate, bonus_insignia_id")
           .eq("id", journeyId)
-          .single();
+          .maybeSingle();
 
         setJourney(journeyData);
 
@@ -105,21 +104,34 @@ export default function JourneyModulePlayer() {
           .from("trainings")
           .select("id, name, description")
           .eq("id", trainingId)
-          .single();
+          .maybeSingle();
 
         setTraining(trainingData);
 
         // Fetch modules
         const { data: modulesData } = await supabase
           .from("training_modules")
-          .select("*")
+          .select("id, name, description, content_type, video_url, step_type, step_config, xp_reward, coins_reward, order_index")
           .eq("training_id", trainingId)
-          .order("sort_order");
+          .order("order_index");
 
-        setModules(modulesData || []);
+        const mappedModules = (modulesData || []).map(m => ({
+          id: m.id,
+          name: m.name,
+          description: m.description,
+          content_type: m.content_type,
+          video_url: m.video_url,
+          step_type: m.step_type,
+          step_config: m.step_config,
+          xp_reward: m.xp_reward,
+          coins_reward: m.coins_reward,
+          order_index: m.order_index,
+        }));
+
+        setModules(mappedModules);
 
         // Set current module
-        const current = (modulesData || []).find(m => m.id === moduleId);
+        const current = mappedModules.find(m => m.id === moduleId);
         setCurrentModule(current || null);
 
         // Fetch module progress
@@ -127,7 +139,7 @@ export default function JourneyModulePlayer() {
           .from("user_module_progress")
           .select("module_id, completed_at")
           .eq("user_id", user.id)
-          .in("module_id", (modulesData || []).map(m => m.id));
+          .in("module_id", mappedModules.map(m => m.id));
 
         const progressMap: Record<string, boolean> = {};
         (progressData || []).forEach(p => {
@@ -193,7 +205,6 @@ export default function JourneyModulePlayer() {
         // Complete training in journey
         await completeTraining(trainingId);
         
-        // Navigate to next training or journey completion
         toast.success("Treinamento concluído!");
         navigate(`/app/journeys/${journeyId}`);
         return;
@@ -236,7 +247,7 @@ export default function JourneyModulePlayer() {
     progress: (Object.keys(moduleProgress).length / modules.length) * 100,
     modules: modules.map(m => ({
       id: m.id,
-      title: m.title,
+      title: m.name,
       isCompleted: !!moduleProgress[m.id],
       isLocked: false,
       isCurrent: m.id === moduleId,
@@ -264,6 +275,7 @@ export default function JourneyModulePlayer() {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center space-y-4">
+          <Route className="w-16 h-16 text-muted-foreground mx-auto" />
           <h2 className="text-xl font-semibold">Módulo não encontrado</h2>
           <Button onClick={() => navigate(`/app/journeys/${journeyId}`)}>
             Voltar para Jornada
@@ -277,12 +289,23 @@ export default function JourneyModulePlayer() {
   const stepType = currentModule.step_type || "content";
   const isModuleCompleted = !!moduleProgress[currentModule.id];
 
+  // Build enhanced module for step components
+  const enhancedModule = {
+    id: currentModule.id,
+    title: currentModule.name,
+    content: currentModule.description || "",
+    content_type: currentModule.content_type || "text",
+    video_url: currentModule.video_url,
+    step_type: currentModule.step_type || "content",
+    step_config: currentModule.step_config || {},
+    xp_reward: currentModule.xp_reward,
+    coins_reward: currentModule.coins_reward,
+    sort_order: currentModule.order_index,
+  };
+
   // Render step content
   const renderStepContent = () => {
-    const enhancedModule = {
-      ...currentModule,
-      step_config: currentModule.step_config || {},
-    };
+    const handleCancel = () => navigate(`/app/journeys/${journeyId}`);
 
     switch (stepType) {
       case "arena_game":
@@ -290,6 +313,7 @@ export default function JourneyModulePlayer() {
           <ArenaGameStep
             module={enhancedModule as any}
             onComplete={handleCompleteModule}
+            onCancel={handleCancel}
           />
         );
       case "reflection":
@@ -297,6 +321,8 @@ export default function JourneyModulePlayer() {
           <ReflectionStep
             module={enhancedModule as any}
             onComplete={handleCompleteModule}
+            onCancel={handleCancel}
+            isSubmitting={isCompleting}
           />
         );
       case "practical_challenge":
@@ -304,6 +330,8 @@ export default function JourneyModulePlayer() {
           <PracticalChallengeStep
             module={enhancedModule as any}
             onComplete={handleCompleteModule}
+            onCancel={handleCancel}
+            isSubmitting={isCompleting}
           />
         );
       case "content":
@@ -312,6 +340,7 @@ export default function JourneyModulePlayer() {
           <ContentStep
             module={enhancedModule as any}
             onComplete={handleCompleteModule}
+            onCancel={handleCancel}
           />
         );
     }
@@ -327,10 +356,10 @@ export default function JourneyModulePlayer() {
           completedTrainings={journeyProgress?.completedTrainings || 0}
           totalTrainings={journeyProgress?.totalTrainings || 0}
           trainings={sidebarTrainings}
-          xpReward={journey.xp_reward}
-          coinsReward={journey.coins_reward}
-          hasCertificate={journey.certificate_enabled}
-          hasInsignia={!!journey.insignia_id}
+          xpReward={journey.bonus_xp}
+          coinsReward={journey.bonus_coins}
+          hasCertificate={journey.generates_certificate}
+          hasInsignia={!!journey.bonus_insignia_id}
           currentModuleId={moduleId}
           onModuleClick={(tid, mid) => {
             navigate(`/app/journeys/${journeyId}/training/${tid}/module/${mid}`);
@@ -347,10 +376,10 @@ export default function JourneyModulePlayer() {
             completedTrainings={journeyProgress?.completedTrainings || 0}
             totalTrainings={journeyProgress?.totalTrainings || 0}
             trainings={sidebarTrainings}
-            xpReward={journey.xp_reward}
-            coinsReward={journey.coins_reward}
-            hasCertificate={journey.certificate_enabled}
-            hasInsignia={!!journey.insignia_id}
+            xpReward={journey.bonus_xp}
+            coinsReward={journey.bonus_coins}
+            hasCertificate={journey.generates_certificate}
+            hasInsignia={!!journey.bonus_insignia_id}
             currentModuleId={moduleId}
             onModuleClick={(tid, mid) => {
               navigate(`/app/journeys/${journeyId}/training/${tid}/module/${mid}`);
@@ -379,7 +408,7 @@ export default function JourneyModulePlayer() {
               journeyId, 
               training.name, 
               trainingId, 
-              currentModule.title
+              currentModule.name
             )} 
             className="flex-1"
           />
