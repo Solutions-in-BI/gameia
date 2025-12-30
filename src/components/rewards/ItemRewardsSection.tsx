@@ -1,6 +1,7 @@
 /**
  * ItemRewardsSection - Seção para configurar itens da loja como recompensa
  * Usado em CreateChallengeModal e TrainingWizard
+ * Apenas itens específicos (não categorias)
  */
 
 import { useState, useEffect } from "react";
@@ -27,7 +28,6 @@ import {
 import { cn } from "@/lib/utils";
 import { 
   useItemRewards, 
-  ITEM_CATEGORIES,
   type ItemRewardConfig,
   type ItemUnlockMode,
 } from "@/hooks/useItemRewards";
@@ -43,7 +43,7 @@ export function ItemRewardsSection({
   setRewardItems,
   maxItems = 3,
 }: ItemRewardsSectionProps) {
-  const { getAvailableItems, ITEM_CATEGORIES: categories } = useItemRewards();
+  const { getAvailableItems } = useItemRewards();
   const [availableItems, setAvailableItems] = useState<Array<{
     id: string;
     name: string;
@@ -66,11 +66,12 @@ export function ItemRewardsSection({
 
   const addRewardItem = () => {
     if (rewardItems.length >= maxItems) return;
+    if (availableItems.length === 0) return;
     
     setRewardItems([
       ...rewardItems,
       {
-        category: categories[0].id,
+        item_id: availableItems[0]?.id,
         unlock_mode: "auto_unlock",
       },
     ]);
@@ -88,14 +89,6 @@ export function ItemRewardsSection({
     );
   };
 
-  const toggleItemType = (index: number, useCategory: boolean) => {
-    if (useCategory) {
-      updateRewardItem(index, { item_id: undefined, category: categories[0].id });
-    } else {
-      updateRewardItem(index, { category: undefined, item_id: availableItems[0]?.id });
-    }
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -109,7 +102,7 @@ export function ItemRewardsSection({
             variant="outline"
             size="sm"
             onClick={addRewardItem}
-            disabled={isLoading}
+            disabled={isLoading || availableItems.length === 0}
           >
             <Plus className="w-4 h-4 mr-1" />
             Adicionar Item
@@ -137,40 +130,16 @@ export function ItemRewardsSection({
       ) : (
         <div className="space-y-3">
           {rewardItems.map((reward, index) => {
-            const isCategory = !reward.item_id && reward.category;
             const selectedItem = availableItems.find(i => i.id === reward.item_id);
-            const selectedCategory = categories.find(c => c.id === reward.category);
 
             return (
               <Card key={index}>
                 <CardContent className="p-4 space-y-4">
-                  {/* Header com tipo de seleção */}
+                  {/* Header */}
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-xs">
-                        Item {index + 1}
-                      </Badge>
-                      <div className="flex gap-1">
-                        <Button
-                          type="button"
-                          variant={isCategory ? "secondary" : "ghost"}
-                          size="sm"
-                          className="h-7 text-xs"
-                          onClick={() => toggleItemType(index, true)}
-                        >
-                          Categoria
-                        </Button>
-                        <Button
-                          type="button"
-                          variant={!isCategory ? "secondary" : "ghost"}
-                          size="sm"
-                          className="h-7 text-xs"
-                          onClick={() => toggleItemType(index, false)}
-                        >
-                          Item Específico
-                        </Button>
-                      </div>
-                    </div>
+                    <Badge variant="outline" className="text-xs">
+                      Item {index + 1}
+                    </Badge>
                     <Button
                       type="button"
                       variant="ghost"
@@ -182,58 +151,30 @@ export function ItemRewardsSection({
                     </Button>
                   </div>
 
-                  {/* Seleção de Item ou Categoria */}
+                  {/* Seleção de Item */}
                   <div className="space-y-2">
-                    <Label className="text-sm">
-                      {isCategory ? "Categoria" : "Item"}
-                    </Label>
-                    {isCategory ? (
-                      <Select
-                        value={reward.category}
-                        onValueChange={(value) => updateRewardItem(index, { category: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione uma categoria" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {categories.map((cat) => (
-                            <SelectItem key={cat.id} value={cat.id}>
-                              <span className="flex items-center gap-2">
-                                <span>{cat.icon}</span>
-                                <span>{cat.label}</span>
-                              </span>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <Select
-                        value={reward.item_id}
-                        onValueChange={(value) => updateRewardItem(index, { item_id: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione um item" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {availableItems.map((item) => (
-                            <SelectItem key={item.id} value={item.id}>
-                              <span className="flex items-center gap-2">
-                                <span>{item.icon}</span>
-                                <span>{item.name}</span>
-                                <Badge variant="outline" className="ml-1 text-xs">
-                                  {item.category}
-                                </Badge>
-                              </span>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                    {isCategory && (
-                      <p className="text-xs text-muted-foreground">
-                        Um item aleatório da categoria será sorteado como recompensa
-                      </p>
-                    )}
+                    <Label className="text-sm">Item</Label>
+                    <Select
+                      value={reward.item_id}
+                      onValueChange={(value) => updateRewardItem(index, { item_id: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione um item" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-popover">
+                        {availableItems.map((item) => (
+                          <SelectItem key={item.id} value={item.id}>
+                            <span className="flex items-center gap-2">
+                              <span>{item.icon}</span>
+                              <span>{item.name}</span>
+                              <Badge variant="outline" className="ml-1 text-xs">
+                                {item.category}
+                              </Badge>
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   {/* Modo de desbloqueio */}
@@ -290,22 +231,14 @@ export function ItemRewardsSection({
                     <p className="text-xs text-muted-foreground">
                       {reward.unlock_mode === "auto_unlock" ? (
                         <>
-                          🎁 Ao completar, o usuário receberá{" "}
-                          {isCategory ? (
-                            <>um item da categoria <strong>{selectedCategory?.label}</strong></>
-                          ) : (
-                            <>o item <strong>{selectedItem?.name || "selecionado"}</strong></>
-                          )}{" "}
+                          🎁 Ao completar, o usuário receberá o item{" "}
+                          <strong>{selectedItem?.name || "selecionado"}</strong>{" "}
                           diretamente no inventário.
                         </>
                       ) : (
                         <>
-                          🔓 Ao completar,{" "}
-                          {isCategory ? (
-                            <>um item da categoria <strong>{selectedCategory?.label}</strong></>
-                          ) : (
-                            <>o item <strong>{selectedItem?.name || "selecionado"}</strong></>
-                          )}{" "}
+                          🔓 Ao completar, o item{" "}
+                          <strong>{selectedItem?.name || "selecionado"}</strong>{" "}
                           ficará disponível para compra na loja.
                         </>
                       )}

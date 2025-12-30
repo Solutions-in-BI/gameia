@@ -46,6 +46,7 @@ import {
   type CreateChallengeData,
 } from "@/hooks/useChallenges";
 import { ItemRewardsSection } from "@/components/rewards/ItemRewardsSection";
+import { EvolutionTemplateSection } from "@/components/rewards/EvolutionTemplateSection";
 import type { ItemRewardConfig } from "@/hooks/useItemRewards";
 
 interface CreateChallengeModalProps {
@@ -57,7 +58,7 @@ interface CreateChallengeModalProps {
   canCreateGlobal?: boolean;
 }
 
-const STEPS = ["Tipo", "Detalhes", "Período", "Meta", "Recompensa", "Itens"];
+const STEPS = ["Tipo", "Detalhes", "Período", "Meta", "Recompensa", "Itens", "Template"];
 
 const SCOPE_OPTIONS = [
   { value: "personal" as const, label: "Pessoal", icon: User, description: "Só você participa" },
@@ -96,6 +97,7 @@ export function CreateChallengeModal({
   const [coinsReward, setCoinsReward] = useState(50);
   const [icon, setIcon] = useState("target");
   const [rewardItems, setRewardItems] = useState<ItemRewardConfig[]>([]);
+  const [evolutionTemplateId, setEvolutionTemplateId] = useState<string | null>(null);
 
   // Template selection for personal
   const [selectedTemplate, setSelectedTemplate] = useState<number | null>(null);
@@ -146,6 +148,7 @@ export function CreateChallengeModal({
       case 3: return successCriteria.trim().length > 0 && targetValue > 0;
       case 4: return xpReward > 0 || coinsReward > 0;
       case 5: return true; // Item rewards são opcionais
+      case 6: return true; // Template é opcional
       default: return false;
     }
   };
@@ -170,6 +173,7 @@ export function CreateChallengeModal({
       icon,
       auto_enroll: scope === "personal",
       reward_items: rewardItems.length > 0 ? rewardItems : undefined,
+      evolution_template_id: evolutionTemplateId || undefined,
     };
 
     const result = await onCreate(data);
@@ -451,6 +455,16 @@ export function CreateChallengeModal({
                   rewardItems={rewardItems}
                   setRewardItems={setRewardItems}
                   maxItems={3}
+                />
+              </div>
+            )}
+
+            {/* Step 7 - Template de Evolução */}
+            {step === 6 && (
+              <div className="space-y-6">
+                <EvolutionTemplateSection
+                  selectedTemplateId={evolutionTemplateId}
+                  setSelectedTemplateId={setEvolutionTemplateId}
                 />
               </div>
             )}
