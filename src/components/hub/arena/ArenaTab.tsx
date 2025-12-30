@@ -1,7 +1,7 @@
 /**
  * ArenaTab - Hub de Experiências
  * Jogos, Desafios, Treinamentos, Testes Cognitivos e Simulações
- * "Arena é onde acontecem todas as experiências que geram XP/moedas"
+ * Sub-navegação via sidebar lateral (não mais tabs internas)
  */
 
 import { useState } from "react";
@@ -9,24 +9,19 @@ import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Gamepad2,
-  Zap,
   Brain,
   MessageSquare,
   Sparkles,
   Play,
-  Star,
-  Filter,
   Grid3X3,
   Puzzle,
   Car,
   Lightbulb,
   Target,
   GraduationCap,
-  Clock,
 } from "lucide-react";
 import { HubCard, HubEmptyState, HubButton, HubHeader } from "../common";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { useSkillProgress } from "@/hooks/useSkillProgress";
 import { useChallenges, Challenge } from "@/hooks/useChallenges";
@@ -45,14 +40,6 @@ import { CognitiveTestPlayer } from "@/components/game/development/CognitiveTest
 
 type ArenaFilter = "all" | "games" | "challenges" | "cognitive" | "simulations";
 type ActiveExperience = { type: string; id: string } | null;
-
-const ARENA_FILTERS: { id: ArenaFilter; label: string; icon: React.ElementType }[] = [
-  { id: "all", label: "Todos", icon: Grid3X3 },
-  { id: "games", label: "Jogos", icon: Gamepad2 },
-  { id: "challenges", label: "Desafios", icon: Target },
-  { id: "cognitive", label: "Testes", icon: Brain },
-  { id: "simulations", label: "Simulações", icon: MessageSquare },
-];
 
 interface GameItem {
   id: string;
@@ -124,9 +111,9 @@ const COMING_SOON_GAMES = [
 ];
 
 export function ArenaTab() {
-  const [filter, setFilter] = useState<ArenaFilter>("all");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const filter = (searchParams.get("tab") as ArenaFilter) || "all";
   const [activeExperience, setActiveExperience] = useState<ActiveExperience>(null);
-  const [, setSearchParams] = useSearchParams();
   const { skills } = useSkillProgress();
   
   // Data hooks
@@ -211,22 +198,6 @@ export function ArenaTab() {
         onAction={() => recommendedGame && setActiveExperience({ type: "game", id: recommendedGame.id })}
       />
 
-      {/* Filter Tabs */}
-      <Tabs value={filter} onValueChange={(v) => setFilter(v as ArenaFilter)} className="w-full">
-        <TabsList className="w-full justify-start overflow-x-auto bg-muted/40 p-1 h-auto">
-          {ARENA_FILTERS.map(f => (
-            <TabsTrigger
-              key={f.id}
-              value={f.id}
-              className="flex items-center gap-1.5 px-4 py-2 data-[state=active]:bg-background whitespace-nowrap"
-            >
-              <f.icon className="w-4 h-4" />
-              <span>{f.label}</span>
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
-
       {/* Active Challenges Highlight */}
       {showChallenges && activeChallenges.length > 0 && (
         <ChallengesHighlight
@@ -236,7 +207,7 @@ export function ArenaTab() {
             setShowChallengeDetail(true);
           }}
           onViewAllClick={() => {
-            window.location.href = "/app/evolution";
+            window.location.href = "/app/evolution?tab=challenges";
           }}
         />
       )}
@@ -345,7 +316,7 @@ export function ArenaTab() {
                 </div>
               </div>
               <HubButton 
-                onClick={() => setSearchParams({ tab: "development" })}
+                onClick={() => window.location.href = "/app/development"}
                 className="shrink-0"
               >
                 Ver Desenvolvimento
@@ -426,7 +397,7 @@ export function ArenaTab() {
         (filter === "challenges" && activeChallenges.length === 0)) && (
         <HubEmptyState
           icon={Grid3X3}
-          title={`Nenhum item em "${ARENA_FILTERS.find(f => f.id === filter)?.label}"`}
+          title={`Nenhum item disponível`}
           description="Novos conteúdos serão adicionados em breve"
         />
       )}
