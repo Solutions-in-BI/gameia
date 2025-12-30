@@ -3,18 +3,17 @@
  */
 
 import { useState } from "react";
-import { motion } from "framer-motion";
 import {
   MessageSquare,
   ArrowLeft,
   Send,
   CheckCircle,
-  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { NoteButton } from "@/components/notes/NoteButton";
 import type { EnhancedTrainingModule, StepResult } from "@/types/training";
 
 interface ReflectionStepProps {
@@ -61,22 +60,32 @@ export function ReflectionStep({
     <Card>
       <CardContent className="p-0">
         {/* Header */}
-        <div className="p-4 border-b border-border flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={onCancel}>
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <div>
-            <div className="flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-primary" />
-              <Badge variant="outline" className="text-xs">Reflexão</Badge>
-              {module.is_checkpoint && (
-                <Badge className="text-xs bg-amber-500/10 text-amber-500 border-amber-500/20">
-                  Checkpoint
-                </Badge>
-              )}
+        <div className="p-4 border-b border-border flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={onCancel}>
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <div>
+              <div className="flex items-center gap-2">
+                <MessageSquare className="w-4 h-4 text-primary" />
+                <Badge variant="outline" className="text-xs">Reflexão</Badge>
+                {module.is_checkpoint && (
+                  <Badge className="text-xs bg-amber-500/10 text-amber-500 border-amber-500/20">
+                    Checkpoint
+                  </Badge>
+                )}
+              </div>
+              <h3 className="font-medium text-foreground">{module.name}</h3>
             </div>
-            <h3 className="font-medium text-foreground">{module.name}</h3>
           </div>
+          
+          {/* Note Button */}
+          <NoteButton
+            trainingId={module.training_id}
+            moduleId={module.id}
+            contentType="reflection"
+            variant="inline"
+          />
         </div>
 
         {/* Content */}

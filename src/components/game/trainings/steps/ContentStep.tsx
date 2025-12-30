@@ -3,7 +3,6 @@
  */
 
 import { useState, useRef, useEffect } from "react";
-import { motion } from "framer-motion";
 import {
   Play,
   Pause,
@@ -13,12 +12,12 @@ import {
   CheckCircle,
   ArrowLeft,
   ExternalLink,
-  FileText,
   Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { NoteButton } from "@/components/notes/NoteButton";
 import type { EnhancedTrainingModule, StepResult } from "@/types/training";
 
 interface ContentStepProps {
@@ -33,15 +32,17 @@ export function ContentStep({ module, onComplete, onCancel }: ContentStepProps) 
   const [isMuted, setIsMuted] = useState(false);
   const [videoProgress, setVideoProgress] = useState(0);
   const [videoDuration, setVideoDuration] = useState(0);
+  const [currentTimestamp, setCurrentTimestamp] = useState(0);
   const [startTime] = useState(Date.now());
   const [canComplete, setCanComplete] = useState(false);
+  const [selectedText, setSelectedText] = useState<string | undefined>(undefined);
 
   const contentType = module.step_config?.content_type || module.content_type;
 
   useEffect(() => {
     // For text content, allow completion after some time
     if (contentType === 'text') {
-      const timer = setTimeout(() => setCanComplete(true), 5000); // 5 seconds minimum
+      const timer = setTimeout(() => setCanComplete(true), 5000);
       return () => clearTimeout(timer);
     }
   }, [contentType]);
@@ -50,7 +51,7 @@ export function ContentStep({ module, onComplete, onCancel }: ContentStepProps) 
     if (videoRef.current) {
       const progress = (videoRef.current.currentTime / videoRef.current.duration) * 100;
       setVideoProgress(progress);
-      // Allow completion when 90% of video is watched
+      setCurrentTimestamp(Math.floor(videoRef.current.currentTime));
       if (progress >= 90) {
         setCanComplete(true);
       }
@@ -100,6 +101,23 @@ export function ContentStep({ module, onComplete, onCancel }: ContentStepProps) 
     });
   };
 
+  // Handle text selection for annotations
+  const handleTextSelection = () => {
+    const selection = window.getSelection();
+    if (selection && selection.toString().trim().length > 0) {
+      setSelectedText(selection.toString().trim());
+    } else {
+      setSelectedText(undefined);
+    }
+  };
+
+  const getNoteContentType = () => {
+    if (contentType === 'video') return 'video';
+    if (contentType === 'pdf') return 'pdf';
+    if (contentType === 'link') return 'link';
+    return 'text';
+  };
+
   return (
     <Card>
       <CardContent className="p-0">
@@ -117,6 +135,16 @@ export function ContentStep({ module, onComplete, onCancel }: ContentStepProps) 
               </div>
             </div>
           </div>
+          
+          {/* Note Button in Header */}
+          <NoteButton
+            trainingId={module.training_id}
+            moduleId={module.id}
+            contentType={getNoteContentType()}
+            currentTimestamp={contentType === 'video' ? currentTimestamp : undefined}
+            selectedText={selectedText}
+            variant="inline"
+          />
         </div>
 
         {/* Video Content */}
@@ -173,7 +201,10 @@ export function ContentStep({ module, onComplete, onCancel }: ContentStepProps) 
 
         {/* Text Content */}
         {contentType === 'text' && (
-          <div className="p-6 prose prose-lg dark:prose-invert max-w-none">
+          <div 
+            className="p-6 prose prose-lg dark:prose-invert max-w-none"
+            onMouseUp={handleTextSelection}
+          >
             {(module.content_data?.text_content as string) || (
               <p className="text-muted-foreground">Sem conteúdo disponível</p>
             )}

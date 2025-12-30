@@ -11,10 +11,12 @@ import {
   Trophy,
   AlertCircle,
   CheckCircle,
+  StickyNote,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { NoteButton } from "@/components/notes/NoteButton";
 import type { EnhancedTrainingModule, StepResult } from "@/types/training";
 
 // Import game components
@@ -164,11 +166,19 @@ export function ArenaGameStep({ module, onComplete, onCancel }: ArenaGameStepPro
   if (isPlaying && GameComponent) {
     return (
       <div className="relative">
-        <div className="absolute top-4 left-4 z-10">
+        <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={() => setIsPlaying(false)}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Sair
           </Button>
+          <NoteButton
+            trainingId={module.training_id}
+            moduleId={module.id}
+            contentType="game"
+            gameContext={{ game_type: gameType, is_playing: true }}
+            variant="icon"
+            className="bg-background/80 backdrop-blur-sm"
+          />
         </div>
         <GameComponent
           onComplete={(result: any) => {
