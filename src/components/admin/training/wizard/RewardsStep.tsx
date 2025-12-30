@@ -1,0 +1,351 @@
+/**
+ * RewardsStep - Step 2: Recompensas e gamificação
+ */
+
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { 
+  Award,
+  Coins,
+  Sparkles,
+  Plus,
+  X,
+  Zap,
+  Target,
+} from "lucide-react";
+import type { TrainingFormData, SkillImpact, InsigniaRelation } from "../TrainingWizard";
+
+interface RewardsStepProps {
+  formData: TrainingFormData;
+  setFormData: React.Dispatch<React.SetStateAction<TrainingFormData>>;
+  skillImpacts: SkillImpact[];
+  setSkillImpacts: React.Dispatch<React.SetStateAction<SkillImpact[]>>;
+  insigniaRelations: InsigniaRelation[];
+  setInsigniaRelations: React.Dispatch<React.SetStateAction<InsigniaRelation[]>>;
+  availableSkills: Array<{id: string; name: string; icon: string}>;
+  availableInsignias: Array<{id: string; name: string; icon: string}>;
+}
+
+const RELATION_TYPES = [
+  { value: "unlocks", label: "Desbloqueia" },
+  { value: "required", label: "Requerido" },
+  { value: "recommended", label: "Recomendado" },
+];
+
+export function RewardsStep({ 
+  formData, 
+  setFormData,
+  skillImpacts,
+  setSkillImpacts,
+  insigniaRelations,
+  setInsigniaRelations,
+  availableSkills,
+  availableInsignias,
+}: RewardsStepProps) {
+  const addSkillImpact = () => {
+    if (skillImpacts.length >= 3) return;
+    const availableSkill = availableSkills.find(
+      s => !skillImpacts.some(si => si.skillId === s.id)
+    );
+    if (availableSkill) {
+      setSkillImpacts([...skillImpacts, { skillId: availableSkill.id, weight: 50 }]);
+    }
+  };
+
+  const removeSkillImpact = (skillId: string) => {
+    setSkillImpacts(skillImpacts.filter(si => si.skillId !== skillId));
+  };
+
+  const updateSkillWeight = (skillId: string, weight: number) => {
+    setSkillImpacts(skillImpacts.map(si => 
+      si.skillId === skillId ? { ...si, weight } : si
+    ));
+  };
+
+  const addInsigniaRelation = () => {
+    const availableInsignia = availableInsignias.find(
+      i => !insigniaRelations.some(ir => ir.insigniaId === i.id)
+    );
+    if (availableInsignia) {
+      setInsigniaRelations([...insigniaRelations, { insigniaId: availableInsignia.id, relationType: "unlocks" }]);
+    }
+  };
+
+  const removeInsigniaRelation = (insigniaId: string) => {
+    setInsigniaRelations(insigniaRelations.filter(ir => ir.insigniaId !== insigniaId));
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* XP and Coins */}
+      <div>
+        <Label className="text-xs uppercase tracking-wide text-muted-foreground mb-3 block">
+          Recompensas por Conclusão
+        </Label>
+        <div className="grid grid-cols-2 gap-4">
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 rounded-lg bg-purple-500/10">
+                  <Sparkles className="w-5 h-5 text-purple-500" />
+                </div>
+                <div>
+                  <Label htmlFor="xp_reward" className="font-medium">XP</Label>
+                  <p className="text-xs text-muted-foreground">Experiência</p>
+                </div>
+              </div>
+              <Input
+                id="xp_reward"
+                type="number"
+                min="0"
+                value={formData.xp_reward}
+                onChange={(e) => setFormData(prev => ({ ...prev, xp_reward: parseInt(e.target.value) || 0 }))}
+                className="text-lg font-semibold"
+              />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 rounded-lg bg-amber-500/10">
+                  <Coins className="w-5 h-5 text-amber-500" />
+                </div>
+                <div>
+                  <Label htmlFor="coins_reward" className="font-medium">Moedas</Label>
+                  <p className="text-xs text-muted-foreground">Para a loja</p>
+                </div>
+              </div>
+              <Input
+                id="coins_reward"
+                type="number"
+                min="0"
+                value={formData.coins_reward}
+                onChange={(e) => setFormData(prev => ({ ...prev, coins_reward: parseInt(e.target.value) || 0 }))}
+                className="text-lg font-semibold"
+              />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Skill Impacts */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <Label className="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-2">
+            <Zap className="w-3 h-3" />
+            Skills Impactadas (máx. 3)
+          </Label>
+          {skillImpacts.length < 3 && availableSkills.length > skillImpacts.length && (
+            <Button type="button" variant="outline" size="sm" onClick={addSkillImpact}>
+              <Plus className="w-4 h-4 mr-1" />
+              Adicionar
+            </Button>
+          )}
+        </div>
+
+        {skillImpacts.length === 0 ? (
+          <div className="text-center py-6 border border-dashed border-border rounded-lg">
+            <Target className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">Nenhuma skill vinculada</p>
+            <Button 
+              type="button" 
+              variant="ghost" 
+              size="sm" 
+              className="mt-2"
+              onClick={addSkillImpact}
+              disabled={availableSkills.length === 0}
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              Adicionar Skill
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {skillImpacts.map((impact) => {
+              const skill = availableSkills.find(s => s.id === impact.skillId);
+              return (
+                <Card key={impact.skillId}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <Select
+                          value={impact.skillId}
+                          onValueChange={(value) => {
+                            setSkillImpacts(skillImpacts.map(si =>
+                              si.skillId === impact.skillId ? { ...si, skillId: value } : si
+                            ));
+                          }}
+                        >
+                          <SelectTrigger className="w-48">
+                            <SelectValue>
+                              <span className="flex items-center gap-2">
+                                <span>{skill?.icon}</span>
+                                <span>{skill?.name}</span>
+                              </span>
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            {availableSkills
+                              .filter(s => s.id === impact.skillId || !skillImpacts.some(si => si.skillId === s.id))
+                              .map((s) => (
+                                <SelectItem key={s.id} value={s.id}>
+                                  <span className="flex items-center gap-2">
+                                    <span>{s.icon}</span>
+                                    <span>{s.name}</span>
+                                  </span>
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        onClick={() => removeSkillImpact(impact.skillId)}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Peso do impacto</span>
+                        <Badge variant="secondary">{impact.weight}%</Badge>
+                      </div>
+                      <Slider
+                        value={[impact.weight]}
+                        onValueChange={([value]) => updateSkillWeight(impact.skillId, value)}
+                        min={10}
+                        max={100}
+                        step={10}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Insignia Relations */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <Label className="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-2">
+            <Award className="w-3 h-3" />
+            Insígnias Relacionadas
+          </Label>
+          {availableInsignias.length > insigniaRelations.length && (
+            <Button type="button" variant="outline" size="sm" onClick={addInsigniaRelation}>
+              <Plus className="w-4 h-4 mr-1" />
+              Adicionar
+            </Button>
+          )}
+        </div>
+
+        {insigniaRelations.length === 0 ? (
+          <div className="text-center py-6 border border-dashed border-border rounded-lg">
+            <Award className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">Nenhuma insígnia vinculada</p>
+            <Button 
+              type="button" 
+              variant="ghost" 
+              size="sm" 
+              className="mt-2"
+              onClick={addInsigniaRelation}
+              disabled={availableInsignias.length === 0}
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              Adicionar Insígnia
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {insigniaRelations.map((relation) => {
+              const insignia = availableInsignias.find(i => i.id === relation.insigniaId);
+              return (
+                <div 
+                  key={relation.insigniaId}
+                  className="flex items-center gap-3 p-3 rounded-lg border border-border bg-card"
+                >
+                  <Select
+                    value={relation.insigniaId}
+                    onValueChange={(value) => {
+                      setInsigniaRelations(insigniaRelations.map(ir =>
+                        ir.insigniaId === relation.insigniaId ? { ...ir, insigniaId: value } : ir
+                      ));
+                    }}
+                  >
+                    <SelectTrigger className="flex-1">
+                      <SelectValue>
+                        <span className="flex items-center gap-2">
+                          <span>{insignia?.icon}</span>
+                          <span>{insignia?.name}</span>
+                        </span>
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableInsignias
+                        .filter(i => i.id === relation.insigniaId || !insigniaRelations.some(ir => ir.insigniaId === i.id))
+                        .map((i) => (
+                          <SelectItem key={i.id} value={i.id}>
+                            <span className="flex items-center gap-2">
+                              <span>{i.icon}</span>
+                              <span>{i.name}</span>
+                            </span>
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Select
+                    value={relation.relationType}
+                    onValueChange={(value) => {
+                      setInsigniaRelations(insigniaRelations.map(ir =>
+                        ir.insigniaId === relation.insigniaId ? { ...ir, relationType: value } : ir
+                      ));
+                    }}
+                  >
+                    <SelectTrigger className="w-36">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {RELATION_TYPES.map((type) => (
+                        <SelectItem key={type.value} value={type.value}>
+                          {type.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                    onClick={() => removeInsigniaRelation(relation.insigniaId)}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

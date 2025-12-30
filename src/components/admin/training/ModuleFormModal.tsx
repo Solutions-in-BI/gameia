@@ -1,8 +1,9 @@
 /**
- * ModuleFormModal - Modal para criar/editar módulos
+ * ModuleFormModal - Modal melhorado para criar/editar módulos
  */
 
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Dialog,
   DialogContent,
@@ -15,18 +16,31 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Upload, X, Video, FileText, HelpCircle, FileIcon, Link } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
+import { 
+  Loader2, 
+  Upload, 
+  X, 
+  Video, 
+  FileText, 
+  HelpCircle, 
+  FileIcon, 
+  Link,
+  Clock,
+  Award,
+  Coins,
+  Eye,
+  CheckCircle2,
+  ArrowRight,
+  ArrowLeft,
+  Sparkles,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type { TrainingModule } from "@/hooks/useTrainings";
-import { Progress } from "@/components/ui/progress";
 
 interface ModuleFormModalProps {
   isOpen: boolean;
@@ -36,11 +50,53 @@ interface ModuleFormModalProps {
 }
 
 const CONTENT_TYPES = [
-  { value: "video", label: "Vídeo", icon: Video },
-  { value: "text", label: "Texto/Artigo", icon: FileText },
-  { value: "quiz", label: "Quiz", icon: HelpCircle },
-  { value: "pdf", label: "PDF", icon: FileIcon },
-  { value: "link", label: "Link Externo", icon: Link },
+  { 
+    value: "video", 
+    label: "Vídeo", 
+    icon: Video,
+    description: "Aulas em vídeo, tutoriais",
+    color: "from-rose-500/20 to-orange-500/20",
+    iconColor: "text-rose-500"
+  },
+  { 
+    value: "text", 
+    label: "Texto", 
+    icon: FileText,
+    description: "Artigos, textos formatados",
+    color: "from-blue-500/20 to-cyan-500/20",
+    iconColor: "text-blue-500"
+  },
+  { 
+    value: "quiz", 
+    label: "Quiz", 
+    icon: HelpCircle,
+    description: "Perguntas e respostas",
+    color: "from-purple-500/20 to-pink-500/20",
+    iconColor: "text-purple-500"
+  },
+  { 
+    value: "pdf", 
+    label: "PDF", 
+    icon: FileIcon,
+    description: "Documentos e materiais",
+    color: "from-amber-500/20 to-yellow-500/20",
+    iconColor: "text-amber-500"
+  },
+  { 
+    value: "link", 
+    label: "Link", 
+    icon: Link,
+    description: "Recursos externos",
+    color: "from-emerald-500/20 to-teal-500/20",
+    iconColor: "text-emerald-500"
+  },
+];
+
+const TEMPLATES = [
+  { name: "Aula Introdutória", time: 15, xp: 30, coins: 15, type: "video" },
+  { name: "Leitura Rápida", time: 5, xp: 15, coins: 5, type: "text" },
+  { name: "Avaliação", time: 10, xp: 50, coins: 25, type: "quiz" },
+  { name: "Material de Apoio", time: 20, xp: 20, coins: 10, type: "pdf" },
 ];
 
 export function ModuleFormModal({
@@ -49,6 +105,7 @@ export function ModuleFormModal({
   module,
   onSave,
 }: ModuleFormModalProps) {
+  const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [formData, setFormData] = useState({
@@ -82,6 +139,7 @@ export function ModuleFormModal({
         is_preview: module.is_preview,
         requires_completion: module.requires_completion,
       });
+      setStep(2); // Go to content step when editing
     } else {
       setFormData({
         module_key: "",
@@ -97,22 +155,37 @@ export function ModuleFormModal({
         is_preview: false,
         requires_completion: true,
       });
+      setStep(1);
     }
-  }, [module]);
+  }, [module, isOpen]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleClose = () => {
+    setStep(1);
+    onClose();
+  };
+
+  const handleSubmit = async () => {
     setIsLoading(true);
-
     try {
       const data: Partial<TrainingModule> = {
         ...formData,
         module_key: formData.module_key || formData.name.toLowerCase().replace(/\s+/g, "_"),
       };
       await onSave(data);
+      handleClose();
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const applyTemplate = (template: typeof TEMPLATES[0]) => {
+    setFormData(prev => ({
+      ...prev,
+      content_type: template.type,
+      time_minutes: template.time,
+      xp_reward: template.xp,
+      coins_reward: template.coins,
+    }));
   };
 
   const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -124,8 +197,6 @@ export function ModuleFormModal({
 
     try {
       const fileName = `videos/${Date.now()}_${file.name}`;
-      
-      // Simulate progress (actual tracking requires different approach)
       const progressInterval = setInterval(() => {
         setUploadProgress((prev) => Math.min(prev + 10, 90));
       }, 500);
@@ -149,31 +220,6 @@ export function ModuleFormModal({
     } finally {
       setIsLoading(false);
       setTimeout(() => setUploadProgress(0), 1000);
-    }
-  };
-
-  const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsLoading(true);
-    try {
-      const fileName = `module-thumbnails/${Date.now()}_${file.name}`;
-      const { data, error } = await supabase.storage
-        .from("training-media")
-        .upload(fileName, file);
-
-      if (error) throw error;
-
-      const { data: urlData } = supabase.storage
-        .from("training-media")
-        .getPublicUrl(data.path);
-
-      setFormData((prev) => ({ ...prev, thumbnail_url: urlData.publicUrl }));
-    } catch (error) {
-      console.error("Error uploading thumbnail:", error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -205,323 +251,407 @@ export function ModuleFormModal({
     }
   };
 
+  const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsLoading(true);
+    try {
+      const fileName = `module-thumbnails/${Date.now()}_${file.name}`;
+      const { data, error } = await supabase.storage
+        .from("training-media")
+        .upload(fileName, file);
+
+      if (error) throw error;
+
+      const { data: urlData } = supabase.storage
+        .from("training-media")
+        .getPublicUrl(data.path);
+
+      setFormData((prev) => ({ ...prev, thumbnail_url: urlData.publicUrl }));
+    } catch (error) {
+      console.error("Error uploading thumbnail:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const canProceed = step === 1 
+    ? formData.content_type !== "" 
+    : formData.name.trim() !== "";
+
+  const selectedType = CONTENT_TYPES.find(t => t.value === formData.content_type);
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh]">
-        <DialogHeader>
-          <DialogTitle>
-            {module ? "Editar Módulo" : "Novo Módulo"}
-          </DialogTitle>
-          <DialogDescription>
-            {module ? "Atualize os dados do módulo" : "Configure o conteúdo e recompensas do módulo"}
-          </DialogDescription>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="max-w-2xl max-h-[90vh] p-0 gap-0 overflow-hidden">
+        {/* Header */}
+        <DialogHeader className="px-6 pt-6 pb-4 border-b border-border">
+          <div className="flex items-center justify-between">
+            <div>
+              <DialogTitle className="flex items-center gap-2">
+                {selectedType && (
+                  <div className={cn("p-2 rounded-lg bg-gradient-to-br", selectedType.color)}>
+                    <selectedType.icon className={cn("w-5 h-5", selectedType.iconColor)} />
+                  </div>
+                )}
+                {module ? "Editar Módulo" : "Novo Módulo"}
+              </DialogTitle>
+              <DialogDescription className="mt-1">
+                {step === 1 ? "Escolha o tipo de conteúdo" : "Configure o módulo"}
+              </DialogDescription>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span className={cn("w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium", step >= 1 ? "bg-primary text-primary-foreground" : "bg-muted")}>
+                1
+              </span>
+              <div className="w-8 h-0.5 bg-muted" />
+              <span className={cn("w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium", step >= 2 ? "bg-primary text-primary-foreground" : "bg-muted")}>
+                2
+              </span>
+            </div>
+          </div>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[calc(90vh-120px)] pr-4">
-          <form onSubmit={handleSubmit} className="space-y-6 py-4">
-            {/* Name */}
-            <div className="space-y-2">
-              <Label htmlFor="name">Nome do Módulo *</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-                placeholder="Ex: Introdução ao Produto"
-                required
-              />
-            </div>
+        <ScrollArea className="max-h-[calc(90vh-200px)]">
+          <div className="p-6">
+            <AnimatePresence mode="wait">
+              {/* Step 1: Choose Content Type */}
+              {step === 1 && (
+                <motion.div
+                  key="step1"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  className="space-y-6"
+                >
+                  {/* Templates */}
+                  <div>
+                    <Label className="text-xs uppercase tracking-wide text-muted-foreground mb-3 flex items-center gap-2">
+                      <Sparkles className="w-3 h-3" />
+                      Templates Rápidos
+                    </Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {TEMPLATES.map((template) => (
+                        <Button
+                          key={template.name}
+                          variant="outline"
+                          className="h-auto py-3 px-4 justify-start"
+                          onClick={() => {
+                            applyTemplate(template);
+                            setStep(2);
+                          }}
+                        >
+                          <div className="text-left">
+                            <div className="font-medium text-sm">{template.name}</div>
+                            <div className="text-xs text-muted-foreground mt-0.5">
+                              {template.time}min • {template.xp}XP • {template.coins}🪙
+                            </div>
+                          </div>
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
 
-            {/* Description */}
-            <div className="space-y-2">
-              <Label htmlFor="description">Descrição</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-                placeholder="Breve descrição do conteúdo"
-                rows={2}
-              />
-            </div>
+                  {/* Content Types */}
+                  <div>
+                    <Label className="text-xs uppercase tracking-wide text-muted-foreground mb-3 block">
+                      Ou escolha o tipo
+                    </Label>
+                    <div className="grid grid-cols-1 gap-3">
+                      {CONTENT_TYPES.map((type) => {
+                        const Icon = type.icon;
+                        const isSelected = formData.content_type === type.value;
+                        
+                        return (
+                          <Card
+                            key={type.value}
+                            className={cn(
+                              "cursor-pointer transition-all hover:shadow-md",
+                              isSelected && "ring-2 ring-primary"
+                            )}
+                            onClick={() => setFormData(prev => ({ ...prev, content_type: type.value }))}
+                          >
+                            <CardContent className="p-4 flex items-center gap-4">
+                              <div className={cn("p-3 rounded-xl bg-gradient-to-br", type.color)}>
+                                <Icon className={cn("w-6 h-6", type.iconColor)} />
+                              </div>
+                              <div className="flex-1">
+                                <div className="font-medium">{type.label}</div>
+                                <div className="text-sm text-muted-foreground">{type.description}</div>
+                              </div>
+                              {isSelected && (
+                                <CheckCircle2 className="w-5 h-5 text-primary" />
+                              )}
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
 
-            {/* Content Type */}
-            <div className="space-y-2">
-              <Label>Tipo de Conteúdo</Label>
-              <div className="grid grid-cols-5 gap-2">
-                {CONTENT_TYPES.map((type) => {
-                  const Icon = type.icon;
-                  return (
-                    <button
-                      key={type.value}
-                      type="button"
-                      onClick={() => setFormData((prev) => ({ ...prev, content_type: type.value }))}
-                      className={`flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all ${
-                        formData.content_type === type.value
-                          ? "border-primary bg-primary/10"
-                          : "border-border hover:border-primary/50"
-                      }`}
-                    >
-                      <Icon className="w-5 h-5 mb-1" />
-                      <span className="text-xs">{type.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Video Upload */}
-            {formData.content_type === "video" && (
-              <div className="space-y-4 p-4 rounded-lg border border-border bg-muted/30">
-                <Label>Vídeo</Label>
-                {formData.video_url ? (
-                  <div className="space-y-2">
-                    <div className="relative rounded-lg overflow-hidden aspect-video bg-black">
-                      <video
-                        src={formData.video_url}
-                        controls
-                        className="w-full h-full"
+              {/* Step 2: Configure Module */}
+              {step === 2 && (
+                <motion.div
+                  key="step2"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-6"
+                >
+                  {/* Basic Info */}
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Nome do Módulo *</Label>
+                      <Input
+                        id="name"
+                        value={formData.name}
+                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                        placeholder="Ex: Introdução ao Produto"
                       />
                     </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setFormData((prev) => ({ ...prev, video_url: "" }))}
-                    >
-                      <X className="w-4 h-4 mr-1" />
-                      Remover vídeo
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <label className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary transition-colors">
-                      <Upload className="w-8 h-8 text-muted-foreground mb-2" />
-                      <span className="text-sm text-muted-foreground">
-                        Clique para fazer upload ou arraste o vídeo
-                      </span>
-                      <span className="text-xs text-muted-foreground mt-1">
-                        MP4, WebM até 500MB
-                      </span>
-                      <input
-                        type="file"
-                        accept="video/*"
-                        onChange={handleVideoUpload}
-                        className="hidden"
+
+                    <div className="space-y-2">
+                      <Label htmlFor="description">Descrição</Label>
+                      <Textarea
+                        id="description"
+                        value={formData.description}
+                        onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                        placeholder="Breve descrição do conteúdo"
+                        rows={2}
                       />
-                    </label>
-                    {uploadProgress > 0 && (
-                      <Progress value={uploadProgress} className="h-2" />
+                    </div>
+                  </div>
+
+                  {/* Content Type Specific Fields */}
+                  <div className="p-4 rounded-xl border border-border bg-muted/30 space-y-4">
+                    <div className="flex items-center gap-2">
+                      {selectedType && <selectedType.icon className={cn("w-4 h-4", selectedType.iconColor)} />}
+                      <Label className="font-medium">Conteúdo - {selectedType?.label}</Label>
+                    </div>
+
+                    {/* Video */}
+                    {formData.content_type === "video" && (
+                      <>
+                        {formData.video_url ? (
+                          <div className="space-y-2">
+                            <div className="relative rounded-lg overflow-hidden aspect-video bg-black">
+                              <video src={formData.video_url} controls className="w-full h-full" />
+                            </div>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setFormData(prev => ({ ...prev, video_url: "" }))}
+                            >
+                              <X className="w-4 h-4 mr-1" />
+                              Remover vídeo
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            <label className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary transition-colors">
+                              <Upload className="w-8 h-8 text-muted-foreground mb-2" />
+                              <span className="text-sm text-muted-foreground">Upload de vídeo</span>
+                              <span className="text-xs text-muted-foreground mt-1">MP4, WebM</span>
+                              <input type="file" accept="video/*" onChange={handleVideoUpload} className="hidden" />
+                            </label>
+                            {uploadProgress > 0 && <Progress value={uploadProgress} className="h-2" />}
+                            <div className="text-center text-xs text-muted-foreground">ou</div>
+                            <Input
+                              placeholder="Cole a URL do vídeo (YouTube, Vimeo, etc.)"
+                              value={formData.video_url}
+                              onChange={(e) => setFormData(prev => ({ ...prev, video_url: e.target.value }))}
+                            />
+                          </div>
+                        )}
+                      </>
                     )}
-                    <div className="text-center">
-                      <span className="text-xs text-muted-foreground">ou</span>
-                    </div>
-                    <Input
-                      placeholder="Cole a URL do vídeo (YouTube, Vimeo, etc.)"
-                      value={formData.video_url}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, video_url: e.target.value }))}
-                    />
-                  </div>
-                )}
-              </div>
-            )}
 
-            {/* Text Content */}
-            {formData.content_type === "text" && (
-              <div className="space-y-2">
-                <Label>Conteúdo do Artigo</Label>
-                <Textarea
-                  value={(formData.content_data.text_content as string) || ""}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      content_data: { ...prev.content_data, text_content: e.target.value },
-                    }))
-                  }
-                  placeholder="Digite ou cole o conteúdo do artigo. Suporta Markdown."
-                  rows={10}
-                />
-              </div>
-            )}
-
-            {/* PDF Upload */}
-            {formData.content_type === "pdf" && (
-              <div className="space-y-2">
-                <Label>Arquivo PDF</Label>
-                {(formData.content_data.pdf_url as string) ? (
-                  <div className="flex items-center gap-3 p-3 rounded-lg border border-border">
-                    <FileIcon className="w-8 h-8 text-primary" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">PDF carregado</p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {formData.content_data.pdf_url as string}
-                      </p>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() =>
-                        setFormData((prev) => ({
+                    {/* Text */}
+                    {formData.content_type === "text" && (
+                      <Textarea
+                        value={(formData.content_data.text_content as string) || ""}
+                        onChange={(e) => setFormData(prev => ({
                           ...prev,
-                          content_data: { ...prev.content_data, pdf_url: "" },
-                        }))
-                      }
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
+                          content_data: { ...prev.content_data, text_content: e.target.value },
+                        }))}
+                        placeholder="Digite ou cole o conteúdo. Suporta Markdown."
+                        rows={8}
+                      />
+                    )}
+
+                    {/* PDF */}
+                    {formData.content_type === "pdf" && (
+                      <>
+                        {(formData.content_data.pdf_url as string) ? (
+                          <div className="flex items-center gap-3 p-3 rounded-lg border border-border">
+                            <FileIcon className="w-8 h-8 text-amber-500" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium">PDF carregado</p>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setFormData(prev => ({
+                                ...prev,
+                                content_data: { ...prev.content_data, pdf_url: "" },
+                              }))}
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <label className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary transition-colors">
+                            <Upload className="w-8 h-8 text-muted-foreground mb-2" />
+                            <span className="text-sm text-muted-foreground">Upload de PDF</span>
+                            <input type="file" accept=".pdf" onChange={handlePdfUpload} className="hidden" />
+                          </label>
+                        )}
+                      </>
+                    )}
+
+                    {/* Link */}
+                    {formData.content_type === "link" && (
+                      <Input
+                        type="url"
+                        placeholder="https://exemplo.com/recurso"
+                        value={(formData.content_data.external_url as string) || ""}
+                        onChange={(e) => setFormData(prev => ({
+                          ...prev,
+                          content_data: { ...prev.content_data, external_url: e.target.value },
+                        }))}
+                      />
+                    )}
+
+                    {/* Quiz */}
+                    {formData.content_type === "quiz" && (
+                      <div className="text-sm text-muted-foreground text-center py-4">
+                        O quiz será configurado automaticamente com base nas configurações do jogo.
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <label className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary transition-colors">
-                    <Upload className="w-8 h-8 text-muted-foreground mb-2" />
-                    <span className="text-sm text-muted-foreground">
-                      Clique para fazer upload do PDF
-                    </span>
-                    <input
-                      type="file"
-                      accept=".pdf"
-                      onChange={handlePdfUpload}
-                      className="hidden"
-                    />
-                  </label>
-                )}
-              </div>
-            )}
 
-            {/* External Link */}
-            {formData.content_type === "link" && (
-              <div className="space-y-2">
-                <Label>URL Externa</Label>
-                <Input
-                  type="url"
-                  placeholder="https://exemplo.com/recurso"
-                  value={(formData.content_data.external_url as string) || ""}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      content_data: { ...prev.content_data, external_url: e.target.value },
-                    }))
-                  }
-                />
-              </div>
-            )}
+                  {/* Rewards */}
+                  <div>
+                    <Label className="text-xs uppercase tracking-wide text-muted-foreground mb-3 block">
+                      Duração e Recompensas
+                    </Label>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="p-3 rounded-xl border border-border bg-card space-y-2">
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Clock className="w-4 h-4" />
+                          <span className="text-xs">Duração</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="number"
+                            min="1"
+                            value={formData.time_minutes}
+                            onChange={(e) => setFormData(prev => ({ ...prev, time_minutes: parseInt(e.target.value) || 0 }))}
+                            className="h-8 text-center"
+                          />
+                          <span className="text-sm text-muted-foreground">min</span>
+                        </div>
+                      </div>
 
-            {/* Thumbnail */}
-            <div className="space-y-2">
-              <Label>Thumbnail (opcional)</Label>
-              <div className="flex items-center gap-4">
-                {formData.thumbnail_url ? (
-                  <div className="relative">
-                    <img
-                      src={formData.thumbnail_url}
-                      alt="Thumbnail"
-                      className="w-24 h-16 object-cover rounded-lg"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setFormData((prev) => ({ ...prev, thumbnail_url: "" }))}
-                      className="absolute -top-2 -right-2 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
+                      <div className="p-3 rounded-xl border border-border bg-card space-y-2">
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Award className="w-4 h-4 text-purple-500" />
+                          <span className="text-xs">XP</span>
+                        </div>
+                        <Input
+                          type="number"
+                          min="0"
+                          value={formData.xp_reward}
+                          onChange={(e) => setFormData(prev => ({ ...prev, xp_reward: parseInt(e.target.value) || 0 }))}
+                          className="h-8 text-center"
+                        />
+                      </div>
+
+                      <div className="p-3 rounded-xl border border-border bg-card space-y-2">
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Coins className="w-4 h-4 text-amber-500" />
+                          <span className="text-xs">Moedas</span>
+                        </div>
+                        <Input
+                          type="number"
+                          min="0"
+                          value={formData.coins_reward}
+                          onChange={(e) => setFormData(prev => ({ ...prev, coins_reward: parseInt(e.target.value) || 0 }))}
+                          className="h-8 text-center"
+                        />
+                      </div>
+                    </div>
                   </div>
-                ) : (
-                  <label className="w-24 h-16 border-2 border-dashed border-border rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors">
-                    <Upload className="w-4 h-4 text-muted-foreground" />
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleThumbnailUpload}
-                      className="hidden"
-                    />
-                  </label>
-                )}
-              </div>
-            </div>
 
-            {/* Time & Rewards */}
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="time_minutes">Duração (min)</Label>
-                <Input
-                  id="time_minutes"
-                  type="number"
-                  min="1"
-                  value={formData.time_minutes}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, time_minutes: parseInt(e.target.value) }))
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="xp_reward">XP</Label>
-                <Input
-                  id="xp_reward"
-                  type="number"
-                  min="0"
-                  value={formData.xp_reward}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, xp_reward: parseInt(e.target.value) }))
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="coins_reward">Moedas</Label>
-                <Input
-                  id="coins_reward"
-                  type="number"
-                  min="0"
-                  value={formData.coins_reward}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, coins_reward: parseInt(e.target.value) }))
-                  }
-                />
-              </div>
-            </div>
+                  {/* Options */}
+                  <div className="space-y-3 pt-4 border-t border-border">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label>Preview Liberado</Label>
+                        <p className="text-xs text-muted-foreground">Visível antes de iniciar</p>
+                      </div>
+                      <Switch
+                        checked={formData.is_preview}
+                        onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_preview: checked }))}
+                      />
+                    </div>
 
-            {/* Toggles */}
-            <div className="space-y-4 pt-4 border-t border-border">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label>Preview Liberado</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Permite visualizar sem seguir a ordem
-                  </p>
-                </div>
-                <Switch
-                  checked={formData.is_preview}
-                  onCheckedChange={(checked) =>
-                    setFormData((prev) => ({ ...prev, is_preview: checked }))
-                  }
-                />
-              </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label>Requer Conclusão</Label>
+                        <p className="text-xs text-muted-foreground">Precisa concluir para avançar</p>
+                      </div>
+                      <Switch
+                        checked={formData.requires_completion}
+                        onCheckedChange={(checked) => setFormData(prev => ({ ...prev, requires_completion: checked }))}
+                      />
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </ScrollArea>
 
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label>Requer Conclusão</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Precisa completar para avançar
-                  </p>
-                </div>
-                <Switch
-                  checked={formData.requires_completion}
-                  onCheckedChange={(checked) =>
-                    setFormData((prev) => ({ ...prev, requires_completion: checked }))
-                  }
-                />
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="flex justify-end gap-3 pt-4 border-t border-border">
-              <Button type="button" variant="outline" onClick={onClose}>
+        {/* Footer */}
+        <div className="px-6 py-4 border-t border-border flex items-center justify-between bg-muted/30">
+          {step === 1 ? (
+            <>
+              <Button variant="ghost" onClick={handleClose}>
                 Cancelar
               </Button>
-              <Button type="submit" disabled={isLoading}>
-                {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                {module ? "Salvar Alterações" : "Criar Módulo"}
+              <Button onClick={() => setStep(2)} disabled={!canProceed}>
+                Continuar
+                <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
-            </div>
-          </form>
-        </ScrollArea>
+            </>
+          ) : (
+            <>
+              <Button variant="ghost" onClick={() => setStep(1)}>
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Voltar
+              </Button>
+              <Button onClick={handleSubmit} disabled={isLoading || !canProceed}>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Salvando...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                    {module ? "Salvar Alterações" : "Criar Módulo"}
+                  </>
+                )}
+              </Button>
+            </>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );

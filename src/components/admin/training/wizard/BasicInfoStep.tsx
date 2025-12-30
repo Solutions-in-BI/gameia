@@ -1,0 +1,274 @@
+/**
+ * BasicInfoStep - Step 1: Informações básicas do treinamento
+ */
+
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { 
+  Palette,
+  Upload,
+  X,
+} from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import type { TrainingFormData } from "../TrainingWizard";
+
+interface BasicInfoStepProps {
+  formData: TrainingFormData;
+  setFormData: React.Dispatch<React.SetStateAction<TrainingFormData>>;
+}
+
+const CATEGORIES = [
+  { value: "general", label: "Geral" },
+  { value: "sales", label: "Vendas" },
+  { value: "leadership", label: "Liderança" },
+  { value: "technical", label: "Técnico" },
+  { value: "compliance", label: "Compliance" },
+  { value: "onboarding", label: "Onboarding" },
+  { value: "soft_skills", label: "Soft Skills" },
+];
+
+const DIFFICULTIES = [
+  { value: "beginner", label: "Iniciante", color: "text-emerald-500" },
+  { value: "intermediate", label: "Intermediário", color: "text-amber-500" },
+  { value: "advanced", label: "Avançado", color: "text-orange-500" },
+  { value: "expert", label: "Expert", color: "text-red-500" },
+];
+
+const EMOJIS = [
+  "📚", "🎯", "🚀", "💡", "🎓", "📊", "💼", "🏆", 
+  "⭐", "🔥", "💪", "🎨", "🔧", "📱", "💻", "🌟"
+];
+
+const COLORS = [
+  "#6366f1", "#8b5cf6", "#ec4899", "#ef4444", 
+  "#f97316", "#eab308", "#22c55e", "#14b8a6",
+  "#06b6d4", "#3b82f6", "#6b7280", "#1f2937"
+];
+
+export function BasicInfoStep({ formData, setFormData }: BasicInfoStepProps) {
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const fileName = `training-thumbnails/${Date.now()}_${file.name}`;
+      const { data, error } = await supabase.storage
+        .from("training-media")
+        .upload(fileName, file);
+
+      if (error) throw error;
+
+      const { data: urlData } = supabase.storage
+        .from("training-media")
+        .getPublicUrl(data.path);
+
+      setFormData(prev => ({ ...prev, thumbnail_url: urlData.publicUrl }));
+    } catch (error) {
+      console.error("Error uploading thumbnail:", error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Name */}
+      <div className="space-y-2">
+        <Label htmlFor="name">Nome do Treinamento *</Label>
+        <Input
+          id="name"
+          value={formData.name}
+          onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+          placeholder="Ex: Fundamentos de Vendas"
+        />
+      </div>
+
+      {/* Description */}
+      <div className="space-y-2">
+        <Label htmlFor="description">Descrição</Label>
+        <Textarea
+          id="description"
+          value={formData.description}
+          onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+          placeholder="Descreva o conteúdo e objetivos do treinamento"
+          rows={3}
+        />
+      </div>
+
+      {/* Icon & Color */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Ícone</Label>
+          <div className="flex flex-wrap gap-2 p-3 rounded-lg border border-border bg-muted/30">
+            {EMOJIS.map((emoji) => (
+              <button
+                key={emoji}
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, icon: emoji }))}
+                className={`w-9 h-9 rounded-lg flex items-center justify-center text-lg transition-all ${
+                  formData.icon === emoji 
+                    ? "bg-primary/20 ring-2 ring-primary" 
+                    : "hover:bg-muted"
+                }`}
+              >
+                {emoji}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label className="flex items-center gap-2">
+            <Palette className="w-4 h-4" />
+            Cor
+          </Label>
+          <div className="flex flex-wrap gap-2 p-3 rounded-lg border border-border bg-muted/30">
+            {COLORS.map((color) => (
+              <button
+                key={color}
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, color }))}
+                className={`w-8 h-8 rounded-lg transition-all ${
+                  formData.color === color ? "ring-2 ring-offset-2 ring-primary" : ""
+                }`}
+                style={{ backgroundColor: color }}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Category & Difficulty */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Categoria *</Label>
+          <Select 
+            value={formData.category} 
+            onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione" />
+            </SelectTrigger>
+            <SelectContent>
+              {CATEGORIES.map((cat) => (
+                <SelectItem key={cat.value} value={cat.value}>
+                  {cat.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label>Dificuldade</Label>
+          <Select 
+            value={formData.difficulty} 
+            onValueChange={(value) => setFormData(prev => ({ ...prev, difficulty: value }))}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione" />
+            </SelectTrigger>
+            <SelectContent>
+              {DIFFICULTIES.map((diff) => (
+                <SelectItem key={diff.value} value={diff.value}>
+                  <span className={diff.color}>{diff.label}</span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Estimated Hours */}
+      <div className="space-y-2">
+        <Label htmlFor="estimated_hours">Duração Estimada (horas)</Label>
+        <Input
+          id="estimated_hours"
+          type="number"
+          min="0.5"
+          step="0.5"
+          value={formData.estimated_hours}
+          onChange={(e) => setFormData(prev => ({ ...prev, estimated_hours: parseFloat(e.target.value) || 0 }))}
+        />
+      </div>
+
+      {/* Thumbnail */}
+      <div className="space-y-2">
+        <Label>Thumbnail (opcional)</Label>
+        {formData.thumbnail_url ? (
+          <div className="relative inline-block">
+            <img
+              src={formData.thumbnail_url}
+              alt="Thumbnail"
+              className="w-48 h-28 object-cover rounded-lg border border-border"
+            />
+            <Button
+              type="button"
+              variant="destructive"
+              size="icon"
+              className="absolute -top-2 -right-2 w-6 h-6"
+              onClick={() => setFormData(prev => ({ ...prev, thumbnail_url: "" }))}
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        ) : (
+          <label className="flex items-center justify-center w-48 h-28 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary transition-colors">
+            <div className="text-center">
+              <Upload className="w-6 h-6 text-muted-foreground mx-auto mb-1" />
+              <span className="text-xs text-muted-foreground">
+                {isUploading ? "Enviando..." : "Upload"}
+              </span>
+            </div>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleThumbnailUpload}
+              className="hidden"
+              disabled={isUploading}
+            />
+          </label>
+        )}
+      </div>
+
+      {/* Toggles */}
+      <div className="space-y-4 pt-4 border-t border-border">
+        <div className="flex items-center justify-between">
+          <div>
+            <Label>Treinamento Ativo</Label>
+            <p className="text-xs text-muted-foreground">Visível para os colaboradores</p>
+          </div>
+          <Switch
+            checked={formData.is_active}
+            onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
+          />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div>
+            <Label>Treinamento de Onboarding</Label>
+            <p className="text-xs text-muted-foreground">Exibido para novos colaboradores</p>
+          </div>
+          <Switch
+            checked={formData.is_onboarding}
+            onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_onboarding: checked }))}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}

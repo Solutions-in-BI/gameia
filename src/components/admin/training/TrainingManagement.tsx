@@ -42,7 +42,7 @@ import { Progress } from "@/components/ui/progress";
 import { useTrainings, Training } from "@/hooks/useTrainings";
 import { useOrganization } from "@/hooks/useOrganization";
 import { toast } from "sonner";
-import { TrainingFormModal } from "./TrainingFormModal";
+import { TrainingWizard } from "./TrainingWizard";
 import { TrainingModulesBuilder } from "./TrainingModulesBuilder";
 
 const DIFFICULTY_LABELS: Record<string, { label: string; color: string }> = {
@@ -370,10 +370,13 @@ export function TrainingManagement() {
         </div>
       )}
 
-      {/* Form Modal */}
-      <TrainingFormModal
+      {/* Training Wizard */}
+      <TrainingWizard
         isOpen={isFormOpen}
-        onClose={() => setIsFormOpen(false)}
+        onClose={() => {
+          setIsFormOpen(false);
+          setSelectedTraining(null);
+        }}
         training={selectedTraining}
         onSave={handleFormSave}
       />
