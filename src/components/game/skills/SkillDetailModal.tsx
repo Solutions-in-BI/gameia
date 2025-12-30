@@ -1,14 +1,16 @@
 /**
  * Modal de detalhes de uma skill
- * Fase 4: Experiência do Usuário
+ * Com CTAs para ação direta (jogos, treinamentos)
  */
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   X, TrendingUp, Clock, Gamepad2, Star, 
-  CheckCircle2, XCircle, ChevronRight 
+  CheckCircle2, XCircle, ChevronRight, Play,
+  GraduationCap, ArrowRight, Route
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { SkillWithProgress } from "@/hooks/useSkillProgress";
@@ -51,6 +53,7 @@ const GAME_LABELS: Record<string, string> = {
 };
 
 export function SkillDetailModal({ skill, isOpen, onClose }: SkillDetailModalProps) {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [history, setHistory] = useState<SkillEvent[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
@@ -162,12 +165,62 @@ export function SkillDetailModal({ skill, isOpen, onClose }: SkillDetailModalPro
               </p>
             </div>
 
-            {/* Related Games */}
+            {/* ACTION CTAs - Para evoluir esta skill */}
+            <div className="space-y-3 p-4 rounded-xl bg-gradient-to-r from-primary/10 to-transparent border border-primary/20">
+              <h4 className="text-sm font-semibold flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-primary" />
+                Para evoluir esta skill
+              </h4>
+              <div className="grid grid-cols-1 gap-2">
+                {/* Go to Arena for related games */}
+                {skill.related_games && skill.related_games.length > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="justify-start gap-2 h-auto py-2"
+                    onClick={() => {
+                      onClose();
+                      navigate("/app?tab=arena");
+                    }}
+                  >
+                    <Gamepad2 className="w-4 h-4 text-purple-500" />
+                    <div className="text-left">
+                      <p className="font-medium">Jogar na Arena</p>
+                      <p className="text-xs text-muted-foreground">
+                        {skill.related_games.map(g => GAME_LABELS[g] || g).slice(0, 2).join(", ")}
+                        {skill.related_games.length > 2 && ` +${skill.related_games.length - 2}`}
+                      </p>
+                    </div>
+                    <ArrowRight className="w-4 h-4 ml-auto" />
+                  </Button>
+                )}
+                
+                {/* Go to Development for trainings */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="justify-start gap-2 h-auto py-2"
+                  onClick={() => {
+                    onClose();
+                    navigate("/app?tab=development");
+                  }}
+                >
+                  <GraduationCap className="w-4 h-4 text-blue-500" />
+                  <div className="text-left">
+                    <p className="font-medium">Fazer Treinamento</p>
+                    <p className="text-xs text-muted-foreground">Jornadas e cursos estruturados</p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 ml-auto" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Related Games (collapsed view) */}
             {skill.related_games && skill.related_games.length > 0 && (
               <div>
                 <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
                   <Gamepad2 className="w-4 h-4" />
-                  Jogos Relacionados
+                  Jogos que desenvolvem esta skill
                 </h4>
                 <div className="flex flex-wrap gap-2">
                   {skill.related_games.map((game) => (

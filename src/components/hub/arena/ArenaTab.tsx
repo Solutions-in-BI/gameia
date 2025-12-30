@@ -30,13 +30,9 @@ import { cn } from "@/lib/utils";
 import { useSkillProgress } from "@/hooks/useSkillProgress";
 import { useChallenges, Challenge } from "@/hooks/useChallenges";
 import { useOrganization } from "@/hooks/useOrganization";
-import { useTrainings } from "@/hooks/useTrainings";
 import { useCognitiveTests } from "@/hooks/useCognitiveTests";
-import { useTrainingJourneys } from "@/hooks/useTrainingJourneys";
 import { ChallengesHighlight, ChallengeDetailModal } from "@/components/challenges";
 import { ExperienceCard } from "@/components/arena/ExperienceCard";
-import { JourneyCard } from "@/components/arena/JourneyCard";
-import { RewardBadge } from "@/components/rewards/RewardBadge";
 
 // Games
 import { SnakeGame } from "@/components/game/snake/SnakeGame";
@@ -49,9 +45,6 @@ import { AIScenarioGame } from "@/components/game/enterprise/AIScenarioGame";
 import { SalesGame } from "@/components/game/sales/SalesGame";
 import { ComingSoonGame } from "@/components/game/enterprise/ComingSoonGame";
 import { CognitiveTestPlayer } from "@/components/game/development/CognitiveTestPlayer";
-
-// Types
-import { Route } from "lucide-react";
 
 type ArenaFilter = "all" | "games" | "challenges" | "cognitive" | "simulations";
 type ActiveExperience = { type: string; id: string } | null;
