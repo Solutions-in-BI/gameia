@@ -62,6 +62,14 @@ export interface TrainingFormData {
   training_key: string;
   certificate_enabled: boolean;
   insignia_reward_id: string | null;
+  training_type: 'traditional' | 'book_guided';
+  book_metadata?: {
+    title?: string;
+    author?: string;
+    isbn?: string;
+    cover_url?: string;
+    total_chapters?: number;
+  };
 }
 
 export interface DistributionFormData {
@@ -148,6 +156,7 @@ export function TrainingWizard({
     training_key: "",
     certificate_enabled: false,
     insignia_reward_id: null,
+    training_type: 'traditional',
   });
 
   const [distributionData, setDistributionData] = useState<DistributionFormData>({
@@ -183,6 +192,8 @@ export function TrainingWizard({
         training_key: training.training_key,
         certificate_enabled: training.certificate_enabled,
         insignia_reward_id: training.insignia_reward_id || null,
+        training_type: (training as any).training_type || 'traditional',
+        book_metadata: (training as any).book_metadata,
       });
 
       // Load distribution data from config if editing
@@ -236,6 +247,7 @@ export function TrainingWizard({
       training_key: "",
       certificate_enabled: false,
       insignia_reward_id: null,
+      training_type: 'traditional',
     });
     setDistributionData({
       is_active: true,
