@@ -36,12 +36,12 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 const NAV_ITEMS = [
   { path: "/app", label: "Início", shortLabel: "Início", icon: LayoutDashboard, exact: true },
   { path: "/app/arena", label: "Arena", shortLabel: "Arena", icon: Swords },
+  { path: "/app/development", label: "Desenvolvimento", shortLabel: "Dev", icon: GraduationCap },
   { path: "/app/evolution", label: "Evolução", shortLabel: "Evolução", icon: TrendingUp },
   { path: "/app/caminho", label: "Caminho", shortLabel: "Caminho", icon: Compass },
 ];
 
 const SECONDARY_NAV = [
-  { path: "/app/trainings", label: "Treinamentos", icon: GraduationCap },
   { path: "/app/marketplace", label: "Loja", icon: ShoppingBag },
 ];
 
