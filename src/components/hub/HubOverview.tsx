@@ -26,8 +26,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { HubCard, HubCardHeader, HubStat, HubEmptyState, HubButton, HubHeader } from "./common";
-import { DailyMissionsCard, MonthlyGoalsCard } from "./overview";
-import { PrimaryRecommendation } from "./overview/PrimaryRecommendation";
+import { DailyMissionsCard, MonthlyGoalsCard, RecommendationsCarousel, RecommendationItem } from "./overview";
 import { RewardBadge } from "@/components/rewards/RewardBadge";
 import { useStreak } from "@/hooks/useStreak";
 import { useLevel } from "@/hooks/useLevel";
@@ -94,11 +93,6 @@ export function HubOverview({ onNavigate }: HubOverviewProps) {
   });
   const continueJourney = inProgressJourneys[0];
 
-  // Get pending cognitive test
-  const pendingTest = tests.find(t => 
-    !mySessions.some(s => s.test_id === t.id && s.status === "completed")
-  );
-
   // Pending actions count
   const pendingActions = suggestions ? (
     (suggestions.pending_tests?.length || 0) +
@@ -106,19 +100,22 @@ export function HubOverview({ onNavigate }: HubOverviewProps) {
     (suggestions.pdi_goals_due?.length || 0)
   ) : 0;
 
-  // Determine PRIMARY RECOMMENDATION (single focus)
-  const primaryRecommendation = useMemo(() => {
-    // Priority 1: In-progress journey
+  // Build MULTIPLE recommendations for carousel
+  const recommendations = useMemo(() => {
+    const items: RecommendationItem[] = [];
+
+    // 1. In-progress journey
     if (continueJourney) {
-      const progress = getCompletionPercentage(continueJourney.id);
-      const userProgress = journeyUserProgress.find(p => p.journey_id === continueJourney.id);
-      return {
-        type: "journey" as const,
+      const prog = getCompletionPercentage(continueJourney.id);
+      const userProg = journeyUserProgress.find(p => p.journey_id === continueJourney.id);
+      items.push({
+        id: `journey-${continueJourney.id}`,
+        type: "journey",
         title: continueJourney.name,
-        subtitle: `${userProgress?.trainings_completed || 0}/${continueJourney.total_trainings} módulos concluídos`,
+        subtitle: `${userProg?.trainings_completed || 0}/${continueJourney.total_trainings} módulos`,
         description: continueJourney.description || undefined,
-        reason: weakestSkill ? `Para evoluir em ${weakestSkill.name}` : "Continue de onde parou",
-        progress,
+        reason: "Continue de onde parou",
+        progress: prog,
         reward: {
           xp: continueJourney.bonus_xp || 500,
           coins: continueJourney.bonus_coins || 100,
@@ -127,18 +124,19 @@ export function HubOverview({ onNavigate }: HubOverviewProps) {
         skills: [continueJourney.category],
         thumbnail: continueJourney.thumbnail_url || undefined,
         onClick: () => navigate(`/app/journeys/${continueJourney.id}`),
-      };
+      });
     }
 
-    // Priority 2: In-progress training
+    // 2. In-progress training
     if (continueTraining) {
-      return {
-        type: "training" as const,
+      items.push({
+        id: `training-${continueTraining.id}`,
+        type: "training",
         title: continueTraining.name,
         subtitle: "Treinamento em andamento",
         description: continueTraining.description || undefined,
-        reason: "Continue de onde parou",
-        progress: 30, // Would need actual progress
+        reason: "Continue seu aprendizado",
+        progress: 30,
         reward: {
           xp: continueTraining.xp_reward || 100,
           coins: continueTraining.coins_reward || 50,
@@ -146,56 +144,70 @@ export function HubOverview({ onNavigate }: HubOverviewProps) {
         skills: [continueTraining.category],
         thumbnail: continueTraining.thumbnail_url || undefined,
         onClick: () => navigate(`/app/trainings/${continueTraining.id}`),
-      };
+      });
     }
 
-    // Priority 3: Recommended test based on weak skill
-    if (pendingTest) {
-      return {
-        type: "test" as const,
-        title: pendingTest.name,
+    // 3. Pending cognitive tests (up to 2)
+    const pendingTests = tests.filter(t => 
+      !mySessions.some(s => s.test_id === t.id && s.status === "completed")
+    ).slice(0, 2);
+    
+    pendingTests.forEach(test => {
+      items.push({
+        id: `test-${test.id}`,
+        type: "test",
+        title: test.name,
         subtitle: "Teste Cognitivo Recomendado",
-        description: pendingTest.description || "Avalie suas habilidades cognitivas",
+        description: test.description || "Avalie suas habilidades cognitivas",
         reason: "Descubra seu potencial",
         reward: {
-          xp: pendingTest.xp_reward || 100,
+          xp: test.xp_reward || 100,
         },
-        skills: [pendingTest.test_type],
+        skills: [test.test_type],
         onClick: () => onNavigate("arena"),
-      };
-    }
+      });
+    });
 
-    // Priority 4: First available journey
-    const availableJourney = journeys.find(j => j.is_active);
-    if (availableJourney) {
-      return {
-        type: "journey" as const,
-        title: availableJourney.name,
-        subtitle: `${availableJourney.total_trainings} módulos`,
-        description: availableJourney.description || undefined,
+    // 4. Available journeys (up to 2)
+    const availableJourneys = journeys
+      .filter(j => j.is_active && !inProgressJourneys.some(ip => ip.id === j.id))
+      .slice(0, 2);
+    
+    availableJourneys.forEach(journey => {
+      items.push({
+        id: `new-journey-${journey.id}`,
+        type: "journey",
+        title: journey.name,
+        subtitle: `${journey.total_trainings} módulos`,
+        description: journey.description || undefined,
         reason: "Comece uma nova jornada",
         reward: {
-          xp: availableJourney.bonus_xp || 500,
-          coins: availableJourney.bonus_coins || 100,
-          certificate: availableJourney.generates_certificate,
+          xp: journey.bonus_xp || 500,
+          coins: journey.bonus_coins || 100,
+          certificate: journey.generates_certificate,
         },
-        skills: [availableJourney.category],
-        thumbnail: availableJourney.thumbnail_url || undefined,
-        onClick: () => navigate(`/app/journeys/${availableJourney.id}`),
-      };
+        skills: [journey.category],
+        thumbnail: journey.thumbnail_url || undefined,
+        onClick: () => navigate(`/app/journeys/${journey.id}`),
+      });
+    });
+
+    // 5. Fallback: Arena games
+    if (items.length < 2) {
+      items.push({
+        id: "arena-fallback",
+        type: "game",
+        title: "Explore a Arena",
+        subtitle: "Jogos que desenvolvem skills",
+        description: "Pratique com jogos e testes que evoluem suas competências",
+        reason: "Ganhe XP jogando",
+        reward: { xp: 50 },
+        onClick: () => onNavigate("arena"),
+      });
     }
 
-    // Fallback: Go to Arena
-    return {
-      type: "game" as const,
-      title: "Explore a Arena",
-      subtitle: "Jogos que desenvolvem suas skills",
-      description: "Pratique com jogos e testes que evoluem suas competências",
-      reason: "Comece sua jornada",
-      reward: { xp: 50 },
-      onClick: () => onNavigate("arena"),
-    };
-  }, [continueJourney, continueTraining, pendingTest, journeys, weakestSkill, journeyUserProgress, getCompletionPercentage, navigate, onNavigate]);
+    return items.slice(0, 5); // Max 5 items
+  }, [continueJourney, continueTraining, tests, mySessions, journeys, inProgressJourneys, journeyUserProgress, getCompletionPercentage, navigate, onNavigate]);
 
   return (
     <div className="space-y-6">
@@ -238,19 +250,8 @@ export function HubOverview({ onNavigate }: HubOverviewProps) {
         />
       </div>
 
-      {/* PRIMARY RECOMMENDATION - Single focused action */}
-      <PrimaryRecommendation
-        type={primaryRecommendation.type}
-        title={primaryRecommendation.title}
-        subtitle={primaryRecommendation.subtitle}
-        description={primaryRecommendation.description}
-        reason={primaryRecommendation.reason}
-        progress={primaryRecommendation.progress}
-        reward={primaryRecommendation.reward}
-        skills={primaryRecommendation.skills}
-        thumbnail={primaryRecommendation.thumbnail}
-        onClick={primaryRecommendation.onClick}
-      />
+      {/* RECOMMENDATIONS CAROUSEL */}
+      <RecommendationsCarousel recommendations={recommendations} />
 
       {/* Missions and Goals Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
