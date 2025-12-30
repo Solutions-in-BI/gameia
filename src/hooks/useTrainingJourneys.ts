@@ -21,10 +21,9 @@ export interface JourneyTraining {
     estimated_hours: number;
     xp_reward: number;
     coins_reward: number;
-    skill_ids: string[] | null;
     thumbnail_url: string | null;
-    status: string;
-  };
+    category: string;
+  } | null;
 }
 
 export interface TrainingJourney {
@@ -187,25 +186,36 @@ export function useTrainingJourneys(orgId?: string) {
   // Fetch journey trainings
   const fetchJourneyTrainings = useCallback(async (journeyId: string): Promise<JourneyTraining[]> => {
     try {
-      const { data, error } = await supabase
+      // First fetch journey_trainings
+      const { data: jtData, error: jtError } = await supabase
         .from('journey_trainings')
-        .select(`
-          *,
-          training:trainings(id, name, description, estimated_hours, xp_reward, coins_reward, skill_ids, thumbnail_url, status)
-        `)
+        .select('*')
         .eq('journey_id', journeyId)
         .order('order_index', { ascending: true });
 
-      if (error) throw error;
+      if (jtError) throw jtError;
+      if (!jtData || jtData.length === 0) return [];
 
-      return (data || []).map(row => ({
+      // Then fetch related trainings
+      const trainingIds = jtData.map(jt => jt.training_id);
+      const { data: trainingsData } = await supabase
+        .from('trainings')
+        .select('id, name, description, estimated_hours, xp_reward, coins_reward, thumbnail_url, category')
+        .in('id', trainingIds);
+
+      const trainingsMap = (trainingsData || []).reduce((acc, t) => {
+        acc[t.id] = t;
+        return acc;
+      }, {} as Record<string, typeof trainingsData[0]>);
+
+      return jtData.map(row => ({
         id: row.id,
         journey_id: row.journey_id,
         training_id: row.training_id,
         order_index: row.order_index,
         is_required: row.is_required,
         prerequisite_training_id: row.prerequisite_training_id,
-        training: row.training as JourneyTraining['training'],
+        training: trainingsMap[row.training_id] || null,
       }));
     } catch (error) {
       console.error("Error fetching journey trainings:", error);

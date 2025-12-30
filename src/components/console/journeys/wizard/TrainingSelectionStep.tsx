@@ -22,13 +22,13 @@ interface TrainingSelectionStepProps {
 }
 
 export function TrainingSelectionStep({ formData, updateFormData }: TrainingSelectionStepProps) {
-  const { organization } = useOrganization();
-  const { trainings, isLoading } = useTrainings(organization?.id);
+  const { currentOrg } = useOrganization();
+  const { trainings, isLoading } = useTrainings(currentOrg?.id);
   const [searchQuery, setSearchQuery] = useState("");
 
   // Filter out already selected trainings
   const availableTrainings = trainings.filter(t => 
-    t.status === 'active' && 
+    t.is_active && 
     !formData.trainings.some(jt => jt.training_id === t.id) &&
     (t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
      t.description?.toLowerCase().includes(searchQuery.toLowerCase()))

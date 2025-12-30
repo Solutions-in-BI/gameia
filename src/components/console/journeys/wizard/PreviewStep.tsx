@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useTrainings } from "@/hooks/useTrainings";
-import { useSkills } from "@/hooks/useSkills";
 import { useOrganization } from "@/hooks/useOrganization";
 import { JOURNEY_CATEGORIES, JOURNEY_LEVELS, JOURNEY_IMPORTANCE } from "@/hooks/useTrainingJourneys";
 import type { JourneyFormData } from "../JourneyWizard";
@@ -17,9 +16,8 @@ interface PreviewStepProps {
 }
 
 export function PreviewStep({ formData }: PreviewStepProps) {
-  const { organization } = useOrganization();
-  const { trainings } = useTrainings(organization?.id);
-  const { skills } = useSkills(organization?.id);
+  const { currentOrg } = useOrganization();
+  const { trainings } = useTrainings(currentOrg?.id);
 
   // Calculate totals from selected trainings
   const selectedTrainings = formData.trainings.map(jt => {
@@ -30,14 +28,8 @@ export function PreviewStep({ formData }: PreviewStepProps) {
   const totalXp = selectedTrainings.reduce((sum, t) => sum + (t?.xp_reward || 0), 0);
   const totalCoins = selectedTrainings.reduce((sum, t) => sum + (t?.coins_reward || 0), 0);
 
-  // Aggregate skills
-  const aggregatedSkillIds = new Set<string>();
-  selectedTrainings.forEach(t => {
-    if (t?.skill_ids) {
-      t.skill_ids.forEach(id => aggregatedSkillIds.add(id));
-    }
-  });
-  const relatedSkills = skills.filter(s => aggregatedSkillIds.has(s.id));
+  // Aggregate categories
+  const categories = [...new Set(selectedTrainings.map(t => t?.category).filter(Boolean))];
 
   const categoryLabel = JOURNEY_CATEGORIES.find(c => c.value === formData.category)?.label || formData.category;
   const levelLabel = JOURNEY_LEVELS.find(l => l.value === formData.level)?.label || formData.level;
@@ -165,20 +157,20 @@ export function PreviewStep({ formData }: PreviewStepProps) {
         </CardContent>
       </Card>
 
-      {/* Skills Impact */}
-      {relatedSkills.length > 0 && (
+      {/* Categories covered */}
+      {categories.length > 0 && (
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <Award className="h-4 w-4" />
-              Skills Impactadas
+              Categorias Abordadas
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              {relatedSkills.map(skill => (
-                <Badge key={skill.id} variant="secondary">
-                  {skill.name}
+              {categories.map(cat => (
+                <Badge key={cat} variant="secondary">
+                  {cat}
                 </Badge>
               ))}
             </div>

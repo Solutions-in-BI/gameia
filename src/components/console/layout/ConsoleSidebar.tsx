@@ -19,6 +19,7 @@ import {
   TrendingUp,
   Store,
   ChevronDown,
+  Route,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -35,6 +36,7 @@ export type ConsoleSection =
   | "trainings"
   | "trainings-catalog"
   | "trainings-evolution"
+  | "trainings-journeys"
   | "cognitive"
   | "templates"
   | "integrations"
@@ -75,6 +77,7 @@ const NAV_ITEMS: NavItem[] = [
     description: "Conteúdo e evolução",
     children: [
       { id: "trainings-catalog", label: "Catálogo", icon: GraduationCap },
+      { id: "trainings-journeys", label: "Jornadas", icon: Route },
       { id: "trainings-evolution", label: "Templates de Evolução", icon: TrendingUp },
     ],
   },

@@ -26,9 +26,9 @@ interface RewardsStepProps {
 }
 
 export function RewardsStep({ formData, updateFormData }: RewardsStepProps) {
-  const { organization } = useOrganization();
-  const { insignias } = useInsignias(organization?.id);
-  const { templates } = useEvolutionTemplates(organization?.id);
+  const { currentOrg } = useOrganization();
+  const { insignias } = useInsignias();
+  const { templates } = useEvolutionTemplates(currentOrg?.id);
   
   const [useTemplate, setUseTemplate] = useState(!!formData.evolution_template_id);
 
