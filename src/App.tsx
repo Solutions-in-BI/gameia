@@ -47,7 +47,7 @@ import JourneyModulePlayer from "./pages/app/JourneyModulePlayer";
 import Marketplace from "./pages/Marketplace";
 import TrainingEditorPage from "./pages/console/TrainingEditorPage";
 import RecreationPage from "./pages/app/RecreationPage";
-import CertificatesPage from "./pages/app/CertificatesPage";
+// CertificatesPage removido - agora acessado via /app/development?tab=certificates
 
 // Legacy redirect
 import Dashboard from "./pages/Dashboard";
@@ -97,7 +97,7 @@ const App = () => (
             <Route path="journeys/:journeyId/training/:trainingId/module/:moduleId" element={<JourneyModulePlayer />} />
             <Route path="marketplace" element={<Marketplace />} />
             <Route path="recreation" element={<RecreationPage />} />
-            <Route path="certificates" element={<CertificatesPage />} />
+            {/* Certificates agora acessado via /app/development?tab=certificates */}
           </Route>
           
           {/* Legacy redirect - keep for backwards compat */}
