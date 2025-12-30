@@ -3,6 +3,7 @@
  * Usado para Jogos, Treinamentos, Testes Cognitivos, Desafios e Simulações
  */
 
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { 
   Gamepad2, GraduationCap, Brain, Target, MessageSquare, 
@@ -108,6 +109,9 @@ export function ExperienceCard({
   variant = 'default',
   className
 }: ExperienceCardProps) {
+  // Image error states for fallback handling - must be at top level
+  const [imgError, setImgError] = useState(false);
+  
   const typeConfig = TYPE_CONFIG[type] || TYPE_CONFIG.game;
 
   const difficultyKey =
@@ -204,12 +208,19 @@ export function ExperienceCard({
         onClick={onClick}
       >
         <div className="flex flex-col sm:flex-row">
-          {/* Thumbnail/Gradient - Compacto */}
-          <div className="sm:w-40 h-28 sm:h-auto relative shrink-0">
-            {thumbnail ? (
-              <img src={thumbnail} alt={title} className="w-full h-full object-cover" />
+          {/* Thumbnail/Gradient - Fixed height with fallback */}
+          <div className="sm:w-40 h-28 sm:h-auto relative shrink-0 bg-muted overflow-hidden">
+            {thumbnail && !imgError ? (
+              <img 
+                src={thumbnail} 
+                alt={title} 
+                className="w-full h-full object-cover"
+                onError={() => setImgError(true)}
+              />
             ) : (
-              <div className="w-full h-full bg-gradient-to-br from-primary/20 via-primary/10 to-transparent" />
+              <div className="w-full h-full bg-gradient-to-br from-primary/20 via-primary/10 to-transparent flex items-center justify-center">
+                <span className={cn("text-3xl", typeConfig.color)}>{typeConfig.icon}</span>
+              </div>
             )}
             
             {/* Badge de tipo */}
@@ -282,7 +293,7 @@ export function ExperienceCard({
       whileHover={{ y: -2, scale: 1.01 }}
       whileTap={{ scale: 0.99 }}
       className={cn(
-        "group relative overflow-hidden rounded-xl border bg-card transition-all cursor-pointer",
+        "group relative overflow-hidden rounded-xl border bg-card transition-all cursor-pointer h-full flex flex-col",
         isLocked ? "opacity-60" : "hover:shadow-lg hover:border-primary/40",
         isCompleted && "ring-2 ring-green-500/20",
         className
@@ -291,24 +302,41 @@ export function ExperienceCard({
     >
       {/* Progress overlay */}
       {progress !== undefined && progress > 0 && progress < 100 && (
-        <div className="absolute top-0 left-0 right-0 h-1">
+        <div className="absolute top-0 left-0 right-0 h-1 z-10">
           <Progress value={progress} className="h-1 rounded-none" />
         </div>
       )}
 
-      {/* Thumbnail */}
-      {thumbnail && (
-        <div className="aspect-video relative overflow-hidden">
+      {/* Thumbnail - Always rendered with fixed height */}
+      <div className="h-32 sm:h-36 relative overflow-hidden bg-muted shrink-0">
+        {thumbnail && !imgError ? (
           <img 
             src={thumbnail} 
             alt={title} 
             className="w-full h-full object-cover transition-transform group-hover:scale-105"
+            onError={() => setImgError(true)}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
-        </div>
-      )}
+        ) : (
+          <div className={cn(
+            "w-full h-full flex items-center justify-center",
+            "bg-gradient-to-br from-primary/15 via-primary/5 to-transparent"
+          )}>
+            <span className={cn("text-4xl opacity-70", typeConfig.color)}>
+              {icon || typeConfig.icon}
+            </span>
+          </div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
+        
+        {/* Badges on thumbnail */}
+        {isNew && (
+          <div className="absolute top-2 right-2">
+            <Badge className="bg-primary text-primary-foreground text-[10px]">Novo</Badge>
+          </div>
+        )}
+      </div>
 
-      <div className="p-4 space-y-3">
+      <div className="p-4 space-y-3 flex-1 flex flex-col">
         {/* Header */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2">
@@ -328,21 +356,17 @@ export function ExperienceCard({
               {typeConfig.label}
             </Badge>
           </div>
-
-          {isNew && (
-            <Badge className="bg-primary text-primary-foreground text-[10px]">Novo</Badge>
-          )}
         </div>
 
         {/* Título e descrição */}
-        <div>
+        <div className="flex-1">
           <h3 className="font-semibold line-clamp-1">{title}</h3>
           <p className="text-sm text-muted-foreground line-clamp-2 mt-0.5">{description}</p>
         </div>
 
-        {/* Skills */}
+        {/* Skills - fixed height area */}
         {skills.length > 0 && (
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1 min-h-[24px] max-h-[24px] overflow-hidden">
             {skills.slice(0, 3).map(skill => (
               <Badge key={skill} variant="secondary" className="text-[10px] px-1.5">
                 {skill}
@@ -356,8 +380,8 @@ export function ExperienceCard({
           </div>
         )}
 
-        {/* Footer */}
-        <div className="flex items-center justify-between pt-2 border-t">
+        {/* Footer - always at bottom */}
+        <div className="flex items-center justify-between pt-2 border-t mt-auto">
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             {duration && (
               <span className="flex items-center gap-1">
