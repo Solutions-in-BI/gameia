@@ -1,24 +1,28 @@
 /**
  * Modal de detalhes de uma skill
- * Com CTAs para ação direta (jogos, treinamentos)
+ * Com CTAs para ação direta, recomendações e alertas de estagnação
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   X, TrendingUp, Clock, Gamepad2, Star, 
   CheckCircle2, XCircle, ChevronRight, Play,
-  GraduationCap, ArrowRight, Route
+  GraduationCap, ArrowRight, Route, AlertCircle,
+  Sparkles, Target
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { SkillWithProgress } from "@/hooks/useSkillProgress";
+import { SkillRecommendations } from "./SkillRecommendations";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card, CardContent } from "@/components/ui/card";
+import { differenceInDays } from "date-fns";
 import {
   Dialog,
   DialogContent,
@@ -57,6 +61,14 @@ export function SkillDetailModal({ skill, isOpen, onClose }: SkillDetailModalPro
   const { user } = useAuth();
   const [history, setHistory] = useState<SkillEvent[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+
+  // Calculate days since last activity
+  const daysSinceLastActivity = useMemo(() => {
+    if (!skill?.userProgress?.last_practiced) return null;
+    return differenceInDays(new Date(), new Date(skill.userProgress.last_practiced));
+  }, [skill?.userProgress?.last_practiced]);
+
+  const isStagnant = daysSinceLastActivity !== null && daysSinceLastActivity >= 14;
 
   useEffect(() => {
     if (isOpen && skill && user) {
@@ -165,35 +177,61 @@ export function SkillDetailModal({ skill, isOpen, onClose }: SkillDetailModalPro
               </p>
             </div>
 
-            {/* ACTION CTAs - Para evoluir esta skill */}
+            {/* Stagnation Alert */}
+            {isStagnant && (
+              <Card className="border-amber-500/30 bg-amber-500/5">
+                <CardContent className="p-3">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-amber-600 dark:text-amber-400">
+                        Skill estagnada há {daysSinceLastActivity} dias
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Escolha uma atividade abaixo para retomar sua evolução
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Recommendations Section */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-primary" />
+                Recomendações para evoluir
+              </h4>
+              <SkillRecommendations
+                skillId={skill.id}
+                skillName={skill.name}
+                relatedGames={skill.related_games || []}
+                daysSinceLastActivity={daysSinceLastActivity || 0}
+                isStagnant={isStagnant}
+                compact={false}
+              />
+            </div>
+
+            {/* ACTION CTAs - Ações rápidas */}
             <div className="space-y-3 p-4 rounded-xl bg-gradient-to-r from-primary/10 to-transparent border border-primary/20">
               <h4 className="text-sm font-semibold flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-primary" />
-                Para evoluir esta skill
+                Ações Rápidas
               </h4>
-              <div className="grid grid-cols-1 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 {/* Go to Arena for related games */}
-                {skill.related_games && skill.related_games.length > 0 && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="justify-start gap-2 h-auto py-2"
-                    onClick={() => {
-                      onClose();
-                      navigate("/app?tab=arena");
-                    }}
-                  >
-                    <Gamepad2 className="w-4 h-4 text-purple-500" />
-                    <div className="text-left">
-                      <p className="font-medium">Jogar na Arena</p>
-                      <p className="text-xs text-muted-foreground">
-                        {skill.related_games.map(g => GAME_LABELS[g] || g).slice(0, 2).join(", ")}
-                        {skill.related_games.length > 2 && ` +${skill.related_games.length - 2}`}
-                      </p>
-                    </div>
-                    <ArrowRight className="w-4 h-4 ml-auto" />
-                  </Button>
-                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="justify-start gap-2 h-auto py-2"
+                  onClick={() => {
+                    onClose();
+                    navigate("/app/arena");
+                  }}
+                >
+                  <Gamepad2 className="w-4 h-4 text-purple-500" />
+                  <span className="text-sm">Jogar</span>
+                </Button>
                 
                 {/* Go to Development for trainings */}
                 <Button
@@ -202,15 +240,11 @@ export function SkillDetailModal({ skill, isOpen, onClose }: SkillDetailModalPro
                   className="justify-start gap-2 h-auto py-2"
                   onClick={() => {
                     onClose();
-                    navigate("/app?tab=development");
+                    navigate("/app/development");
                   }}
                 >
                   <GraduationCap className="w-4 h-4 text-blue-500" />
-                  <div className="text-left">
-                    <p className="font-medium">Fazer Treinamento</p>
-                    <p className="text-xs text-muted-foreground">Jornadas e cursos estruturados</p>
-                  </div>
-                  <ArrowRight className="w-4 h-4 ml-auto" />
+                  <span className="text-sm">Treinar</span>
                 </Button>
               </div>
             </div>

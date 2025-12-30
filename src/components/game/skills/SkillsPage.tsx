@@ -1,21 +1,24 @@
 /**
  * Página dedicada de Skills do usuário
- * Fase 4: Experiência do Usuário
+ * Com recomendações automáticas e alertas de estagnação
  */
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Sparkles, Target, TrendingUp, Lock, ChevronRight, 
-  Gamepad2, Award, Zap, Filter 
+  Gamepad2, Award, Zap, Filter, AlertCircle, Clock,
+  TrendingDown, ArrowRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSkillProgress, SkillWithProgress } from "@/hooks/useSkillProgress";
 import { SkillDetailModal } from "./SkillDetailModal";
+import { SkillRecommendations } from "./SkillRecommendations";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -23,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { differenceInDays } from "date-fns";
 
 const CATEGORY_CONFIG: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
   comunicacao: { label: "Comunicação", icon: <Sparkles className="w-4 h-4" />, color: "text-cyan-400" },
@@ -38,15 +42,43 @@ export function SkillsPage() {
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
 
   // Flatten skills with children
-  const allSkills = skills.flatMap((s) => [s, ...s.children]);
+  const allSkills = useMemo(() => 
+    skills.flatMap((s) => [s, ...s.children]),
+    [skills]
+  );
   
   // Get unique categories
-  const categories = [...new Set(allSkills.map((s) => s.category).filter(Boolean))] as string[];
+  const categories = useMemo(() => 
+    [...new Set(allSkills.map((s) => s.category).filter(Boolean))] as string[],
+    [allSkills]
+  );
   
   // Filter skills
-  const filteredSkills = categoryFilter === "all" 
-    ? allSkills 
-    : allSkills.filter((s) => s.category === categoryFilter);
+  const filteredSkills = useMemo(() => 
+    categoryFilter === "all" 
+      ? allSkills 
+      : allSkills.filter((s) => s.category === categoryFilter),
+    [allSkills, categoryFilter]
+  );
+
+  // Identify stagnant skills (no activity in 14+ days)
+  const stagnantSkills = useMemo(() => 
+    allSkills.filter((s) => {
+      if (!s.userProgress?.last_practiced) return false;
+      const daysSince = differenceInDays(new Date(), new Date(s.userProgress.last_practiced));
+      return daysSince >= 14 && s.userProgress.is_unlocked;
+    }),
+    [allSkills]
+  );
+
+  // Skills that need attention (low level + unlocked)
+  const skillsNeedingAttention = useMemo(() => 
+    allSkills.filter((s) => {
+      const level = s.userProgress?.current_level || 1;
+      return s.userProgress?.is_unlocked && level < 3;
+    }).slice(0, 3),
+    [allSkills]
+  );
 
   // Stats
   const totalSkills = allSkills.length;
@@ -56,7 +88,7 @@ export function SkillsPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 p-6">
+      <div className="space-y-6">
         <Skeleton className="h-8 w-64" />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
@@ -81,7 +113,7 @@ export function SkillsPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -107,6 +139,35 @@ export function SkillsPage() {
           </SelectContent>
         </Select>
       </div>
+
+      {/* Stagnation Alert */}
+      {stagnantSkills.length > 0 && (
+        <Card className="border-amber-500/30 bg-amber-500/5">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="font-medium text-amber-600 dark:text-amber-400">
+                  {stagnantSkills.length} skill{stagnantSkills.length > 1 ? "s" : ""} estagnada{stagnantSkills.length > 1 ? "s" : ""}
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {stagnantSkills.slice(0, 3).map(s => s.name).join(", ")}
+                  {stagnantSkills.length > 3 && ` e mais ${stagnantSkills.length - 3}`}
+                </p>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="shrink-0 border-amber-500/30 text-amber-600 hover:bg-amber-500/10"
+                onClick={() => setSelectedSkill(stagnantSkills[0])}
+              >
+                Ver sugestões
+                <ArrowRight className="w-3 h-3 ml-1" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -135,6 +196,56 @@ export function SkillsPage() {
           color="green"
         />
       </div>
+
+      {/* Skills Needing Attention */}
+      {skillsNeedingAttention.length > 0 && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-primary" />
+              Skills em Foco
+              <Badge variant="secondary" className="ml-auto text-xs">
+                Recomendadas para você
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {skillsNeedingAttention.map((skill) => {
+                const daysSince = skill.userProgress?.last_practiced 
+                  ? differenceInDays(new Date(), new Date(skill.userProgress.last_practiced))
+                  : null;
+                
+                return (
+                  <button
+                    key={skill.id}
+                    onClick={() => setSelectedSkill(skill)}
+                    className="p-3 rounded-lg border border-border/50 bg-card hover:bg-muted/50 text-left transition-all hover:shadow-md"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{skill.icon || "🎯"}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm truncate">{skill.name}</p>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                          <span>Nível {skill.userProgress?.current_level || 1}</span>
+                          {daysSince !== null && daysSince >= 14 && (
+                            <Badge variant="outline" className="text-amber-500 text-[10px]">
+                              <Clock className="w-3 h-3 mr-1" />
+                              {daysSince}d sem atividade
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                      <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                    </div>
+                    <Progress value={skill.progressPercent} className="h-1 mt-2" />
+                  </button>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Skills Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
