@@ -2446,6 +2446,58 @@ export type Database = {
           },
         ]
       }
+      journey_trainings: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_required: boolean | null
+          journey_id: string
+          order_index: number
+          prerequisite_training_id: string | null
+          training_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_required?: boolean | null
+          journey_id: string
+          order_index?: number
+          prerequisite_training_id?: string | null
+          training_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_required?: boolean | null
+          journey_id?: string
+          order_index?: number
+          prerequisite_training_id?: string | null
+          training_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "journey_trainings_journey_id_fkey"
+            columns: ["journey_id"]
+            isOneToOne: false
+            referencedRelation: "training_journeys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "journey_trainings_prerequisite_training_id_fkey"
+            columns: ["prerequisite_training_id"]
+            isOneToOne: false
+            referencedRelation: "trainings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "journey_trainings_training_id_fkey"
+            columns: ["training_id"]
+            isOneToOne: false
+            referencedRelation: "trainings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leaderboard: {
         Row: {
           created_at: string
@@ -5052,6 +5104,121 @@ export type Database = {
           },
         ]
       }
+      training_journeys: {
+        Row: {
+          aggregated_skills: Json | null
+          bonus_coins: number | null
+          bonus_insignia_id: string | null
+          bonus_item_ids: Json | null
+          bonus_xp: number | null
+          category: string
+          certificate_name: string | null
+          color: string | null
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          evolution_template_id: string | null
+          generates_certificate: boolean | null
+          icon: string | null
+          id: string
+          importance: string | null
+          is_active: boolean | null
+          journey_key: string
+          level: string
+          name: string
+          order_type: string | null
+          organization_id: string | null
+          thumbnail_url: string | null
+          total_coins: number | null
+          total_estimated_hours: number | null
+          total_trainings: number | null
+          total_xp: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          aggregated_skills?: Json | null
+          bonus_coins?: number | null
+          bonus_insignia_id?: string | null
+          bonus_item_ids?: Json | null
+          bonus_xp?: number | null
+          category?: string
+          certificate_name?: string | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          evolution_template_id?: string | null
+          generates_certificate?: boolean | null
+          icon?: string | null
+          id?: string
+          importance?: string | null
+          is_active?: boolean | null
+          journey_key: string
+          level?: string
+          name: string
+          order_type?: string | null
+          organization_id?: string | null
+          thumbnail_url?: string | null
+          total_coins?: number | null
+          total_estimated_hours?: number | null
+          total_trainings?: number | null
+          total_xp?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          aggregated_skills?: Json | null
+          bonus_coins?: number | null
+          bonus_insignia_id?: string | null
+          bonus_item_ids?: Json | null
+          bonus_xp?: number | null
+          category?: string
+          certificate_name?: string | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          evolution_template_id?: string | null
+          generates_certificate?: boolean | null
+          icon?: string | null
+          id?: string
+          importance?: string | null
+          is_active?: boolean | null
+          journey_key?: string
+          level?: string
+          name?: string
+          order_type?: string | null
+          organization_id?: string | null
+          thumbnail_url?: string | null
+          total_coins?: number | null
+          total_estimated_hours?: number | null
+          total_trainings?: number | null
+          total_xp?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_journeys_bonus_insignia_id_fkey"
+            columns: ["bonus_insignia_id"]
+            isOneToOne: false
+            referencedRelation: "insignias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_journeys_evolution_template_id_fkey"
+            columns: ["evolution_template_id"]
+            isOneToOne: false
+            referencedRelation: "evolution_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_journeys_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       training_module_prerequisites: {
         Row: {
           created_at: string | null
@@ -5861,6 +6028,72 @@ export type Database = {
             columns: ["item_id"]
             isOneToOne: false
             referencedRelation: "marketplace_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_journey_progress: {
+        Row: {
+          bonus_claimed: boolean | null
+          certificate_issued_at: string | null
+          completed_at: string | null
+          created_at: string | null
+          id: string
+          journey_id: string
+          organization_id: string | null
+          started_at: string | null
+          status: string | null
+          total_coins_earned: number | null
+          total_xp_earned: number | null
+          trainings_completed: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          bonus_claimed?: boolean | null
+          certificate_issued_at?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          journey_id: string
+          organization_id?: string | null
+          started_at?: string | null
+          status?: string | null
+          total_coins_earned?: number | null
+          total_xp_earned?: number | null
+          trainings_completed?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          bonus_claimed?: boolean | null
+          certificate_issued_at?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          journey_id?: string
+          organization_id?: string | null
+          started_at?: string | null
+          status?: string | null
+          total_coins_earned?: number | null
+          total_xp_earned?: number | null
+          trainings_completed?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_journey_progress_journey_id_fkey"
+            columns: ["journey_id"]
+            isOneToOne: false
+            referencedRelation: "training_journeys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_journey_progress_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -7142,6 +7375,10 @@ export type Database = {
         Returns: Json
       }
       purchase_marketplace_item: { Args: { p_item_id: string }; Returns: Json }
+      recalculate_journey_totals: {
+        Args: { p_journey_id: string }
+        Returns: undefined
+      }
       record_core_event: {
         Args: {
           p_coins_earned?: number
