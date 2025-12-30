@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.detect-patterns]
 verify_jwt = false
+
+[functions.update-pdi-progress]
+verify_jwt = false

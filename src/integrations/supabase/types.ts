@@ -1571,59 +1571,86 @@ export type Database = {
       development_goals: {
         Row: {
           auto_challenges_enabled: boolean | null
+          auto_progress_enabled: boolean | null
           challenge_config: Json | null
           created_at: string | null
           description: string | null
           evidence_urls: string[] | null
+          goal_type: string | null
           id: string
+          last_auto_update: string | null
+          linked_challenge_ids: string[] | null
+          linked_cognitive_test_ids: string[] | null
+          linked_insignia_ids: string[] | null
+          linked_training_ids: string[] | null
           manager_notes: string | null
           plan_id: string | null
           priority: string | null
           progress: number | null
           related_games: string[] | null
           skill_id: string | null
+          stagnant_since: string | null
           status: string | null
           success_criteria: string[] | null
           target_date: string | null
           title: string
+          weight: number | null
           xp_reward: number | null
         }
         Insert: {
           auto_challenges_enabled?: boolean | null
+          auto_progress_enabled?: boolean | null
           challenge_config?: Json | null
           created_at?: string | null
           description?: string | null
           evidence_urls?: string[] | null
+          goal_type?: string | null
           id?: string
+          last_auto_update?: string | null
+          linked_challenge_ids?: string[] | null
+          linked_cognitive_test_ids?: string[] | null
+          linked_insignia_ids?: string[] | null
+          linked_training_ids?: string[] | null
           manager_notes?: string | null
           plan_id?: string | null
           priority?: string | null
           progress?: number | null
           related_games?: string[] | null
           skill_id?: string | null
+          stagnant_since?: string | null
           status?: string | null
           success_criteria?: string[] | null
           target_date?: string | null
           title: string
+          weight?: number | null
           xp_reward?: number | null
         }
         Update: {
           auto_challenges_enabled?: boolean | null
+          auto_progress_enabled?: boolean | null
           challenge_config?: Json | null
           created_at?: string | null
           description?: string | null
           evidence_urls?: string[] | null
+          goal_type?: string | null
           id?: string
+          last_auto_update?: string | null
+          linked_challenge_ids?: string[] | null
+          linked_cognitive_test_ids?: string[] | null
+          linked_insignia_ids?: string[] | null
+          linked_training_ids?: string[] | null
           manager_notes?: string | null
           plan_id?: string | null
           priority?: string | null
           progress?: number | null
           related_games?: string[] | null
           skill_id?: string | null
+          stagnant_since?: string | null
           status?: string | null
           success_criteria?: string[] | null
           target_date?: string | null
           title?: string
+          weight?: number | null
           xp_reward?: number | null
         }
         Relationships: [
@@ -2255,6 +2282,69 @@ export type Database = {
             columns: ["goal_id"]
             isOneToOne: false
             referencedRelation: "development_goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      goal_progress_events: {
+        Row: {
+          created_at: string
+          goal_id: string
+          id: string
+          metadata: Json | null
+          organization_id: string | null
+          progress_after: number
+          progress_before: number
+          progress_delta: number
+          source_id: string | null
+          source_name: string | null
+          source_type: string
+          user_id: string
+          xp_earned: number | null
+        }
+        Insert: {
+          created_at?: string
+          goal_id: string
+          id?: string
+          metadata?: Json | null
+          organization_id?: string | null
+          progress_after?: number
+          progress_before?: number
+          progress_delta?: number
+          source_id?: string | null
+          source_name?: string | null
+          source_type: string
+          user_id: string
+          xp_earned?: number | null
+        }
+        Update: {
+          created_at?: string
+          goal_id?: string
+          id?: string
+          metadata?: Json | null
+          organization_id?: string | null
+          progress_after?: number
+          progress_before?: number
+          progress_delta?: number
+          source_id?: string | null
+          source_name?: string | null
+          source_type?: string
+          user_id?: string
+          xp_earned?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goal_progress_events_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "development_goals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "goal_progress_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -3699,6 +3789,69 @@ export type Database = {
           slug?: string
         }
         Relationships: []
+      }
+      pdi_linked_actions: {
+        Row: {
+          action_id: string | null
+          action_name: string
+          action_type: string
+          completed_at: string | null
+          dismissed_at: string | null
+          expected_progress_impact: number | null
+          goal_id: string
+          id: string
+          metadata: Json | null
+          organization_id: string | null
+          priority: number | null
+          suggested_at: string
+          user_id: string
+        }
+        Insert: {
+          action_id?: string | null
+          action_name: string
+          action_type: string
+          completed_at?: string | null
+          dismissed_at?: string | null
+          expected_progress_impact?: number | null
+          goal_id: string
+          id?: string
+          metadata?: Json | null
+          organization_id?: string | null
+          priority?: number | null
+          suggested_at?: string
+          user_id: string
+        }
+        Update: {
+          action_id?: string | null
+          action_name?: string
+          action_type?: string
+          completed_at?: string | null
+          dismissed_at?: string | null
+          expected_progress_impact?: number | null
+          goal_id?: string
+          id?: string
+          metadata?: Json | null
+          organization_id?: string | null
+          priority?: number | null
+          suggested_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pdi_linked_actions_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "development_goals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pdi_linked_actions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -7625,6 +7778,10 @@ export type Database = {
       purchase_marketplace_item: { Args: { p_item_id: string }; Returns: Json }
       recalculate_journey_totals: {
         Args: { p_journey_id: string }
+        Returns: undefined
+      }
+      recalculate_pdi_progress: {
+        Args: { plan_id_param: string }
         Returns: undefined
       }
       record_core_event: {
