@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { 
   StickyNote, Search, Filter, Star, FileText, 
-  CheckCircle, RefreshCw, Calendar, BookOpen
+  CheckCircle, RefreshCw, BookOpen
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NoteCard } from "@/components/notes/NoteCard";
+import { NotesInsightsPanel } from "@/components/notes/NotesInsightsPanel";
 import { useTrainingNotes, type NoteStatus } from "@/hooks/useTrainingNotes";
 
 export function NotesTab() {
@@ -107,6 +108,9 @@ export function NotesTab() {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
     >
+      {/* AI Insights Panel */}
+      {stats.total > 0 && <NotesInsightsPanel />}
+
       {/* Stats Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         {statCards.map((stat) => {
