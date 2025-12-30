@@ -1,9 +1,9 @@
 /**
  * useJourneyProgress - Hook para gerenciar progresso do usuário em jornadas
- * Busca progresso, calcula % concluída e gerencia estados de módulos
+ * Otimizado com queries paralelas e validação robusta
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -50,62 +50,55 @@ export function useJourneyProgress(journeyId?: string) {
       setIsLoading(true);
       setError(null);
 
-      // Buscar jornada
-      const { data: journey, error: journeyError } = await supabase
-        .from("training_journeys")
-        .select("*")
-        .eq("id", journeyId)
-        .maybeSingle();
+      // Queries paralelas para máxima performance
+      const [journeyResult, journeyTrainingsResult, userProgressResult] = await Promise.all([
+        // Buscar jornada
+        supabase
+          .from("training_journeys")
+          .select("*")
+          .eq("id", journeyId)
+          .maybeSingle(),
+        
+        // Buscar treinamentos da jornada com detalhes
+        supabase
+          .from("journey_trainings")
+          .select(`
+            id,
+            training_id,
+            order_index,
+            is_required,
+            trainings (
+              id,
+              name
+            )
+          `)
+          .eq("journey_id", journeyId)
+          .order("order_index"),
+        
+        // Buscar progresso do usuário na jornada
+        supabase
+          .from("user_journey_progress")
+          .select("*")
+          .eq("journey_id", journeyId)
+          .eq("user_id", user.id)
+          .maybeSingle(),
+      ]);
 
-      if (journeyError) throw journeyError;
-      if (!journey) {
+      if (journeyResult.error) throw journeyResult.error;
+      if (!journeyResult.data) {
         setError("Jornada não encontrada");
         setIsLoading(false);
         return;
       }
 
-      // Buscar treinamentos da jornada
-      const { data: journeyTrainings, error: jtError } = await supabase
-        .from("journey_trainings")
-        .select(`
-          id,
-          training_id,
-          order_index,
-          is_required
-        `)
-        .eq("journey_id", journeyId)
-        .order("order_index");
+      const journey = journeyResult.data;
+      const journeyTrainings = journeyTrainingsResult.data || [];
+      const userProgress = userProgressResult.data;
 
-      if (jtError) throw jtError;
-
-      // Buscar detalhes dos treinamentos separadamente
-      const trainingIds = (journeyTrainings || []).map(jt => jt.training_id);
-      let trainingsMap: Record<string, { id: string; name: string; modules_count: number }> = {};
-      
-      if (trainingIds.length > 0) {
-        const { data: trainingsData } = await supabase
-          .from("trainings")
-          .select("id, name")
-          .in("id", trainingIds);
-        
-        (trainingsData || []).forEach(t => {
-          trainingsMap[t.id] = { ...t, modules_count: 0 };
-        });
-      }
-
-
-      // Buscar progresso do usuário na jornada
-      const { data: userProgress, error: upError } = await supabase
-        .from("user_journey_progress")
-        .select("*")
-        .eq("journey_id", journeyId)
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (upError) throw upError;
-
-      // Buscar progresso do usuário em cada treinamento
+      // Buscar progresso dos treinamentos em paralelo (se houver treinamentos)
+      const trainingIds = journeyTrainings.map(jt => jt.training_id);
       let trainingProgress: any[] = [];
+      
       if (trainingIds.length > 0) {
         const { data: tpData, error: tpError } = await supabase
           .from("user_training_progress")
@@ -118,8 +111,8 @@ export function useJourneyProgress(journeyId?: string) {
       }
 
       // Montar estrutura de progresso
-      const trainingsProgress: JourneyTrainingProgress[] = (journeyTrainings || []).map((jt, index) => {
-        const training = trainingsMap[jt.training_id];
+      const trainingsProgress: JourneyTrainingProgress[] = journeyTrainings.map((jt, index) => {
+        const training = jt.trainings as any;
         const tProgress = trainingProgress.find((tp: any) => tp.training_id === jt.training_id);
         
         // Verifica se o anterior está completo para determinar se está bloqueado
@@ -136,7 +129,7 @@ export function useJourneyProgress(journeyId?: string) {
           trainingId: jt.training_id,
           trainingName: training?.name || "Treinamento",
           orderIndex: jt.order_index,
-          modulesCount: training?.modules_count || 0,
+          modulesCount: 0,
           completedModules: tProgress?.current_module_index || 0,
           isCompleted,
           isLocked: isLocked && !isCompleted,
@@ -179,9 +172,20 @@ export function useJourneyProgress(journeyId?: string) {
     fetchProgress();
   }, [fetchProgress]);
 
-  // Iniciar jornada
-  const startJourney = useCallback(async () => {
-    if (!journeyId || !user) return;
+  // Iniciar jornada com validação robusta
+  const startJourney = useCallback(async (): Promise<boolean> => {
+    // Validação de parâmetros antes do upsert
+    if (!journeyId || journeyId.trim() === "") {
+      console.error("startJourney: journeyId is missing or empty");
+      toast.error("Erro: ID da jornada inválido");
+      return false;
+    }
+
+    if (!user?.id || user.id.trim() === "") {
+      console.error("startJourney: user is not authenticated");
+      toast.error("Erro: Faça login para iniciar a jornada");
+      return false;
+    }
 
     try {
       const { error } = await supabase
@@ -191,15 +195,22 @@ export function useJourneyProgress(journeyId?: string) {
           user_id: user.id,
           started_at: new Date().toISOString(),
           progress_percent: 0,
+        }, {
+          onConflict: 'journey_id,user_id'
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error("startJourney upsert error:", error);
+        throw error;
+      }
       
       await fetchProgress();
       toast.success("Jornada iniciada!");
+      return true;
     } catch (err) {
       console.error("Error starting journey:", err);
-      toast.error("Erro ao iniciar jornada");
+      toast.error("Erro ao iniciar jornada. Tente novamente.");
+      return false;
     }
   }, [journeyId, user, fetchProgress]);
 
