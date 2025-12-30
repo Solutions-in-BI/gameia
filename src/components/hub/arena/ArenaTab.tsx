@@ -20,7 +20,7 @@ import {
   Target,
   GraduationCap,
 } from "lucide-react";
-import { HubCard, HubEmptyState, HubButton, HubHeader } from "../common";
+import { HubCard, HubEmptyState, HubButton } from "../common";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useSkillProgress } from "@/hooks/useSkillProgress";
@@ -188,16 +188,6 @@ export function ArenaTab() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <HubHeader
-        title="Arena"
-        subtitle="Experiências que evoluem suas skills e geram recompensas"
-        icon={Gamepad2}
-        actionLabel="Jogar Agora"
-        actionIcon={Play}
-        onAction={() => recommendedGame && setActiveExperience({ type: "game", id: recommendedGame.id })}
-      />
-
       {/* Active Challenges Highlight */}
       {showChallenges && activeChallenges.length > 0 && (
         <ChallengesHighlight

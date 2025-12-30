@@ -17,7 +17,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
-import { HubHeader, HubCard, HubButton, HubEmptyState } from "../common";
+import { HubCard, HubButton, HubEmptyState } from "../common";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ExperienceCard } from "@/components/arena/ExperienceCard";
@@ -85,13 +85,6 @@ export function DevelopmentTab() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <HubHeader
-        title="Desenvolvimento"
-        subtitle="Aprendizado estruturado para evoluir suas competências"
-        icon={GraduationCap}
-      />
-
       {/* Stats Summary */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatCard 
