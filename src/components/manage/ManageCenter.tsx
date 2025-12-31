@@ -25,6 +25,7 @@ import { TrainingAssignments } from "./trainings";
 import { ExperienceApprovalsPanel } from "./benefits";
 import { TeamCertificatesDashboard } from "./certificates";
 import { RewardAnalyticsDashboard } from "./rewards/RewardAnalyticsDashboard";
+import { ManagerAssessmentsSection } from "./assessments";
 
 function CommitmentsSection() {
   return (
@@ -35,20 +36,6 @@ function CommitmentsSection() {
       </div>
       <div className="bg-card border border-border rounded-xl p-8 text-center">
         <p className="text-muted-foreground">Em breve: visão consolidada dos compromissos das equipes.</p>
-      </div>
-    </div>
-  );
-}
-
-function AssessmentsSection() {
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Avaliações & Feedback</h1>
-        <p className="text-muted-foreground">360°, PDI e One-on-One</p>
-      </div>
-      <div className="bg-card border border-border rounded-xl p-8 text-center">
-        <p className="text-muted-foreground">Em breve: gestão completa de avaliações.</p>
       </div>
     </div>
   );
@@ -125,8 +112,7 @@ export function ManageCenter() {
       case "commitments":
         return <CommitmentsSection />;
       case "assessments":
-        return <AssessmentsSection />;
-      case "reports":
+        return <ManagerAssessmentsSection />;
         return <ReportsPage />;
       default:
         return (

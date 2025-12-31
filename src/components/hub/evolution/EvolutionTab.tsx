@@ -14,9 +14,10 @@ import { OneOnOneSection } from "@/components/game/development/OneOnOneSection";
 import { InsigniasSubtab } from "./InsigniasSubtab";
 import { ChallengesSubtab } from "./ChallengesSubtab";
 import { HistorySubtab } from "./HistorySubtab";
+import { AssessmentHistoryTab } from "@/components/assessments";
 import { useOrganization } from "@/hooks/useOrganization";
 
-type EvolutionSubtab = "summary" | "history" | "challenges" | "insignias" | "skills" | "pdi" | "feedback" | "1on1" | "team";
+type EvolutionSubtab = "summary" | "history" | "challenges" | "insignias" | "skills" | "pdi" | "feedback" | "1on1" | "team" | "assessments";
 
 export function EvolutionTab() {
   const { isAdmin } = useOrganization();
@@ -57,6 +58,8 @@ export function EvolutionTab() {
         return <Assessment360Section />;
       case "1on1":
         return <OneOnOneSection />;
+      case "assessments":
+        return <AssessmentHistoryTab />;
       case "team":
         return isAdmin ? <ManagerEvolutionView /> : null;
       default:
