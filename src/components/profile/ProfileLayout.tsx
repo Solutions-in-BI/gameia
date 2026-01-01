@@ -3,12 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   User, TrendingUp, Swords, ShoppingBag, 
-  History, Settings, ArrowLeft, Crown, Award, StickyNote
+  History, Settings, ArrowLeft, Crown, Award, StickyNote, Menu
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useLevel } from "@/hooks/useLevel";
 import { useRoles } from "@/hooks/useRoles";
+import { AppSidebar, MobileSidebar, SidebarItem } from "@/components/layouts/AppSidebar";
 import { ProfileHeader } from "./common/ProfileHeader";
 import { OverviewTab } from "./tabs/OverviewTab";
 import { EvolutionTab } from "./tabs/EvolutionTab";
@@ -22,13 +23,7 @@ import { getLevelProgress } from "@/constants/levels";
 
 type TabId = "overview" | "evolution" | "arena" | "shop" | "certifications" | "notes" | "history" | "settings";
 
-interface Tab {
-  id: TabId;
-  label: string;
-  icon: typeof User;
-}
-
-const tabs: Tab[] = [
+const sidebarItems: SidebarItem[] = [
   { id: "overview", label: "Visão Geral", icon: User },
   { id: "evolution", label: "Evolução", icon: TrendingUp },
   { id: "notes", label: "Anotações", icon: StickyNote },
@@ -45,6 +40,7 @@ export function ProfileLayout() {
   const { level, xp, levelInfo } = useLevel();
   const { highestRole } = useRoles();
   const [activeTab, setActiveTab] = useState<TabId>("overview");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const xpProgress = getLevelProgress(xp, level);
   const xpForNextLevel = levelInfo.xpRequired;
@@ -67,6 +63,10 @@ export function ProfileLayout() {
       </div>
     );
   }
+
+  const handleTabChange = (id: string) => {
+    setActiveTab(id as TabId);
+  };
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -92,25 +92,37 @@ export function ProfileLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-background mesh-background">
+    <div className="min-h-screen bg-background mesh-background flex flex-col">
       {/* Header */}
       <header className="sticky top-0 z-40 glass border-b border-border/40">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => navigate("/app")}
-            className="gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Voltar
-          </Button>
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => navigate("/app")}
+              className="gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">Voltar</span>
+            </Button>
+            
+            {/* Mobile menu toggle */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
+              onClick={() => setMobileMenuOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+          </div>
           
           <div className="flex items-center gap-2">
             {isMaster && (
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/30">
-                <Crown className="h-3.5 w-3.5 text-amber-500" />
-                <span className="text-xs font-medium text-amber-600 dark:text-amber-400">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 border border-primary/30">
+                <Crown className="h-3.5 w-3.5 text-primary" />
+                <span className="text-xs font-medium text-primary">
                   Master
                 </span>
               </div>
@@ -124,59 +136,53 @@ export function ProfileLayout() {
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-6 space-y-6">
-        {/* Profile Header Card */}
-        <ProfileHeader 
-          profile={profile}
-          level={level}
-          currentXP={currentXP}
-          xpForNextLevel={xpForNextLevel}
-          xpProgress={xpProgress}
-          isMaster={isMaster}
-          isAdmin={isAdmin}
+      <div className="flex flex-1 max-w-7xl mx-auto w-full">
+        {/* Sidebar */}
+        <AppSidebar
+          items={sidebarItems}
+          activeItem={activeTab}
+          onItemChange={handleTabChange}
+          title="Meu Perfil"
         />
 
-        {/* Tabs Navigation */}
-        <div className="surface p-1.5 overflow-x-auto">
-          <nav className="flex gap-1 min-w-max">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`
-                    flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium
-                    transition-all duration-200
-                    ${isActive 
-                      ? "bg-primary text-primary-foreground shadow-sm" 
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                    }
-                  `}
-                >
-                  <Icon className="h-4 w-4" />
-                  <span className="hidden sm:inline">{tab.label}</span>
-                </button>
-              );
-            })}
-          </nav>
-        </div>
+        {/* Mobile Sidebar */}
+        <MobileSidebar
+          items={sidebarItems}
+          activeItem={activeTab}
+          onItemChange={handleTabChange}
+          title="Meu Perfil"
+          isOpen={mobileMenuOpen}
+          onClose={() => setMobileMenuOpen(false)}
+        />
 
-        {/* Tab Content */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-          >
-            {renderTabContent()}
-          </motion.div>
-        </AnimatePresence>
-      </main>
+        {/* Main Content */}
+        <main className="flex-1 p-4 md:p-6 space-y-6 overflow-auto">
+          {/* Profile Header Card - Compact version */}
+          <ProfileHeader 
+            profile={profile}
+            level={level}
+            currentXP={currentXP}
+            xpForNextLevel={xpForNextLevel}
+            xpProgress={xpProgress}
+            isMaster={isMaster}
+            isAdmin={isAdmin}
+          />
+
+          {/* Tab Content */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.2 }}
+              className="min-h-[400px]"
+            >
+              {renderTabContent()}
+            </motion.div>
+          </AnimatePresence>
+        </main>
+      </div>
     </div>
   );
 }
