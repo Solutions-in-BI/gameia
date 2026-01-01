@@ -65,7 +65,7 @@ export function useJourneyProgress(journeyId?: string) {
             training_id,
             order_index,
             is_required,
-            trainings (
+            trainings:trainings!journey_trainings_training_id_fkey (
               id,
               name
             )

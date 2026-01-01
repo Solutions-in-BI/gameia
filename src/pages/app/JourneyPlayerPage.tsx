@@ -95,7 +95,7 @@ export default function JourneyPlayerPage() {
           .select(`
             training_id,
             order_index,
-            trainings (
+            trainings:trainings!journey_trainings_training_id_fkey (
               id,
               name,
               description,
