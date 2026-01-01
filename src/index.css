@@ -5,46 +5,45 @@
 @layer base {
   :root {
     /*
-      GAMEIA PREMIUM THEME
-      - Clean, enterprise-grade aesthetic
-      - Refined blue primary with subtle warmth
-      - Sophisticated neutral palette
-      - Fintech/SaaS inspired
+      GAMEIA HONEY & CHARCOAL THEME
+      - Sofisticado e chic com amarelo mel
+      - Carvão elegante como base
+      - Premium e atemporal
     */
-    --background: 220 20% 98%;
-    --foreground: 222 47% 11%;
+    --background: 40 20% 98%;
+    --foreground: 30 10% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --card-hover: 220 25% 97%;
+    --card-foreground: 30 10% 15%;
+    --card-hover: 40 15% 96%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 30 10% 15%;
 
-    /* Primary - Refined blue */
-    --primary: 217 91% 60%;
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 217 91% 70%;
-    --primary-muted: 217 91% 95%;
+    /* Primary - Honey Gold */
+    --primary: 42 92% 50%;
+    --primary-foreground: 30 10% 10%;
+    --primary-glow: 42 92% 60%;
+    --primary-muted: 42 60% 94%;
 
-    /* Secondary - Warm teal */
-    --secondary: 172 66% 50%;
-    --secondary-foreground: 0 0% 100%;
+    /* Secondary - Warm Charcoal */
+    --secondary: 30 10% 25%;
+    --secondary-foreground: 40 20% 98%;
 
-    /* Muted - Sophisticated neutrals */
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;
+    /* Muted - Cream neutrals */
+    --muted: 40 15% 94%;
+    --muted-foreground: 30 8% 45%;
 
-    /* Accent - Vibrant violet */
-    --accent: 258 90% 66%;
-    --accent-foreground: 0 0% 100%;
+    /* Accent - Amber */
+    --accent: 35 100% 55%;
+    --accent-foreground: 30 10% 10%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 217 91% 60%;
+    --border: 40 15% 88%;
+    --input: 40 15% 88%;
+    --ring: 42 92% 50%;
 
     --radius: 0.75rem;
 
@@ -52,93 +51,93 @@
     --gameia-success: 160 84% 39%;
     --gameia-warning: 38 92% 50%;
     --gameia-info: 199 89% 48%;
-    --gameia-purple: 258 90% 66%;
-    --gameia-teal: 172 66% 50%;
+    --gameia-purple: 30 10% 25%;
+    --gameia-teal: 35 100% 55%;
 
-    /* Pillar Colors */
-    --pillar-curriculum: 217 91% 60%;
-    --pillar-gamification: 172 66% 50%;
-    --pillar-guidance: 258 90% 66%;
+    /* Pillar Colors - Honey variations */
+    --pillar-curriculum: 42 92% 50%;
+    --pillar-gamification: 35 100% 55%;
+    --pillar-guidance: 30 10% 25%;
 
     /* Premium Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(199 89% 48%));
-    --gradient-secondary: linear-gradient(135deg, hsl(172 66% 50%), hsl(199 89% 48%));
-    --gradient-accent: linear-gradient(135deg, hsl(258 90% 66%), hsl(217 91% 60%));
-    --gradient-surface: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(220 20% 98%) 100%);
-    --gradient-glow: radial-gradient(ellipse at center, hsl(217 91% 60% / 0.15) 0%, transparent 70%);
+    --gradient-primary: linear-gradient(135deg, hsl(42 92% 50%), hsl(35 100% 55%));
+    --gradient-secondary: linear-gradient(135deg, hsl(30 10% 25%), hsl(30 10% 35%));
+    --gradient-accent: linear-gradient(135deg, hsl(35 100% 55%), hsl(42 92% 50%));
+    --gradient-surface: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(40 20% 98%) 100%);
+    --gradient-glow: radial-gradient(ellipse at center, hsl(42 92% 50% / 0.15) 0%, transparent 70%);
     --gradient-mesh:
-      radial-gradient(at 40% 20%, hsl(217 91% 60% / 0.04) 0px, transparent 50%),
-      radial-gradient(at 80% 0%, hsl(258 90% 66% / 0.03) 0px, transparent 50%),
-      radial-gradient(at 0% 50%, hsl(172 66% 50% / 0.03) 0px, transparent 50%);
+      radial-gradient(at 40% 20%, hsl(42 92% 50% / 0.06) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, hsl(35 100% 55% / 0.04) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, hsl(30 10% 25% / 0.03) 0px, transparent 50%);
 
     /* Premium Shadows */
-    --shadow-xs: 0 1px 2px hsl(222 47% 11% / 0.03);
-    --shadow-sm: 0 1px 3px hsl(222 47% 11% / 0.04), 0 1px 2px hsl(222 47% 11% / 0.03);
-    --shadow-md: 0 4px 6px -1px hsl(222 47% 11% / 0.05), 0 2px 4px -2px hsl(222 47% 11% / 0.04);
-    --shadow-lg: 0 10px 15px -3px hsl(222 47% 11% / 0.06), 0 4px 6px -4px hsl(222 47% 11% / 0.04);
-    --shadow-xl: 0 20px 25px -5px hsl(222 47% 11% / 0.08), 0 8px 10px -6px hsl(222 47% 11% / 0.04);
-    --shadow-glow: 0 0 20px hsl(217 91% 60% / 0.15);
-    --shadow-glow-strong: 0 0 30px hsl(217 91% 60% / 0.25);
+    --shadow-xs: 0 1px 2px hsl(30 10% 15% / 0.03);
+    --shadow-sm: 0 1px 3px hsl(30 10% 15% / 0.04), 0 1px 2px hsl(30 10% 15% / 0.03);
+    --shadow-md: 0 4px 6px -1px hsl(30 10% 15% / 0.05), 0 2px 4px -2px hsl(30 10% 15% / 0.04);
+    --shadow-lg: 0 10px 15px -3px hsl(30 10% 15% / 0.06), 0 4px 6px -4px hsl(30 10% 15% / 0.04);
+    --shadow-xl: 0 20px 25px -5px hsl(30 10% 15% / 0.08), 0 8px 10px -6px hsl(30 10% 15% / 0.04);
+    --shadow-glow: 0 0 20px hsl(42 92% 50% / 0.2);
+    --shadow-glow-strong: 0 0 30px hsl(42 92% 50% / 0.35);
   }
 
   .dark {
-    --background: 224 71% 4%;
-    --foreground: 213 31% 91%;
+    --background: 30 15% 6%;
+    --foreground: 40 20% 92%;
 
-    --card: 224 71% 7%;
-    --card-foreground: 213 31% 91%;
-    --card-hover: 224 71% 10%;
+    --card: 30 12% 10%;
+    --card-foreground: 40 20% 92%;
+    --card-hover: 30 12% 14%;
 
-    --popover: 224 71% 7%;
-    --popover-foreground: 213 31% 91%;
+    --popover: 30 12% 10%;
+    --popover-foreground: 40 20% 92%;
 
-    /* Primary - Vibrant blue */
-    --primary: 217 91% 65%;
-    --primary-foreground: 224 71% 4%;
-    --primary-glow: 217 91% 75%;
-    --primary-muted: 217 91% 15%;
+    /* Primary - Vibrant Honey */
+    --primary: 42 92% 55%;
+    --primary-foreground: 30 15% 6%;
+    --primary-glow: 42 92% 65%;
+    --primary-muted: 42 40% 15%;
 
-    /* Secondary - Bright teal */
-    --secondary: 172 66% 55%;
-    --secondary-foreground: 224 71% 4%;
+    /* Secondary - Light Charcoal */
+    --secondary: 30 8% 40%;
+    --secondary-foreground: 40 20% 98%;
 
     /* Muted - Dark neutrals */
-    --muted: 223 47% 11%;
-    --muted-foreground: 215 20% 55%;
+    --muted: 30 10% 14%;
+    --muted-foreground: 40 12% 55%;
 
-    /* Accent - Electric violet */
-    --accent: 258 90% 70%;
-    --accent-foreground: 224 71% 4%;
+    /* Accent - Bright Amber */
+    --accent: 35 100% 60%;
+    --accent-foreground: 30 15% 6%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 216 34% 17%;
-    --input: 216 34% 17%;
-    --ring: 217 91% 65%;
+    --border: 30 10% 20%;
+    --input: 30 10% 20%;
+    --ring: 42 92% 55%;
 
     /* Status colors */
     --gameia-success: 160 84% 50%;
     --gameia-warning: 38 92% 58%;
     --gameia-info: 199 89% 58%;
-    --gameia-purple: 258 90% 70%;
-    --gameia-teal: 172 66% 55%;
+    --gameia-purple: 30 8% 50%;
+    --gameia-teal: 35 100% 60%;
 
     /* Pillar Colors */
-    --pillar-curriculum: 217 91% 65%;
-    --pillar-gamification: 172 66% 55%;
-    --pillar-guidance: 258 90% 70%;
+    --pillar-curriculum: 42 92% 55%;
+    --pillar-gamification: 35 100% 60%;
+    --pillar-guidance: 30 8% 50%;
 
     /* Premium Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(217 91% 65%), hsl(199 89% 58%));
-    --gradient-secondary: linear-gradient(135deg, hsl(172 66% 55%), hsl(199 89% 58%));
-    --gradient-accent: linear-gradient(135deg, hsl(258 90% 70%), hsl(217 91% 65%));
-    --gradient-surface: linear-gradient(180deg, hsl(224 71% 9%) 0%, hsl(224 71% 4%) 100%);
-    --gradient-glow: radial-gradient(ellipse at center, hsl(217 91% 65% / 0.15) 0%, transparent 70%);
+    --gradient-primary: linear-gradient(135deg, hsl(42 92% 55%), hsl(35 100% 60%));
+    --gradient-secondary: linear-gradient(135deg, hsl(30 8% 40%), hsl(30 8% 50%));
+    --gradient-accent: linear-gradient(135deg, hsl(35 100% 60%), hsl(42 92% 55%));
+    --gradient-surface: linear-gradient(180deg, hsl(30 12% 12%) 0%, hsl(30 15% 6%) 100%);
+    --gradient-glow: radial-gradient(ellipse at center, hsl(42 92% 55% / 0.15) 0%, transparent 70%);
     --gradient-mesh:
-      radial-gradient(at 40% 20%, hsl(217 91% 65% / 0.08) 0px, transparent 50%),
-      radial-gradient(at 80% 0%, hsl(258 90% 70% / 0.06) 0px, transparent 50%),
-      radial-gradient(at 0% 50%, hsl(172 66% 55% / 0.06) 0px, transparent 50%);
+      radial-gradient(at 40% 20%, hsl(42 92% 55% / 0.1) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, hsl(35 100% 60% / 0.08) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, hsl(30 8% 50% / 0.06) 0px, transparent 50%);
 
     /* Premium Shadows */
     --shadow-xs: 0 1px 2px hsl(0 0% 0% / 0.2);
@@ -146,8 +145,8 @@
     --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.3), 0 2px 4px -2px hsl(0 0% 0% / 0.2);
     --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.35), 0 4px 6px -4px hsl(0 0% 0% / 0.2);
     --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.4), 0 8px 10px -6px hsl(0 0% 0% / 0.25);
-    --shadow-glow: 0 0 20px hsl(217 91% 65% / 0.2);
-    --shadow-glow-strong: 0 0 30px hsl(217 91% 65% / 0.35);
+    --shadow-glow: 0 0 20px hsl(42 92% 55% / 0.25);
+    --shadow-glow-strong: 0 0 30px hsl(42 92% 55% / 0.4);
   }
 }
 
