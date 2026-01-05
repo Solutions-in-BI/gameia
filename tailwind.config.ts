@@ -66,6 +66,15 @@ export default {
           gamification: "hsl(var(--pillar-gamification))",
           guidance: "hsl(var(--pillar-guidance))",
         },
+        tier: {
+          bronze: "hsl(var(--tier-bronze))",
+          silver: "hsl(var(--tier-silver))",
+          gold: "hsl(var(--tier-gold))",
+          platinum: "hsl(var(--tier-platinum))",
+          diamond: "hsl(var(--tier-diamond))",
+          master: "hsl(var(--tier-master))",
+          grandmaster: "hsl(var(--tier-grandmaster))",
+        },
       },
       backgroundImage: {
         "gradient-primary": "var(--gradient-primary)",

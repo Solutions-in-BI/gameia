@@ -5,6 +5,8 @@
  * Fórmula: XP_necessário = level * 100
  */
 
+import { TIER_COLORS, getLevelTier as getColorTier, type TierKey } from "./colors";
+
 export interface LevelInfo {
   level: number;
   xpRequired: number;
@@ -47,30 +49,23 @@ export const LEVEL_TITLES: Record<number, { title: string; icon: string }> = {
   100: { title: "Infinito", icon: "♾️" },
 };
 
-// Cores por faixa de nível
-export const LEVEL_COLORS: Record<string, { color: string; bgColor: string; glowColor: string }> = {
-  bronze: { color: "text-amber-700", bgColor: "bg-amber-700/20", glowColor: "shadow-amber-500/30" },
-  silver: { color: "text-slate-400", bgColor: "bg-slate-400/20", glowColor: "shadow-slate-400/30" },
-  gold: { color: "text-yellow-500", bgColor: "bg-yellow-500/20", glowColor: "shadow-yellow-500/30" },
-  platinum: { color: "text-cyan-400", bgColor: "bg-cyan-400/20", glowColor: "shadow-cyan-400/30" },
-  diamond: { color: "text-purple-400", bgColor: "bg-purple-400/20", glowColor: "shadow-purple-400/30" },
-  master: { color: "text-red-500", bgColor: "bg-red-500/20", glowColor: "shadow-red-500/30" },
-  grandmaster: { color: "text-pink-500", bgColor: "bg-pink-500/20", glowColor: "shadow-pink-500/30" },
-  legendary: { color: "text-orange-400", bgColor: "bg-gradient-to-r from-orange-500/20 to-yellow-500/20", glowColor: "shadow-orange-500/50" },
+// Cores por faixa de nível - usando sistema centralizado
+export const LEVEL_COLORS: Record<TierKey, { color: string; bgColor: string; glowColor: string }> = {
+  bronze: { color: "text-tier-bronze", bgColor: "bg-tier-bronze/20", glowColor: "shadow-[0_0_10px_hsl(var(--tier-bronze)/0.3)]" },
+  silver: { color: "text-tier-silver", bgColor: "bg-tier-silver/20", glowColor: "shadow-[0_0_10px_hsl(var(--tier-silver)/0.3)]" },
+  gold: { color: "text-tier-gold", bgColor: "bg-tier-gold/20", glowColor: "shadow-[0_0_15px_hsl(var(--tier-gold)/0.4)]" },
+  platinum: { color: "text-tier-platinum", bgColor: "bg-tier-platinum/20", glowColor: "shadow-[0_0_18px_hsl(var(--tier-platinum)/0.4)]" },
+  diamond: { color: "text-tier-diamond", bgColor: "bg-tier-diamond/20", glowColor: "shadow-[0_0_20px_hsl(var(--tier-diamond)/0.5)]" },
+  master: { color: "text-tier-master", bgColor: "bg-tier-master/20", glowColor: "shadow-[0_0_25px_hsl(var(--tier-master)/0.5)]" },
+  grandmaster: { color: "text-tier-grandmaster", bgColor: "bg-tier-grandmaster/20", glowColor: "shadow-glow" },
+  legendary: { color: "text-primary", bgColor: "bg-gradient-primary", glowColor: "shadow-glow-strong" },
 };
 
 /**
  * Retorna a faixa de cor baseada no nível
  */
-export function getLevelTier(level: number): keyof typeof LEVEL_COLORS {
-  if (level >= 90) return "legendary";
-  if (level >= 70) return "grandmaster";
-  if (level >= 50) return "master";
-  if (level >= 35) return "diamond";
-  if (level >= 25) return "platinum";
-  if (level >= 15) return "gold";
-  if (level >= 5) return "silver";
-  return "bronze";
+export function getLevelTier(level: number): TierKey {
+  return getColorTier(level);
 }
 
 /**
