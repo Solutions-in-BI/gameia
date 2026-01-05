@@ -287,15 +287,15 @@ export function useBadges() {
     return userBadges.some(ub => ub.badge_id === badgeId);
   }, [userBadges]);
 
-  // Get rarity color
+  // Get rarity color - using centralized color system
   const getRarityColor = useCallback((rarity: string): string => {
     switch (rarity) {
-      case 'common': return 'text-gray-400 border-gray-400/30 bg-gray-400/10';
-      case 'uncommon': return 'text-green-400 border-green-400/30 bg-green-400/10';
-      case 'rare': return 'text-blue-400 border-blue-400/30 bg-blue-400/10';
-      case 'epic': return 'text-purple-400 border-purple-400/30 bg-purple-400/10';
-      case 'legendary': return 'text-amber-400 border-amber-400/30 bg-amber-400/10';
-      default: return 'text-gray-400 border-gray-400/30 bg-gray-400/10';
+      case 'common': return 'text-muted-foreground border-border/30 bg-muted/10';
+      case 'uncommon': return 'text-gameia-success border-gameia-success/30 bg-gameia-success/10';
+      case 'rare': return 'text-gameia-info border-gameia-info/30 bg-gameia-info/10';
+      case 'epic': return 'text-secondary-foreground border-secondary/30 bg-secondary/10';
+      case 'legendary': return 'text-primary border-primary/30 bg-primary/10';
+      default: return 'text-muted-foreground border-border/30 bg-muted/10';
     }
   }, []);
 

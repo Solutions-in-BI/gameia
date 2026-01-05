@@ -198,9 +198,9 @@ export const AIReflectionStep: React.FC<AIReflectionStepProps> = ({
 
   const getDepthColor = (depth: string | null) => {
     switch (depth) {
-      case 'deep': return 'text-green-600 bg-green-50 border-green-200';
-      case 'moderate': return 'text-amber-600 bg-amber-50 border-amber-200';
-      case 'superficial': return 'text-red-600 bg-red-50 border-red-200';
+      case 'deep': return 'text-gameia-success bg-gameia-success/10 border-gameia-success/20';
+      case 'moderate': return 'text-gameia-warning bg-gameia-warning/10 border-gameia-warning/20';
+      case 'superficial': return 'text-destructive bg-destructive/10 border-destructive/20';
       default: return 'text-muted-foreground bg-muted';
     }
   };
@@ -221,15 +221,15 @@ export const AIReflectionStep: React.FC<AIReflectionStepProps> = ({
       className="space-y-6"
     >
       {/* Header */}
-      <Card className="border-l-4 border-l-purple-500 bg-gradient-to-r from-purple-500/5 to-transparent">
+      <Card className="border-l-4 border-l-secondary bg-gradient-to-r from-secondary/5 to-transparent">
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-purple-500/10 rounded-xl">
-                <Brain className="w-6 h-6 text-purple-500" />
+              <div className="p-3 bg-secondary/10 rounded-xl">
+                <Brain className="w-6 h-6 text-secondary-foreground" />
               </div>
               <div>
-                <Badge variant="secondary" className="mb-1 bg-purple-100 text-purple-700">
+                <Badge variant="secondary" className="mb-1">
                   Reflexão com IA
                 </Badge>
                 <CardTitle className="text-xl">

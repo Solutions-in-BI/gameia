@@ -50,13 +50,13 @@ interface HubOverviewProps {
 }
 
 const SOURCE_CONFIG: Record<SourceType, { label: string; icon: typeof Brain; color: string }> = {
-  game: { label: "Jogo", icon: Zap, color: "text-yellow-500" },
-  cognitive_test: { label: "Teste Mental", icon: Brain, color: "text-purple-500" },
-  feedback_360: { label: "Feedback", icon: Users, color: "text-blue-500" },
-  pdi_goal: { label: "Meta PDI", icon: Target, color: "text-green-500" },
-  one_on_one: { label: "1:1", icon: Calendar, color: "text-orange-500" },
-  training: { label: "Treinamento", icon: Award, color: "text-pink-500" },
-  challenge: { label: "Desafio", icon: Sparkles, color: "text-cyan-500" },
+  game: { label: "Jogo", icon: Zap, color: "text-primary" },
+  cognitive_test: { label: "Teste Mental", icon: Brain, color: "text-secondary-foreground" },
+  feedback_360: { label: "Feedback", icon: Users, color: "text-gameia-info" },
+  pdi_goal: { label: "Meta PDI", icon: Target, color: "text-gameia-success" },
+  one_on_one: { label: "1:1", icon: Calendar, color: "text-accent" },
+  training: { label: "Treinamento", icon: Award, color: "text-primary" },
+  challenge: { label: "Desafio", icon: Sparkles, color: "text-gameia-teal" },
 };
 
 export function HubOverview({ onNavigate }: HubOverviewProps) {
@@ -225,21 +225,21 @@ export function HubOverview({ onNavigate }: HubOverviewProps) {
           label="Missões Hoje"
           value={`${completedCount}/${totalCount}`}
           icon={ListChecks}
-          iconColor="text-green-500"
+          iconColor="text-gameia-success"
           onClick={() => {}}
         />
         <HubStat
           label="Streak Atual"
           value={`${streak.currentStreak} dias`}
           icon={Flame}
-          iconColor="text-orange-500"
+          iconColor="text-accent"
           onClick={() => {}}
         />
         <HubStat
           label="Insígnias"
           value={`${unlockedInsignias}/${insignias.length}`}
           icon={Award}
-          iconColor="text-purple-500"
+          iconColor="text-secondary-foreground"
           onClick={() => onNavigate("evolution")}
         />
         <HubStat
