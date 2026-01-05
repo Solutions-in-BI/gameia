@@ -59,6 +59,15 @@
     --pillar-gamification: 35 100% 55%;
     --pillar-guidance: 30 10% 25%;
 
+    /* Tier/Level Colors - Honey & Charcoal based */
+    --tier-bronze: 30 40% 45%;
+    --tier-silver: 30 8% 55%;
+    --tier-gold: 42 92% 50%;
+    --tier-platinum: 35 100% 55%;
+    --tier-diamond: 199 89% 48%;
+    --tier-master: 0 84% 60%;
+    --tier-grandmaster: 42 92% 55%;
+
     /* Premium Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(42 92% 50%), hsl(35 100% 55%));
     --gradient-secondary: linear-gradient(135deg, hsl(30 10% 25%), hsl(30 10% 35%));
@@ -127,6 +136,15 @@
     --pillar-curriculum: 42 92% 55%;
     --pillar-gamification: 35 100% 60%;
     --pillar-guidance: 30 8% 50%;
+
+    /* Tier/Level Colors - Dark mode */
+    --tier-bronze: 30 40% 50%;
+    --tier-silver: 30 8% 60%;
+    --tier-gold: 42 92% 55%;
+    --tier-platinum: 35 100% 60%;
+    --tier-diamond: 199 89% 58%;
+    --tier-master: 0 84% 60%;
+    --tier-grandmaster: 42 92% 60%;
 
     /* Premium Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(42 92% 55%), hsl(35 100% 60%));
