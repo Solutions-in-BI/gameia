@@ -37,18 +37,18 @@ import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 const typeIcons: Record<string, React.ReactNode> = {
-  gift: <Gift className="w-4 h-4 text-pink-500" />,
-  friend_request: <UserPlus className="w-4 h-4 text-blue-500" />,
-  invite_accepted: <Building2 className="w-4 h-4 text-green-500" />,
+  gift: <Gift className="w-4 h-4 text-accent" />,
+  friend_request: <UserPlus className="w-4 h-4 text-gameia-info" />,
+  invite_accepted: <Building2 className="w-4 h-4 text-gameia-success" />,
   invite_used: <Building2 className="w-4 h-4 text-primary" />,
-  achievement: <Trophy className="w-4 h-4 text-yellow-500" />,
-  challenge: <Target className="w-4 h-4 text-orange-500" />,
+  achievement: <Trophy className="w-4 h-4 text-primary" />,
+  challenge: <Target className="w-4 h-4 text-accent" />,
   // Novos tipos de avaliação
-  assessment_suggestion: <Sparkles className="w-4 h-4 text-purple-500" />,
-  assessment_completed: <ClipboardCheck className="w-4 h-4 text-green-500" />,
-  pdi_goal_due: <AlertCircle className="w-4 h-4 text-orange-500" />,
-  team_assessment: <Users className="w-4 h-4 text-blue-500" />,
-  feedback_request: <Brain className="w-4 h-4 text-indigo-500" />,
+  assessment_suggestion: <Sparkles className="w-4 h-4 text-secondary-foreground" />,
+  assessment_completed: <ClipboardCheck className="w-4 h-4 text-gameia-success" />,
+  pdi_goal_due: <AlertCircle className="w-4 h-4 text-gameia-warning" />,
+  team_assessment: <Users className="w-4 h-4 text-gameia-info" />,
+  feedback_request: <Brain className="w-4 h-4 text-secondary-foreground" />,
 };
 
 function NotificationItem({
@@ -109,7 +109,7 @@ function NotificationItem({
             <Badge variant="destructive" className="text-[10px] h-4 px-1">Urgente</Badge>
           )}
           {priority === 'high' && (
-            <Badge variant="outline" className="text-[10px] h-4 px-1 border-orange-500 text-orange-500">Alta</Badge>
+            <Badge variant="outline" className="text-[10px] h-4 px-1 border-gameia-warning text-gameia-warning">Alta</Badge>
           )}
         </div>
         {notification.message && (

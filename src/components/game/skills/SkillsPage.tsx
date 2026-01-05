@@ -29,11 +29,11 @@ import {
 import { differenceInDays } from "date-fns";
 
 const CATEGORY_CONFIG: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
-  comunicacao: { label: "Comunicação", icon: <Sparkles className="w-4 h-4" />, color: "text-cyan-400" },
-  lideranca: { label: "Liderança", icon: <Target className="w-4 h-4" />, color: "text-pink-400" },
-  tecnico: { label: "Técnico", icon: <Zap className="w-4 h-4" />, color: "text-purple-400" },
-  vendas: { label: "Vendas", icon: <TrendingUp className="w-4 h-4" />, color: "text-green-400" },
-  analise: { label: "Análise", icon: <Award className="w-4 h-4" />, color: "text-amber-400" },
+  comunicacao: { label: "Comunicação", icon: <Sparkles className="w-4 h-4" />, color: "text-gameia-info" },
+  lideranca: { label: "Liderança", icon: <Target className="w-4 h-4" />, color: "text-accent" },
+  tecnico: { label: "Técnico", icon: <Zap className="w-4 h-4" />, color: "text-secondary-foreground" },
+  vendas: { label: "Vendas", icon: <TrendingUp className="w-4 h-4" />, color: "text-gameia-success" },
+  analise: { label: "Análise", icon: <Award className="w-4 h-4" />, color: "text-primary" },
 };
 
 export function SkillsPage() {
@@ -117,7 +117,7 @@ export function SkillsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
+          <h1 className="text-2xl font-bold text-gradient">
             Minhas Habilidades
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -142,12 +142,12 @@ export function SkillsPage() {
 
       {/* Stagnation Alert */}
       {stagnantSkills.length > 0 && (
-        <Card className="border-amber-500/30 bg-amber-500/5">
+        <Card className="border-gameia-warning/30 bg-gameia-warning/5">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+              <AlertCircle className="w-5 h-5 text-gameia-warning shrink-0 mt-0.5" />
               <div className="flex-1">
-                <p className="font-medium text-amber-600 dark:text-amber-400">
+                <p className="font-medium text-gameia-warning">
                   {stagnantSkills.length} skill{stagnantSkills.length > 1 ? "s" : ""} estagnada{stagnantSkills.length > 1 ? "s" : ""}
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
@@ -158,7 +158,7 @@ export function SkillsPage() {
               <Button 
                 variant="outline" 
                 size="sm"
-                className="shrink-0 border-amber-500/30 text-amber-600 hover:bg-amber-500/10"
+                className="shrink-0 border-gameia-warning/30 text-gameia-warning hover:bg-gameia-warning/10"
                 onClick={() => setSelectedSkill(stagnantSkills[0])}
               >
                 Ver sugestões
@@ -172,28 +172,28 @@ export function SkillsPage() {
       {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard
-          icon={<Target className="w-5 h-5 text-cyan-400" />}
+          icon={<Target className="w-5 h-5 text-gameia-info" />}
           label="Desbloqueadas"
           value={`${unlockedSkills}/${totalSkills}`}
-          color="cyan"
+          color="gameia-info"
         />
         <StatCard
-          icon={<Award className="w-5 h-5 text-purple-400" />}
+          icon={<Award className="w-5 h-5 text-secondary-foreground" />}
           label="Maestria"
           value={masteredSkills.toString()}
-          color="purple"
+          color="secondary"
         />
         <StatCard
-          icon={<Zap className="w-5 h-5 text-amber-400" />}
+          icon={<Zap className="w-5 h-5 text-primary" />}
           label="XP Total"
           value={totalXP.toLocaleString()}
-          color="amber"
+          color="primary"
         />
         <StatCard
-          icon={<TrendingUp className="w-5 h-5 text-green-400" />}
+          icon={<TrendingUp className="w-5 h-5 text-gameia-success" />}
           label="Progresso"
           value={`${Math.round((unlockedSkills / totalSkills) * 100)}%`}
-          color="green"
+          color="gameia-success"
         />
       </div>
 
@@ -229,7 +229,7 @@ export function SkillsPage() {
                         <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
                           <span>Nível {skill.userProgress?.current_level || 1}</span>
                           {daysSince !== null && daysSince >= 14 && (
-                            <Badge variant="outline" className="text-amber-500 text-[10px]">
+                            <Badge variant="outline" className="text-gameia-warning text-[10px]">
                               <Clock className="w-3 h-3 mr-1" />
                               {daysSince}d sem atividade
                             </Badge>
@@ -363,7 +363,7 @@ function SkillCard({
       <div className="mt-3 space-y-2">
         <div className="flex items-center justify-between text-xs">
           <span className="text-muted-foreground">Nível {level}</span>
-          <span className={cn("font-medium", mastery >= 5 ? "text-amber-400" : "text-foreground")}>
+          <span className={cn("font-medium", mastery >= 5 ? "text-primary" : "text-foreground")}>
             ⭐ {mastery}/5
           </span>
         </div>
