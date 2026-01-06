@@ -1,6 +1,8 @@
 /**
  * Componentes de Feedback Visual
  * Toasts, alerts e estados de sucesso/erro animados
+ * 
+ * Paleta: Honey & Charcoal - usando cores centralizadas
  */
 
 import { motion, AnimatePresence } from "framer-motion";
@@ -15,6 +17,7 @@ import {
   Star
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { REWARD_COLORS, STATUS_COLORS } from "@/constants/colors";
 
 // Success State Animation
 export function SuccessAnimation({ 
@@ -40,14 +43,14 @@ export function SuccessAnimation({
         initial={{ scale: 0 }}
         animate={{ scale: [0, 1.2, 1] }}
         transition={{ duration: 0.5, times: [0, 0.6, 1] }}
-        className="w-20 h-20 rounded-full bg-emerald-500/20 flex items-center justify-center"
+        className={cn("w-20 h-20 rounded-full flex items-center justify-center", STATUS_COLORS.success.bgSubtle)}
       >
         <motion.div
           initial={{ pathLength: 0 }}
           animate={{ pathLength: 1 }}
           transition={{ duration: 0.3, delay: 0.2 }}
         >
-          <CheckCircle2 className="w-12 h-12 text-emerald-500" />
+          <CheckCircle2 className={cn("w-12 h-12", STATUS_COLORS.success.text)} />
         </motion.div>
       </motion.div>
       <motion.p 
@@ -82,18 +85,13 @@ interface RewardAnimationProps {
 
 export function RewardAnimation({ type, amount, label, onComplete }: RewardAnimationProps) {
   const icons = {
-    xp: <Star className="w-8 h-8 text-amber-400" />,
-    coins: <Coins className="w-8 h-8 text-yellow-400" />,
-    badge: <Trophy className="w-8 h-8 text-purple-400" />,
-    achievement: <Sparkles className="w-8 h-8 text-cyan-400" />,
+    xp: <Star className={cn("w-8 h-8", REWARD_COLORS.xp.icon)} />,
+    coins: <Coins className={cn("w-8 h-8", REWARD_COLORS.coins.icon)} />,
+    badge: <Trophy className={cn("w-8 h-8", REWARD_COLORS.badge.icon)} />,
+    achievement: <Sparkles className={cn("w-8 h-8", REWARD_COLORS.achievement.icon)} />,
   };
 
-  const colors = {
-    xp: "from-amber-500/20 to-orange-500/20 border-amber-500/30",
-    coins: "from-yellow-500/20 to-amber-500/20 border-yellow-500/30",
-    badge: "from-purple-500/20 to-pink-500/20 border-purple-500/30",
-    achievement: "from-cyan-500/20 to-blue-500/20 border-cyan-500/30",
-  };
+  const colors = REWARD_COLORS[type];
 
   return (
     <motion.div
@@ -106,7 +104,8 @@ export function RewardAnimation({ type, amount, label, onComplete }: RewardAnima
       className={cn(
         "flex items-center gap-3 px-4 py-3 rounded-xl border",
         "bg-gradient-to-r backdrop-blur-sm",
-        colors[type]
+        colors.gradient,
+        colors.border
       )}
     >
       <motion.div
@@ -154,24 +153,24 @@ export function FloatingNotification({
 }: FloatingNotificationProps) {
   const variants = {
     success: {
-      bg: "bg-emerald-500/10 border-emerald-500/30",
-      icon: <CheckCircle2 className="w-5 h-5 text-emerald-500" />,
+      bg: cn(STATUS_COLORS.success.bgSubtle, STATUS_COLORS.success.border),
+      icon: <CheckCircle2 className={cn("w-5 h-5", STATUS_COLORS.success.text)} />,
     },
     warning: {
-      bg: "bg-amber-500/10 border-amber-500/30",
-      icon: <AlertCircle className="w-5 h-5 text-amber-500" />,
+      bg: cn(STATUS_COLORS.warning.bgSubtle, STATUS_COLORS.warning.border),
+      icon: <AlertCircle className={cn("w-5 h-5", STATUS_COLORS.warning.text)} />,
     },
     error: {
-      bg: "bg-rose-500/10 border-rose-500/30",
-      icon: <XCircle className="w-5 h-5 text-rose-500" />,
+      bg: cn(STATUS_COLORS.error.bgSubtle, STATUS_COLORS.error.border),
+      icon: <XCircle className={cn("w-5 h-5", STATUS_COLORS.error.text)} />,
     },
     info: {
-      bg: "bg-blue-500/10 border-blue-500/30",
-      icon: <Info className="w-5 h-5 text-blue-500" />,
+      bg: cn(STATUS_COLORS.info.bgSubtle, STATUS_COLORS.info.border),
+      icon: <Info className={cn("w-5 h-5", STATUS_COLORS.info.text)} />,
     },
     reward: {
-      bg: "bg-gradient-to-r from-amber-500/10 to-purple-500/10 border-amber-500/30",
-      icon: <Sparkles className="w-5 h-5 text-amber-400" />,
+      bg: cn("bg-gradient-to-r", REWARD_COLORS.streak.gradient, REWARD_COLORS.streak.border),
+      icon: <Sparkles className={cn("w-5 h-5", REWARD_COLORS.streak.icon)} />,
     },
   };
 
@@ -221,9 +220,9 @@ export function PulseHighlight({
 }) {
   const colors = {
     primary: "ring-primary/50",
-    success: "ring-emerald-500/50",
-    warning: "ring-amber-500/50",
-    error: "ring-rose-500/50",
+    success: "ring-gameia-success/50",
+    warning: "ring-gameia-warning/50",
+    error: "ring-destructive/50",
   };
 
   return (

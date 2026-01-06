@@ -1,6 +1,8 @@
 /**
  * StreakModal - Modal de streak diário
  * Aparece 1x ao dia para mostrar recompensas de streak
+ * 
+ * Paleta: Honey & Charcoal - usando cores centralizadas
  */
 
 import { useEffect, useState } from "react";
@@ -8,6 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Flame, Gift, Zap, X, Coins, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { REWARD_COLORS, STATUS_COLORS } from "@/constants/colors";
 
 // Recompensas por dia de streak
 const STREAK_REWARDS = [
@@ -60,11 +63,11 @@ export function StreakModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md p-0 overflow-hidden bg-gradient-to-br from-orange-950/90 via-background to-red-950/90 border-orange-500/30">
+      <DialogContent className="sm:max-w-md p-0 overflow-hidden bg-gradient-to-br from-primary/20 via-background to-accent/20 border-primary/30">
         <DialogTitle className="sr-only">Streak Diário</DialogTitle>
         
         {/* Background glow */}
-        <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 to-red-500/20 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-accent/10 pointer-events-none" />
         
         {/* Close button */}
         <button
@@ -85,8 +88,8 @@ export function StreakModal({
               }}
               transition={{ duration: 1, repeat: Infinity, repeatDelay: 1 }}
             >
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center shadow-2xl shadow-orange-500/50">
-                <Flame className="w-10 h-10 text-white" />
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-2xl shadow-primary/50">
+                <Flame className="w-10 h-10 text-primary-foreground" />
               </div>
             </motion.div>
             
@@ -101,7 +104,7 @@ export function StreakModal({
           {/* Streak counter */}
           <div className="flex items-center justify-center gap-8">
             <div className="text-center">
-              <div className="text-4xl font-bold bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">
+              <div className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                 {currentStreak}
               </div>
               <div className="text-xs text-muted-foreground uppercase tracking-wide">
@@ -134,9 +137,9 @@ export function StreakModal({
                   className={cn(
                     "relative aspect-square rounded-xl flex flex-col items-center justify-center text-xs font-bold transition-all",
                     isCompleted
-                      ? "bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/30"
+                      ? "bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg shadow-primary/30"
                       : isCurrent && canClaim
-                        ? "bg-orange-500/20 border-2 border-orange-500 text-orange-400"
+                        ? "bg-primary/20 border-2 border-primary text-primary"
                         : "bg-muted/30 text-muted-foreground"
                   )}
                   whileHover={{ scale: 1.05 }}
@@ -161,7 +164,7 @@ export function StreakModal({
                   {/* Bonus indicator */}
                   {isBonus && (
                     <motion.div
-                      className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-500 rounded-full"
+                      className="absolute -top-1 -right-1 w-3 h-3 bg-accent rounded-full"
                       animate={isCompleted ? { scale: [1, 1.3, 1] } : {}}
                       transition={{ duration: 0.5, repeat: Infinity }}
                     />
@@ -178,16 +181,16 @@ export function StreakModal({
             </div>
             <div className="flex items-center justify-center gap-6">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-yellow-500/20 flex items-center justify-center">
-                  <Coins className="w-4 h-4 text-yellow-400" />
+                <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", REWARD_COLORS.coins.bgSubtle)}>
+                  <Coins className={cn("w-4 h-4", REWARD_COLORS.coins.icon)} />
                 </div>
                 <span className="font-bold text-lg text-foreground">
                   +{todayReward.coins}
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-cyan-400" />
+                <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", REWARD_COLORS.xp.bgSubtle)}>
+                  <Sparkles className={cn("w-4 h-4", REWARD_COLORS.xp.icon)} />
                 </div>
                 <span className="font-bold text-lg text-foreground">
                   +{todayReward.xp} XP
@@ -201,14 +204,14 @@ export function StreakModal({
             <motion.button
               onClick={handleClaim}
               disabled={isClaiming}
-              className="w-full py-4 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-bold text-lg flex items-center justify-center gap-2 shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 transition-all disabled:opacity-70"
+              className="w-full py-4 bg-gradient-to-r from-primary to-accent text-primary-foreground rounded-xl font-bold text-lg flex items-center justify-center gap-2 shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all disabled:opacity-70"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
               {isClaiming ? (
                 <>
                   <motion.div
-                    className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
+                    className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full"
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                   />
@@ -225,7 +228,13 @@ export function StreakModal({
             <motion.div
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="w-full py-4 bg-green-500/20 border border-green-500/50 text-green-400 rounded-xl font-bold text-lg flex items-center justify-center gap-2"
+              className={cn(
+                "w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2",
+                STATUS_COLORS.success.bgSubtle,
+                "border",
+                STATUS_COLORS.success.border,
+                STATUS_COLORS.success.text
+              )}
             >
               <motion.span
                 animate={{ scale: [1, 1.2, 1] }}
@@ -244,7 +253,7 @@ export function StreakModal({
           {/* Risk warning */}
           {isAtRisk && (
             <motion.div
-              className="text-center text-sm text-red-400 font-medium"
+              className={cn("text-center text-sm font-medium", STATUS_COLORS.error.text)}
               animate={{ opacity: [1, 0.5, 1] }}
               transition={{ duration: 1, repeat: Infinity }}
             >

@@ -1,6 +1,13 @@
+/**
+ * TrailBadge / InsigniaBadge - Badge visual para insígnias e trilhas
+ * 
+ * Paleta: Honey & Charcoal - usando cores centralizadas
+ */
+
 import { motion } from "framer-motion";
 import { Star, Rocket, Shield, Award, Crown, Zap, Target, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DIFFICULTY_COLORS, getDifficultyColors, type DifficultyKey } from "@/constants/colors";
 
 interface InsigniaBadgeProps {
   icon: string;
@@ -13,44 +20,10 @@ interface InsigniaBadgeProps {
   onClick?: () => void;
 }
 
-const difficultyColors: Record<string, { bg: string; border: string; glow: string }> = {
-  beginner: { 
-    bg: "from-emerald-500 to-emerald-600", 
-    border: "border-emerald-400",
-    glow: "shadow-emerald-500/50"
-  },
-  intermediate: { 
-    bg: "from-violet-500 to-purple-600", 
-    border: "border-violet-400",
-    glow: "shadow-violet-500/50"
-  },
-  advanced: { 
-    bg: "from-amber-500 to-orange-600", 
-    border: "border-amber-400",
-    glow: "shadow-amber-500/50"
-  },
-  expert: { 
-    bg: "from-rose-500 to-red-600", 
-    border: "border-rose-400",
-    glow: "shadow-rose-500/50"
-  },
-};
-
 const sizeClasses = {
   sm: "w-14 h-14 text-lg",
   md: "w-20 h-20 text-2xl",
   lg: "w-28 h-28 text-4xl",
-};
-
-const shapeStyles: Record<string, string> = {
-  star: "clip-path-star",
-  rocket: "rounded-t-full rounded-b-lg",
-  shield: "rounded-t-lg rounded-b-[50%]",
-  hexagon: "clip-path-hexagon",
-  crown: "rounded-t-lg",
-  bolt: "skew-y-3",
-  target: "rounded-full",
-  trophy: "rounded-t-lg rounded-b-xl",
 };
 
 const ShapeIcon = ({ shape, className }: { shape: string; className?: string }) => {
@@ -77,7 +50,7 @@ export function InsigniaBadge({
   showGlow = false,
   onClick 
 }: InsigniaBadgeProps) {
-  const colors = difficultyColors[difficulty || "beginner"];
+  const colors = getDifficultyColors(difficulty || "beginner");
   
   return (
     <motion.div
@@ -104,9 +77,9 @@ export function InsigniaBadge({
           isUnlocked 
             ? cn(
                 "bg-gradient-to-br",
-                colors.bg,
+                colors.gradient,
                 colors.border,
-                showGlow && cn("shadow-xl", colors.glow)
+                showGlow && colors.glow
               )
             : "bg-muted/50 border-muted-foreground/30 grayscale"
         )}
@@ -155,7 +128,7 @@ export function InsigniaBadge({
               shape === "shield" ? "rounded-t-lg rounded-b-[40%]" :
               "rounded-xl",
               "bg-gradient-to-br",
-              colors.bg,
+              colors.gradient,
               "opacity-50"
             )}
             animate={{

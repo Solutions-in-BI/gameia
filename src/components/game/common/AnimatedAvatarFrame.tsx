@@ -6,11 +6,14 @@
  * - Rare: borda azul com brilho
  * - Epic: borda roxa com partículas
  * - Legendary: borda dourada com fogo/raios
+ * 
+ * Paleta: Honey & Charcoal - usando cores centralizadas
  */
 
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { InventoryItem } from "@/hooks/useMarketplace";
+import { FRAME_RARITY_COLORS, type FrameRarityKey } from "@/constants/colors";
 
 interface AnimatedAvatarFrameProps {
   avatarUrl?: string | null;
@@ -30,26 +33,26 @@ const SIZES = {
   xl: "w-32 h-32",
 };
 
-// Estilos por raridade
+// Estilos por raridade com partículas
 const FRAME_STYLES = {
   common: {
-    ring: "ring-2 ring-muted-foreground/50",
+    ring: "ring-2 ring-border",
     glow: "",
     particles: [],
   },
   rare: {
-    ring: "ring-3 ring-blue-500",
-    glow: "shadow-[0_0_15px_rgba(59,130,246,0.5)]",
+    ring: cn("ring-3", FRAME_RARITY_COLORS.rare.ring),
+    glow: FRAME_RARITY_COLORS.rare.glow,
     particles: ["💎", "✨"],
   },
   epic: {
-    ring: "ring-4 ring-purple-500",
-    glow: "shadow-[0_0_25px_rgba(168,85,247,0.6)]",
+    ring: cn("ring-4", FRAME_RARITY_COLORS.epic.ring),
+    glow: FRAME_RARITY_COLORS.epic.glow,
     particles: ["⚡", "💜", "✨", "🔮"],
   },
   legendary: {
-    ring: "ring-4 ring-yellow-400",
-    glow: "shadow-[0_0_35px_rgba(234,179,8,0.7)]",
+    ring: cn("ring-4", FRAME_RARITY_COLORS.legendary.ring),
+    glow: FRAME_RARITY_COLORS.legendary.glow,
     particles: ["🔥", "⚡", "✨", "👑", "💫", "🌟"],
   },
 };
@@ -112,22 +115,19 @@ export function AnimatedAvatarFrame({
         </div>
       )}
 
-      {/* Efeito de fogo para lendário */}
+      {/* Efeito de fogo para lendário - usando cores do sistema */}
       {showAnimations && rarity === "legendary" && (
         <>
-          {/* Anel de fogo */}
+          {/* Anel de fogo usando gradiente primary/accent */}
           <motion.div
-            className="absolute inset-[-8px] rounded-full"
-            style={{
-              background: "conic-gradient(from 0deg, #f59e0b, #ef4444, #f59e0b, #fbbf24, #f59e0b)",
-              filter: "blur(4px)",
-            }}
+            className="absolute inset-[-8px] rounded-full bg-gradient-conic from-primary via-accent to-primary"
+            style={{ filter: "blur(4px)" }}
             animate={{ rotate: 360 }}
             transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
           />
           {/* Pulso de energia */}
           <motion.div
-            className="absolute inset-[-4px] rounded-full bg-yellow-400/30"
+            className="absolute inset-[-4px] rounded-full bg-primary/30"
             animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.6, 0.3] }}
             transition={{ duration: 1.5, repeat: Infinity }}
           />
@@ -138,11 +138,8 @@ export function AnimatedAvatarFrame({
       {showAnimations && rarity === "epic" && (
         <>
           <motion.div
-            className="absolute inset-[-6px] rounded-full"
-            style={{
-              background: "conic-gradient(from 0deg, #a855f7, #6366f1, #a855f7, #c084fc, #a855f7)",
-              filter: "blur(3px)",
-            }}
+            className="absolute inset-[-6px] rounded-full bg-gradient-conic from-secondary via-muted to-secondary"
+            style={{ filter: "blur(3px)" }}
             animate={{ rotate: -360 }}
             transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
           />
@@ -150,7 +147,7 @@ export function AnimatedAvatarFrame({
           {[0, 90, 180, 270].map((angle) => (
             <motion.div
               key={angle}
-              className="absolute w-0.5 h-4 bg-purple-400"
+              className="absolute w-0.5 h-4 bg-secondary-foreground"
               style={{
                 left: "50%",
                 top: "50%",
@@ -167,7 +164,7 @@ export function AnimatedAvatarFrame({
       {/* Efeito brilho para raro */}
       {showAnimations && rarity === "rare" && (
         <motion.div
-          className="absolute inset-[-4px] rounded-full bg-gradient-to-r from-blue-500/0 via-blue-400/50 to-blue-500/0"
+          className="absolute inset-[-4px] rounded-full bg-gradient-to-r from-gameia-info/0 via-gameia-info/50 to-gameia-info/0"
           animate={{ rotate: 360 }}
           transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
         />
@@ -257,7 +254,7 @@ export function CompactAnimatedAvatar({
   rarity?: "common" | "rare" | "epic" | "legendary";
   size?: "sm" | "md";
 }) {
-  const frameStyle = FRAME_STYLES[rarity];
+  const frameColors = FRAME_RARITY_COLORS[rarity as FrameRarityKey];
   const sizeClass = size === "sm" ? "w-8 h-8" : "w-12 h-12";
 
   return (
@@ -266,10 +263,8 @@ export function CompactAnimatedAvatar({
       {rarity !== "common" && (
         <motion.div
           className={cn(
-            "absolute inset-[-2px] rounded-full",
-            rarity === "legendary" && "bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500",
-            rarity === "epic" && "bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500",
-            rarity === "rare" && "bg-gradient-to-r from-blue-500 via-cyan-500 to-blue-500",
+            "absolute inset-[-2px] rounded-full bg-gradient-to-r",
+            frameColors.gradient
           )}
           animate={{ rotate: 360 }}
           transition={{ duration: rarity === "legendary" ? 2 : 4, repeat: Infinity, ease: "linear" }}
@@ -282,10 +277,7 @@ export function CompactAnimatedAvatar({
           "relative rounded-full overflow-hidden flex items-center justify-center",
           sizeClass,
           "ring-2",
-          rarity === "legendary" && "ring-yellow-400",
-          rarity === "epic" && "ring-purple-500",
-          rarity === "rare" && "ring-blue-500",
-          rarity === "common" && "ring-border",
+          frameColors.ring
         )}
       >
         <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20" />

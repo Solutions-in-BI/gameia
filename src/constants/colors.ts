@@ -373,3 +373,270 @@ export function getRarityOrder(rarity: string): number {
   };
   return order[rarity] || 0;
 }
+
+// ============================================
+// CORES DE TIPOS DE CONTEÚDO
+// ============================================
+export const CONTENT_TYPE_COLORS = {
+  training: {
+    gradient: "from-primary to-accent",
+    gradientSubtle: "from-primary/10 to-accent/10",
+    icon: "text-primary",
+    border: "border-primary/30",
+  },
+  journey: {
+    gradient: "from-secondary to-secondary/80",
+    gradientSubtle: "from-secondary/10 to-secondary/5",
+    icon: "text-secondary-foreground",
+    border: "border-secondary/30",
+  },
+  skill: {
+    gradient: "from-accent to-primary",
+    gradientSubtle: "from-accent/10 to-primary/10",
+    icon: "text-accent",
+    border: "border-accent/30",
+  },
+  level: {
+    gradient: "from-gameia-success to-gameia-teal",
+    gradientSubtle: "from-gameia-success/10 to-gameia-teal/10",
+    icon: "text-gameia-success",
+    border: "border-gameia-success/30",
+  },
+  behavioral: {
+    gradient: "from-destructive/80 to-destructive",
+    gradientSubtle: "from-destructive/10 to-destructive/5",
+    icon: "text-destructive",
+    border: "border-destructive/30",
+  },
+} as const;
+
+export type ContentTypeKey = keyof typeof CONTENT_TYPE_COLORS;
+
+// ============================================
+// CORES DE DIFICULDADE
+// ============================================
+export const DIFFICULTY_COLORS = {
+  beginner: {
+    text: "text-gameia-success",
+    bg: "bg-gameia-success",
+    bgSubtle: "bg-gameia-success/10",
+    border: "border-gameia-success/30",
+    gradient: "from-gameia-success to-gameia-teal",
+    glow: "shadow-[0_0_15px_hsl(var(--gameia-success)/0.4)]",
+  },
+  easy: {
+    text: "text-gameia-success",
+    bg: "bg-gameia-success",
+    bgSubtle: "bg-gameia-success/10",
+    border: "border-gameia-success/30",
+    gradient: "from-gameia-success to-gameia-teal",
+    glow: "shadow-[0_0_15px_hsl(var(--gameia-success)/0.4)]",
+  },
+  intermediate: {
+    text: "text-secondary-foreground",
+    bg: "bg-secondary",
+    bgSubtle: "bg-secondary/10",
+    border: "border-secondary/30",
+    gradient: "from-secondary to-muted",
+    glow: "shadow-[0_0_15px_hsl(var(--secondary)/0.4)]",
+  },
+  medium: {
+    text: "text-gameia-warning",
+    bg: "bg-gameia-warning",
+    bgSubtle: "bg-gameia-warning/10",
+    border: "border-gameia-warning/30",
+    gradient: "from-gameia-warning to-accent",
+    glow: "shadow-[0_0_15px_hsl(var(--gameia-warning)/0.4)]",
+  },
+  advanced: {
+    text: "text-primary",
+    bg: "bg-primary",
+    bgSubtle: "bg-primary/10",
+    border: "border-primary/30",
+    gradient: "from-primary to-accent",
+    glow: "shadow-[0_0_15px_hsl(var(--primary)/0.4)]",
+  },
+  hard: {
+    text: "text-destructive",
+    bg: "bg-destructive",
+    bgSubtle: "bg-destructive/10",
+    border: "border-destructive/30",
+    gradient: "from-destructive to-destructive/70",
+    glow: "shadow-[0_0_15px_hsl(var(--destructive)/0.4)]",
+  },
+  expert: {
+    text: "text-destructive",
+    bg: "bg-destructive",
+    bgSubtle: "bg-destructive/10",
+    border: "border-destructive/30",
+    gradient: "from-destructive to-destructive/80",
+    glow: "shadow-[0_0_20px_hsl(var(--destructive)/0.5)]",
+  },
+} as const;
+
+export type DifficultyKey = keyof typeof DIFFICULTY_COLORS;
+
+/**
+ * Retorna cores de dificuldade
+ */
+export function getDifficultyColors(difficulty: string) {
+  const normalized = difficulty?.toLowerCase().replace(/\s+/g, '') || 'beginner';
+  return DIFFICULTY_COLORS[normalized as DifficultyKey] || DIFFICULTY_COLORS.beginner;
+}
+
+// ============================================
+// CORES DE AÇÕES/NEXT STEPS
+// ============================================
+export const ACTION_COLORS = {
+  practice: {
+    text: "text-accent",
+    bg: "bg-accent",
+    bgSubtle: "bg-accent/10",
+    border: "border-accent/30",
+    icon: "text-accent",
+  },
+  mission: {
+    text: "text-gameia-success",
+    bg: "bg-gameia-success",
+    bgSubtle: "bg-gameia-success/10",
+    border: "border-gameia-success/30",
+    icon: "text-gameia-success",
+  },
+  meeting: {
+    text: "text-gameia-info",
+    bg: "bg-gameia-info",
+    bgSubtle: "bg-gameia-info/10",
+    border: "border-gameia-info/30",
+    icon: "text-gameia-info",
+  },
+  reflection: {
+    text: "text-secondary-foreground",
+    bg: "bg-secondary",
+    bgSubtle: "bg-secondary/10",
+    border: "border-secondary/30",
+    icon: "text-secondary-foreground",
+  },
+  goal: {
+    text: "text-primary",
+    bg: "bg-primary",
+    bgSubtle: "bg-primary/10",
+    border: "border-primary/30",
+    icon: "text-primary",
+  },
+} as const;
+
+export type ActionKey = keyof typeof ACTION_COLORS;
+
+// ============================================
+// CORES DE RECOMPENSAS
+// ============================================
+export const REWARD_COLORS = {
+  xp: {
+    text: "text-accent",
+    icon: "text-accent",
+    bg: "bg-accent",
+    bgSubtle: "bg-accent/10",
+    gradient: "from-accent/20 to-primary/20",
+    border: "border-accent/30",
+  },
+  coins: {
+    text: "text-primary",
+    icon: "text-primary",
+    bg: "bg-primary",
+    bgSubtle: "bg-primary/10",
+    gradient: "from-primary/20 to-accent/20",
+    border: "border-primary/30",
+  },
+  badge: {
+    text: "text-secondary-foreground",
+    icon: "text-secondary-foreground",
+    bg: "bg-secondary",
+    bgSubtle: "bg-secondary/10",
+    gradient: "from-secondary/20 to-muted/20",
+    border: "border-secondary/30",
+  },
+  achievement: {
+    text: "text-gameia-info",
+    icon: "text-gameia-info",
+    bg: "bg-gameia-info",
+    bgSubtle: "bg-gameia-info/10",
+    gradient: "from-gameia-info/20 to-accent/20",
+    border: "border-gameia-info/30",
+  },
+  streak: {
+    text: "text-primary",
+    icon: "text-primary",
+    bg: "bg-primary",
+    bgSubtle: "bg-primary/10",
+    gradient: "from-primary to-accent",
+    border: "border-primary/30",
+  },
+} as const;
+
+export type RewardKey = keyof typeof REWARD_COLORS;
+
+// ============================================
+// CORES DE MODOS DE JOGO
+// ============================================
+export const GAME_MODE_COLORS = {
+  beginner: {
+    gradient: "from-gameia-success/20 to-gameia-teal/20",
+    gradientSolid: "from-gameia-success to-gameia-teal",
+    border: "border-gameia-success/50",
+    text: "text-gameia-success",
+  },
+  challenge: {
+    gradient: "from-primary/20 to-accent/20",
+    gradientSolid: "from-primary to-accent",
+    border: "border-primary/50",
+    text: "text-primary",
+  },
+  marathon: {
+    gradient: "from-secondary/20 to-muted/20",
+    gradientSolid: "from-secondary to-muted",
+    border: "border-secondary/50",
+    text: "text-secondary-foreground",
+  },
+  blitz: {
+    gradient: "from-destructive/20 to-accent/20",
+    gradientSolid: "from-destructive to-accent",
+    border: "border-destructive/50",
+    text: "text-destructive",
+  },
+  training: {
+    gradient: "from-gameia-info/20 to-accent/20",
+    gradientSolid: "from-gameia-info to-accent",
+    border: "border-gameia-info/50",
+    text: "text-gameia-info",
+  },
+} as const;
+
+export type GameModeKey = keyof typeof GAME_MODE_COLORS;
+
+// ============================================
+// CORES DE FRAME/AVATAR (Raridade visual)
+// ============================================
+export const FRAME_RARITY_COLORS = {
+  common: {
+    ring: "ring-border",
+    glow: "",
+    gradient: "",
+  },
+  rare: {
+    ring: "ring-gameia-info",
+    glow: "shadow-[0_0_15px_hsl(var(--gameia-info)/0.5)]",
+    gradient: "from-gameia-info via-gameia-teal to-gameia-info",
+  },
+  epic: {
+    ring: "ring-secondary",
+    glow: "shadow-[0_0_25px_hsl(var(--secondary)/0.6)]",
+    gradient: "from-secondary via-muted to-secondary",
+  },
+  legendary: {
+    ring: "ring-primary",
+    glow: "shadow-[0_0_35px_hsl(var(--primary)/0.7)]",
+    gradient: "from-primary via-accent to-primary",
+  },
+} as const;
+
+export type FrameRarityKey = keyof typeof FRAME_RARITY_COLORS;
