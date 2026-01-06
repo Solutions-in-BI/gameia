@@ -1,11 +1,14 @@
 /**
  * Componente de Conquistas/Badges com visual premium
  * Cards com raridade (Common, Rare, Epic, Legendary), ícones e estados locked/unlocked
+ * 
+ * Paleta: Honey & Charcoal - usando cores centralizadas
  */
 
 import { motion } from "framer-motion";
 import { Lock, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { RARITY_COLORS, getRarityColors, type RarityKey } from "@/constants/colors";
 
 export type BadgeRarity = "common" | "rare" | "epic" | "legendary";
 
@@ -24,42 +27,12 @@ interface AchievementsBadgesProps {
   showCount?: boolean;
 }
 
-// Estilos por raridade
-const RARITY_STYLES: Record<BadgeRarity, {
-  label: string;
-  border: string;
-  glow: string;
-  badge: string;
-  text: string;
-}> = {
-  common: {
-    label: "COMMON",
-    border: "border-border/50",
-    glow: "",
-    badge: "bg-muted/50 text-muted-foreground",
-    text: "text-muted-foreground",
-  },
-  rare: {
-    label: "RARE",
-    border: "border-cyan-500/50",
-    glow: "shadow-lg shadow-cyan-500/20",
-    badge: "bg-cyan-500/20 text-cyan-400",
-    text: "text-cyan-400",
-  },
-  epic: {
-    label: "EPIC",
-    border: "border-purple-500/50",
-    glow: "shadow-lg shadow-purple-500/20",
-    badge: "bg-purple-500/20 text-purple-400",
-    text: "text-purple-400",
-  },
-  legendary: {
-    label: "LEGENDARY",
-    border: "border-amber-500/50",
-    glow: "shadow-lg shadow-amber-500/20",
-    badge: "bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400",
-    text: "text-amber-400",
-  },
+// Mapeamento de raridade para labels
+const RARITY_LABELS: Record<BadgeRarity, string> = {
+  common: "COMUM",
+  rare: "RARO",
+  epic: "ÉPICO",
+  legendary: "LENDÁRIO",
 };
 
 export function AchievementsBadges({ badges, title, showCount = true }: AchievementsBadgesProps) {
@@ -69,11 +42,11 @@ export function AchievementsBadges({ badges, title, showCount = true }: Achievem
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">
+        <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">
           {title || "Conquistas"}
         </h2>
         {showCount && (
-          <div className="px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-sm font-bold">
+          <div className="px-3 py-1 rounded-full bg-gameia-success/20 border border-gameia-success/30 text-gameia-success text-sm font-bold">
             {unlockedCount}/{badges.length}
           </div>
         )}
@@ -95,7 +68,7 @@ interface BadgeCardProps {
 }
 
 function BadgeCard({ badge, delay = 0 }: BadgeCardProps) {
-  const style = RARITY_STYLES[badge.rarity];
+  const colors = getRarityColors(badge.rarity);
   const isLocked = !badge.isUnlocked;
 
   return (
@@ -109,13 +82,13 @@ function BadgeCard({ badge, delay = 0 }: BadgeCardProps) {
         "bg-card/80 backdrop-blur-sm",
         isLocked 
           ? "border-border/30 opacity-40" 
-          : cn(style.border, style.glow)
+          : cn(colors.border, colors.glow)
       )}
     >
       {/* Unlocked Checkmark */}
       {!isLocked && (
         <div className="absolute top-2 right-2">
-          <Check className="w-4 h-4 text-emerald-400" />
+          <Check className="w-4 h-4 text-gameia-success" />
         </div>
       )}
 
@@ -138,9 +111,9 @@ function BadgeCard({ badge, delay = 0 }: BadgeCardProps) {
       {/* Rarity Badge */}
       <div className={cn(
         "px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider",
-        isLocked ? "bg-muted/50 text-muted-foreground" : style.badge
+        isLocked ? "bg-muted/50 text-muted-foreground" : cn(colors.bgSubtle, colors.text)
       )}>
-        {style.label}
+        {RARITY_LABELS[badge.rarity]}
       </div>
     </motion.div>
   );
@@ -154,10 +127,10 @@ export function BadgesCarousel({ badges, title }: AchievementsBadgesProps) {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">
+        <h2 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">
           {title || "Conquistas"}
         </h2>
-        <div className="px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-sm font-bold">
+        <div className="px-3 py-1 rounded-full bg-gameia-success/20 border border-gameia-success/30 text-gameia-success text-sm font-bold">
           {unlockedCount}/{badges.length}
         </div>
       </div>

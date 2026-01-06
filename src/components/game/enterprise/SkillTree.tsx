@@ -1,36 +1,19 @@
 /**
  * Componente visual da árvore de habilidades - Caminho de Habilidades
  * Design baseado em grid com cards, níveis LV e barras de progresso coloridas
+ * 
+ * Paleta: Honey & Charcoal - usando cores centralizadas
  */
 
 import { motion } from "framer-motion";
 import { Lock, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SkillWithProgress } from "@/hooks/useSkillTree";
+import { getSkillCategoryColors, SKILL_CATEGORY_COLORS } from "@/constants/colors";
 
 interface SkillTreeProps {
   skills: SkillWithProgress[];
   onSkillClick: (skill: SkillWithProgress) => void;
-}
-
-// Cores para diferentes categorias/skills
-const SKILL_COLORS: Record<string, { bar: string; badge: string }> = {
-  comunicacao: { bar: "bg-cyan-500", badge: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30" },
-  lideranca: { bar: "bg-gradient-to-r from-pink-500 to-purple-500", badge: "bg-pink-500/20 text-pink-400 border-pink-500/30" },
-  tecnico: { bar: "bg-gradient-to-r from-purple-500 to-pink-500", badge: "bg-purple-500/20 text-purple-400 border-purple-500/30" },
-  apresentacao: { bar: "bg-cyan-500", badge: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30" },
-  negociacao: { bar: "bg-gradient-to-r from-cyan-500 to-purple-500", badge: "bg-purple-500/20 text-purple-400 border-purple-500/30" },
-  gestao: { bar: "bg-pink-500", badge: "bg-pink-500/20 text-pink-400 border-pink-500/30" },
-  analise: { bar: "bg-gradient-to-r from-purple-500 to-pink-500", badge: "bg-purple-500/20 text-purple-400 border-purple-500/30" },
-  default: { bar: "bg-primary", badge: "bg-primary/20 text-primary border-primary/30" },
-};
-
-function getSkillColor(name: string) {
-  const key = name.toLowerCase().replace(/[^a-z]/g, "");
-  for (const [k, v] of Object.entries(SKILL_COLORS)) {
-    if (key.includes(k)) return v;
-  }
-  return SKILL_COLORS.default;
 }
 
 export function SkillTree({ skills, onSkillClick }: SkillTreeProps) {
@@ -40,7 +23,7 @@ export function SkillTree({ skills, onSkillClick }: SkillTreeProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">
+      <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">
         Caminho de Habilidades
       </h2>
 
@@ -72,7 +55,7 @@ interface SkillCardProps {
 }
 
 function SkillCard({ skill, onClick, delay = 0 }: SkillCardProps) {
-  const colors = getSkillColor(skill.name);
+  const colors = getSkillCategoryColors(skill.name);
   const isLocked = !skill.isUnlocked;
   const masteryLevel = skill.masteryLevel || 0;
   const maxMastery = 5;
@@ -115,7 +98,7 @@ function SkillCard({ skill, onClick, delay = 0 }: SkillCardProps) {
         "px-3 py-1 rounded-full text-xs font-bold border mb-3",
         isLocked 
           ? "bg-muted/50 text-muted-foreground border-border/50"
-          : colors.badge
+          : cn(colors.bgSubtle, colors.text, colors.border)
       )}>
         LV. {masteryLevel}/{maxMastery}
       </div>
@@ -126,7 +109,7 @@ function SkillCard({ skill, onClick, delay = 0 }: SkillCardProps) {
           initial={{ width: 0 }}
           animate={{ width: `${skill.progress}%` }}
           transition={{ delay: delay + 0.2, duration: 0.5, ease: "easeOut" }}
-          className={cn("h-full rounded-full", colors.bar)}
+          className={cn("h-full rounded-full", colors.bg)}
         />
       </div>
 
