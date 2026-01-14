@@ -105,9 +105,9 @@ const PERSONALITY_OPTIONS = [
 ];
 
 const DIFFICULTY_OPTIONS = [
-  { value: "easy", label: "Fácil", color: "text-green-500" },
-  { value: "medium", label: "Médio", color: "text-yellow-500" },
-  { value: "hard", label: "Difícil", color: "text-red-500" },
+  { value: "easy", label: "Fácil", color: "text-gameia-success" },
+  { value: "medium", label: "Médio", color: "text-gameia-warning" },
+  { value: "hard", label: "Difícil", color: "text-destructive" },
 ];
 
 const CHANNEL_OPTIONS = [

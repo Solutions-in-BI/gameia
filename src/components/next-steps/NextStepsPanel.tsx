@@ -23,6 +23,8 @@ interface NextStepsPanelProps {
   onViewAll?: () => void;
 }
 
+import { ACTION_COLORS } from "@/constants/colors";
+
 const TYPE_CONFIG: Record<StepType, { 
   icon: typeof Target; 
   color: string; 
@@ -31,38 +33,38 @@ const TYPE_CONFIG: Record<StepType, {
 }> = {
   book_application: { 
     icon: BookOpen, 
-    color: "text-orange-500", 
-    bgColor: "bg-orange-500/10",
+    color: ACTION_COLORS.practice.text, 
+    bgColor: ACTION_COLORS.practice.bgSubtle,
     label: "Aplicação Prática" 
   },
   daily_mission: { 
     icon: Target, 
-    color: "text-green-500", 
-    bgColor: "bg-green-500/10",
+    color: ACTION_COLORS.mission.text, 
+    bgColor: ACTION_COLORS.mission.bgSubtle,
     label: "Missão Diária" 
   },
   "1on1_action": { 
     icon: Users, 
-    color: "text-blue-500", 
-    bgColor: "bg-blue-500/10",
+    color: ACTION_COLORS.meeting.text, 
+    bgColor: ACTION_COLORS.meeting.bgSubtle,
     label: "Ação 1:1" 
   },
   pdi_goal: { 
     icon: Brain, 
-    color: "text-purple-500", 
-    bgColor: "bg-purple-500/10",
+    color: ACTION_COLORS.goal.text, 
+    bgColor: ACTION_COLORS.goal.bgSubtle,
     label: "Meta PDI" 
   },
   training_module: {
     icon: Target,
-    color: "text-indigo-500",
-    bgColor: "bg-indigo-500/10",
+    color: ACTION_COLORS.training.text,
+    bgColor: ACTION_COLORS.training.bgSubtle,
     label: "Módulo de Treinamento"
   },
   commitment: {
     icon: Flame,
-    color: "text-red-500",
-    bgColor: "bg-red-500/10",
+    color: ACTION_COLORS.commitment.text,
+    bgColor: ACTION_COLORS.commitment.bgSubtle,
     label: "Compromisso"
   }
 };
@@ -99,7 +101,7 @@ export function NextStepsPanel({
       case 'urgent':
         return <Badge variant="destructive" className="text-xs">Urgente</Badge>;
       case 'high':
-        return <Badge variant="outline" className="text-xs border-orange-500 text-orange-500">Alta</Badge>;
+        return <Badge variant="outline" className="text-xs border-gameia-warning text-gameia-warning">Alta</Badge>;
       default:
         return null;
     }
@@ -119,7 +121,7 @@ export function NextStepsPanel({
     
     if (isToday(deadline)) {
       return (
-        <span className="text-xs text-orange-500 flex items-center gap-1">
+        <span className="text-xs text-gameia-warning flex items-center gap-1">
           <Flame className="w-3 h-3" />
           Hoje
         </span>
@@ -221,7 +223,7 @@ export function NextStepsPanel({
           </div>
         ) : showEmpty ? (
           <div className="text-center py-8">
-            <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-3" />
+            <CheckCircle2 className="w-12 h-12 text-gameia-success mx-auto mb-3" />
             <h3 className="font-semibold mb-1">Tudo em dia!</h3>
             <p className="text-sm text-muted-foreground">
               Você não tem pendências no momento.
