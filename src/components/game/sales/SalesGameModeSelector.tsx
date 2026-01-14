@@ -30,14 +30,14 @@ const TRACK_DETAILS: Record<string, {
   sdr: {
     icon: <Phone className="w-8 h-8" />,
     skills: ['Cold Calling', 'Qualificação BANT', 'Rapport Building', 'Agendamento'],
-    gradient: 'from-blue-500 to-cyan-500',
-    bgGradient: 'from-blue-500/10 to-cyan-500/10',
+    gradient: 'from-gameia-info to-gameia-teal',
+    bgGradient: 'from-gameia-info/10 to-gameia-teal/10',
   },
   closer: {
     icon: <Handshake className="w-8 h-8" />,
     skills: ['Discovery Call', 'Apresentação', 'Contorno de Objeções', 'Fechamento'],
-    gradient: 'from-green-500 to-emerald-500',
-    bgGradient: 'from-green-500/10 to-emerald-500/10',
+    gradient: 'from-gameia-success to-gameia-teal',
+    bgGradient: 'from-gameia-success/10 to-gameia-teal/10',
   },
 };
 
@@ -52,12 +52,12 @@ export function SalesGameModeSelector({ tracks, onSelectTrack, onBack }: SalesGa
       {/* Header */}
       <div className="text-center mb-8">
         <div className="flex justify-center mb-4">
-          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
-            <Target className="w-10 h-10 text-white" />
+          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-gameia-success to-gameia-teal flex items-center justify-center">
+            <Target className="w-10 h-10 text-primary-foreground" />
           </div>
         </div>
         
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-green-400 to-cyan-400 bg-clip-text text-transparent mb-2">
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-gameia-success to-gameia-teal bg-clip-text text-transparent mb-2">
           Desafio de Vendas 3.0
         </h1>
         
@@ -116,11 +116,11 @@ export function SalesGameModeSelector({ tracks, onSelectTrack, onBack }: SalesGa
                     <Clock className="w-4 h-4" />
                     <span>{timeMinutes} min</span>
                   </div>
-                  <div className="flex items-center gap-1 text-cyan-400">
+                  <div className="flex items-center gap-1 text-accent">
                     <Sparkles className="w-4 h-4" />
                     <span>+{track.xp_reward} XP</span>
                   </div>
-                  <div className="flex items-center gap-1 text-amber-400">
+                  <div className="flex items-center gap-1 text-primary">
                     <Trophy className="w-4 h-4" />
                     <span>+{track.coins_reward} 🪙</span>
                   </div>
@@ -139,8 +139,8 @@ export function SalesGameModeSelector({ tracks, onSelectTrack, onBack }: SalesGa
         className="bg-card/30 border border-border/50 rounded-xl p-4 mb-6"
       >
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center flex-shrink-0">
-            <Users className="w-5 h-5 text-purple-400" />
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-secondary/20 to-accent/20 flex items-center justify-center flex-shrink-0">
+            <Users className="w-5 h-5 text-secondary-foreground" />
           </div>
           <div>
             <h4 className="font-medium mb-1">Personas LegalTrade</h4>

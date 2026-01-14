@@ -239,7 +239,7 @@ export function ArenaTab() {
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold flex items-center gap-2">
-              <Brain className="w-5 h-5 text-emerald-500" />
+              <Brain className="w-5 h-5 text-gameia-success" />
               Testes Cognitivos
             </h3>
             <Badge variant="outline" className="text-xs">
@@ -279,7 +279,7 @@ export function ArenaTab() {
 
           {/* Info about conditional rewards */}
           <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 text-sm text-muted-foreground">
-            <Target className="w-4 h-4 text-amber-500 shrink-0" />
+            <Target className="w-4 h-4 text-primary shrink-0" />
             <span>
               Testes cognitivos têm <strong>recompensa condicional</strong>: 
               atinja a meta de acerto para ganhar XP. Você pode refazer os testes!
@@ -294,11 +294,11 @@ export function ArenaTab() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <HubCard className="bg-gradient-to-r from-blue-500/10 via-purple-500/5 to-transparent border-blue-500/20">
+          <HubCard className="bg-gradient-to-r from-gameia-info/10 via-secondary/5 to-transparent border-gameia-info/20">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4">
               <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-blue-500/20">
-                  <GraduationCap className="w-6 h-6 text-blue-500" />
+                <div className="p-3 rounded-xl bg-gameia-info/20">
+                  <GraduationCap className="w-6 h-6 text-gameia-info" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-foreground">Quer se desenvolver melhor?</h3>
@@ -321,7 +321,7 @@ export function ArenaTab() {
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold flex items-center gap-2">
-              <Gamepad2 className="w-5 h-5 text-purple-500" />
+              <Gamepad2 className="w-5 h-5 text-secondary-foreground" />
               {filter === "simulations" ? "Simulações" : filter === "games" ? "Jogos" : "Jogos & Simulações"}
             </h3>
           </div>

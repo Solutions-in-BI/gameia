@@ -523,6 +523,20 @@ export const ACTION_COLORS = {
     border: "border-primary/30",
     icon: "text-primary",
   },
+  training: {
+    text: "text-gameia-info",
+    bg: "bg-gameia-info",
+    bgSubtle: "bg-gameia-info/10",
+    border: "border-gameia-info/30",
+    icon: "text-gameia-info",
+  },
+  commitment: {
+    text: "text-destructive",
+    bg: "bg-destructive",
+    bgSubtle: "bg-destructive/10",
+    border: "border-destructive/30",
+    icon: "text-destructive",
+  },
 } as const;
 
 export type ActionKey = keyof typeof ACTION_COLORS;
