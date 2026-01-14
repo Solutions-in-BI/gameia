@@ -5,6 +5,7 @@
 import { motion } from "framer-motion";
 import { Zap, Brain, Shield, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { GAME_MODE_COLORS } from "@/constants/colors";
 
 export type GameMode = "normal" | "blitz" | "strategy" | "hardcore";
 
@@ -15,7 +16,7 @@ interface GameModeOption {
   icon: React.ReactNode;
   time: number; // segundos por pergunta
   multiplier: number;
-  color: string;
+  colorKey: keyof typeof GAME_MODE_COLORS;
 }
 
 const gameModes: GameModeOption[] = [
@@ -26,7 +27,7 @@ const gameModes: GameModeOption[] = [
     icon: <Clock className="w-6 h-6" />,
     time: 15,
     multiplier: 1,
-    color: "from-blue-500/20 to-blue-600/20 border-blue-500/50",
+    colorKey: "beginner",
   },
   {
     id: "blitz",
@@ -35,7 +36,7 @@ const gameModes: GameModeOption[] = [
     icon: <Zap className="w-6 h-6" />,
     time: 5,
     multiplier: 2,
-    color: "from-yellow-500/20 to-orange-500/20 border-yellow-500/50",
+    colorKey: "blitz",
   },
   {
     id: "strategy",
@@ -44,7 +45,7 @@ const gameModes: GameModeOption[] = [
     icon: <Brain className="w-6 h-6" />,
     time: 60,
     multiplier: 0.75,
-    color: "from-purple-500/20 to-indigo-500/20 border-purple-500/50",
+    colorKey: "marathon",
   },
   {
     id: "hardcore",
@@ -53,7 +54,7 @@ const gameModes: GameModeOption[] = [
     icon: <Shield className="w-6 h-6" />,
     time: 10,
     multiplier: 3,
-    color: "from-red-500/20 to-rose-500/20 border-red-500/50",
+    colorKey: "challenge",
   },
 ];
 
@@ -67,53 +68,58 @@ export function GameModeSelector({ selectedMode, onSelectMode }: GameModeSelecto
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Escolha o Modo de Jogo</h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {gameModes.map((mode, index) => (
-          <motion.button
-            key={mode.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-            onClick={() => onSelectMode(mode.id)}
-            className={cn(
-              "p-4 rounded-xl border-2 text-left transition-all duration-300",
-              "bg-gradient-to-br",
-              mode.color,
-              selectedMode === mode.id
-                ? "ring-2 ring-primary ring-offset-2 ring-offset-background"
-                : "hover:scale-[1.02]"
-            )}
-          >
-            <div className="flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-background/50">
-                {mode.icon}
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <h4 className="font-semibold">{mode.name}</h4>
-                  {mode.multiplier !== 1 && (
-                    <span
-                      className={cn(
-                        "px-2 py-0.5 rounded-full text-xs font-bold",
-                        mode.multiplier > 1
-                          ? "bg-green-500/20 text-green-500"
-                          : "bg-muted text-muted-foreground"
-                      )}
-                    >
-                      x{mode.multiplier}
-                    </span>
-                  )}
+        {gameModes.map((mode, index) => {
+          const colors = GAME_MODE_COLORS[mode.colorKey];
+          
+          return (
+            <motion.button
+              key={mode.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              onClick={() => onSelectMode(mode.id)}
+              className={cn(
+                "p-4 rounded-xl border-2 text-left transition-all duration-300",
+                "bg-gradient-to-br",
+                colors.gradient,
+                colors.border,
+                selectedMode === mode.id
+                  ? "ring-2 ring-primary ring-offset-2 ring-offset-background"
+                  : "hover:scale-[1.02]"
+              )}
+            >
+              <div className="flex items-start gap-3">
+                <div className="p-2 rounded-lg bg-background/50">
+                  {mode.icon}
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {mode.description}
-                </p>
-                <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
-                  <Clock className="w-3 h-3" />
-                  <span>{mode.time}s por pergunta</span>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-semibold">{mode.name}</h4>
+                    {mode.multiplier !== 1 && (
+                      <span
+                        className={cn(
+                          "px-2 py-0.5 rounded-full text-xs font-bold",
+                          mode.multiplier > 1
+                            ? "bg-gameia-success/20 text-gameia-success"
+                            : "bg-muted text-muted-foreground"
+                        )}
+                      >
+                        x{mode.multiplier}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {mode.description}
+                  </p>
+                  <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
+                    <Clock className="w-3 h-3" />
+                    <span>{mode.time}s por pergunta</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          </motion.button>
-        ))}
+            </motion.button>
+          );
+        })}
       </div>
     </div>
   );

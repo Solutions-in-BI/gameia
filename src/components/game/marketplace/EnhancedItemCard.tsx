@@ -11,6 +11,7 @@ import {
 import { MarketplaceItem } from "@/hooks/useMarketplace";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { RARITY_COLORS } from "@/constants/colors";
 
 interface EnhancedItemCardProps {
   item: MarketplaceItem;
@@ -20,29 +21,20 @@ interface EnhancedItemCardProps {
   index?: number;
 }
 
-// Rarity visual configuration
-const RARITY_CONFIG = {
-  common: { badge: "bg-muted text-muted-foreground", border: "border-border hover:border-muted-foreground/50", glow: "", label: "Comum" },
-  uncommon: { badge: "bg-green-500/10 text-green-600 dark:text-green-400", border: "border-green-500/20 hover:border-green-500/40", glow: "", label: "Incomum" },
-  rare: { badge: "bg-blue-500/10 text-blue-600 dark:text-blue-400", border: "border-blue-500/30 hover:border-blue-500/50", glow: "shadow-blue-500/10", label: "Raro" },
-  epic: { badge: "bg-purple-500/10 text-purple-600 dark:text-purple-400", border: "border-purple-500/30 hover:border-purple-500/50", glow: "shadow-purple-500/20", label: "Épico" },
-  legendary: { badge: "bg-amber-500/10 text-amber-600 dark:text-amber-400", border: "border-amber-500/30 hover:border-amber-500/50", glow: "shadow-amber-500/20 shadow-lg", label: "Lendário" },
-};
-
 // Behavior type configuration (functional type)
 const BEHAVIOR_CONFIG = {
-  equippable: { icon: Shirt, label: "Equipável", color: "text-pink-500 bg-pink-500/10" },
-  consumable: { icon: Zap, label: "Consumível", color: "text-amber-500 bg-amber-500/10" },
-  redeemable: { icon: HandHeart, label: "Benefício real", color: "text-emerald-500 bg-emerald-500/10" },
-  permanent: { icon: Crown, label: "Permanente", color: "text-blue-500 bg-blue-500/10" },
+  equippable: { icon: Shirt, label: "Equipável", color: "text-accent bg-accent/10" },
+  consumable: { icon: Zap, label: "Consumível", color: "text-primary bg-primary/10" },
+  redeemable: { icon: HandHeart, label: "Benefício real", color: "text-gameia-success bg-gameia-success/10" },
+  permanent: { icon: Crown, label: "Permanente", color: "text-gameia-info bg-gameia-info/10" },
 };
 
 // Item type display configuration
 const ITEM_TYPE_CONFIG = {
-  cosmetic: { icon: Sparkles, label: "Personalização", color: "text-pink-500" },
-  boost: { icon: Zap, label: "Vantagem", color: "text-amber-500" },
-  experience: { icon: Gift, label: "Experiência", color: "text-emerald-500" },
-  functional: { icon: Star, label: "Funcional", color: "text-purple-500" },
+  cosmetic: { icon: Sparkles, label: "Personalização", color: "text-accent" },
+  boost: { icon: Zap, label: "Vantagem", color: "text-primary" },
+  experience: { icon: Gift, label: "Experiência", color: "text-gameia-success" },
+  functional: { icon: Star, label: "Funcional", color: "text-accent" },
 };
 
 // Determine behavior type from item
@@ -71,7 +63,8 @@ function getBehaviorType(item: MarketplaceItem): keyof typeof BEHAVIOR_CONFIG {
 
 export const EnhancedItemCard = forwardRef<HTMLDivElement, EnhancedItemCardProps>(
   function EnhancedItemCard({ item, owned, canAfford, onPurchase, index = 0 }, ref) {
-    const rarityConfig = RARITY_CONFIG[item.rarity as keyof typeof RARITY_CONFIG] || RARITY_CONFIG.common;
+    const rarityKey = item.rarity as keyof typeof RARITY_COLORS || 'common';
+    const rarityConfig = RARITY_COLORS[rarityKey] || RARITY_COLORS.common;
     const behaviorType = getBehaviorType(item);
     const behaviorConfig = BEHAVIOR_CONFIG[behaviorType];
     const typeConfig = ITEM_TYPE_CONFIG[(item.item_type || "cosmetic") as keyof typeof ITEM_TYPE_CONFIG] || ITEM_TYPE_CONFIG.cosmetic;
@@ -107,7 +100,7 @@ export const EnhancedItemCard = forwardRef<HTMLDivElement, EnhancedItemCardProps
             </div>
           )}
           
-          {isLegendary && !owned && <div className="absolute inset-0 bg-gradient-to-t from-amber-500/10 to-transparent pointer-events-none" />}
+          {isLegendary && !owned && <div className="absolute inset-0 bg-gradient-to-t from-primary/10 to-transparent pointer-events-none" />}
           
           {/* TOP LEFT: Behavior type badge (mandatory) */}
           <div className="absolute top-2 left-2">
@@ -123,13 +116,13 @@ export const EnhancedItemCard = forwardRef<HTMLDivElement, EnhancedItemCardProps
           {/* TOP RIGHT: Ownership or stock indicator */}
           {owned ? (
             <div className="absolute top-2 right-2">
-              <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg">
+              <div className="w-6 h-6 rounded-full bg-gameia-success flex items-center justify-center shadow-lg">
                 <Check className="w-3.5 h-3.5 text-white" />
               </div>
             </div>
           ) : item.is_limited_edition && item.stock !== null ? (
             <div className="absolute top-2 right-2">
-              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-red-500/90 text-white">
+              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-destructive/90 text-white">
                 {item.stock} restantes
               </span>
             </div>
@@ -143,7 +136,7 @@ export const EnhancedItemCard = forwardRef<HTMLDivElement, EnhancedItemCardProps
 
           {/* BOTTOM LEFT: Rarity badge */}
           <div className="absolute bottom-2 left-2">
-            <span className={cn("text-[10px] px-2 py-0.5 rounded-full font-medium backdrop-blur-sm", rarityConfig.badge)}>
+            <span className={cn("text-[10px] px-2 py-0.5 rounded-full font-medium backdrop-blur-sm", rarityConfig.bgSubtle, rarityConfig.text)}>
               {rarityConfig.label}
             </span>
           </div>
@@ -151,7 +144,7 @@ export const EnhancedItemCard = forwardRef<HTMLDivElement, EnhancedItemCardProps
           {/* BOTTOM RIGHT: Boost value if applicable */}
           {isBoost && item.boost_value && !owned && (
             <div className="absolute bottom-2 right-2">
-              <span className="flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/90 text-white">
+              <span className="flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-primary/90 text-primary-foreground">
                 +{Math.round((item.boost_value - 1) * 100)}%
               </span>
             </div>
@@ -170,13 +163,13 @@ export const EnhancedItemCard = forwardRef<HTMLDivElement, EnhancedItemCardProps
               </span>
             )}
             {hasExpiration && (
-              <span className="flex items-center gap-0.5 text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400">
+              <span className="flex items-center gap-0.5 text-[9px] px-1.5 py-0.5 rounded bg-gameia-warning/10 text-gameia-warning">
                 <Clock className="w-2.5 h-2.5" />
                 Expira em {item.expires_after_purchase}d
               </span>
             )}
             {requiresApproval && (
-              <span className="flex items-center gap-0.5 text-[9px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400">
+              <span className="flex items-center gap-0.5 text-[9px] px-1.5 py-0.5 rounded bg-gameia-info/10 text-gameia-info">
                 <ShieldCheck className="w-2.5 h-2.5" />
                 Requer aprovação
               </span>
@@ -189,7 +182,7 @@ export const EnhancedItemCard = forwardRef<HTMLDivElement, EnhancedItemCardProps
 
           <div className="mt-auto pt-2 border-t border-border/50">
             {owned ? (
-              <div className="flex items-center justify-center gap-1.5 text-emerald-600 dark:text-emerald-400 text-sm py-1.5">
+              <div className="flex items-center justify-center gap-1.5 text-gameia-success text-sm py-1.5">
                 <Sparkles className="w-3.5 h-3.5" /> 
                 <span className="font-medium">Adquirido</span>
               </div>
@@ -202,7 +195,7 @@ export const EnhancedItemCard = forwardRef<HTMLDivElement, EnhancedItemCardProps
                 className={cn(
                   "w-full text-sm h-9", 
                   canAfford 
-                    ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20" 
+                    ? "bg-primary/10 text-primary hover:bg-primary/20" 
                     : "text-muted-foreground"
                 )}
               >

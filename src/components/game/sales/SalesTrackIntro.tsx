@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { SalesPersona, SalesStage } from "@/hooks/useSalesGame";
 import type { SalesTrack } from "./SalesGameModeSelector";
+import { DIFFICULTY_COLORS, CONTENT_TYPE_COLORS } from "@/constants/colors";
 
 interface SalesTrackIntroProps {
   track: SalesTrack;
@@ -12,12 +13,6 @@ interface SalesTrackIntroProps {
   onStart: (persona: SalesPersona) => void;
   onBack: () => void;
 }
-
-const DIFFICULTY_CONFIG = {
-  easy: { label: 'Fácil', color: 'bg-green-500/20 text-green-400 border-green-500/30' },
-  medium: { label: 'Médio', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
-  hard: { label: 'Difícil', color: 'bg-red-500/20 text-red-400 border-red-500/30' },
-};
 
 const PERSONALITY_CONFIG: Record<string, { emoji: string; label: string }> = {
   friendly: { emoji: '😊', label: 'Amigável' },
@@ -34,15 +29,15 @@ const TRACK_CONFIG: Record<string, {
   subtitle: string;
 }> = {
   sdr: {
-    icon: <Phone className="w-8 h-8 text-white" />,
-    gradient: 'from-blue-500 to-cyan-500',
-    bgGradient: 'from-blue-400 to-cyan-400',
+    icon: <Phone className="w-8 h-8 text-primary-foreground" />,
+    gradient: 'from-gameia-info to-gameia-teal',
+    bgGradient: 'from-gameia-info to-gameia-teal',
     subtitle: 'Prospecte, qualifique e agende reuniões de alto valor',
   },
   closer: {
-    icon: <Handshake className="w-8 h-8 text-white" />,
-    gradient: 'from-green-500 to-emerald-500',
-    bgGradient: 'from-green-400 to-emerald-400',
+    icon: <Handshake className="w-8 h-8 text-primary-foreground" />,
+    gradient: 'from-gameia-success to-gameia-teal',
+    bgGradient: 'from-gameia-success to-gameia-teal',
     subtitle: 'Feche negócios complexos e supere objeções',
   },
 };
@@ -82,7 +77,7 @@ export function SalesTrackIntro({ track, personas, stages, onStart, onBack }: Sa
       {/* Stages Preview */}
       <div className="bg-card/50 border border-border/50 rounded-xl p-4 mb-6">
         <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-cyan-400" />
+          <Sparkles className="w-4 h-4 text-gameia-info" />
           Etapas da {track.track_key === 'sdr' ? 'Prospecção' : 'Negociação'}
         </h3>
         <div className="flex items-center justify-between overflow-x-auto pb-2">
@@ -107,17 +102,17 @@ export function SalesTrackIntro({ track, personas, stages, onStart, onBack }: Sa
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="bg-card/50 border border-border/50 rounded-xl p-4 text-center">
-          <Clock className="w-5 h-5 text-cyan-400 mx-auto mb-2" />
+          <Clock className="w-5 h-5 text-gameia-info mx-auto mb-2" />
           <div className="text-xl font-bold">{timeMinutes}:00</div>
           <div className="text-xs text-muted-foreground">Tempo Limite</div>
         </div>
         <div className="bg-card/50 border border-border/50 rounded-xl p-4 text-center">
-          <Target className="w-5 h-5 text-green-400 mx-auto mb-2" />
+          <Target className="w-5 h-5 text-gameia-success mx-auto mb-2" />
           <div className="text-xl font-bold">{stages.length}</div>
           <div className="text-xs text-muted-foreground">Etapas</div>
         </div>
         <div className="bg-card/50 border border-border/50 rounded-xl p-4 text-center">
-          <Users className="w-5 h-5 text-amber-400 mx-auto mb-2" />
+          <Users className="w-5 h-5 text-primary mx-auto mb-2" />
           <div className="text-xl font-bold">{personas.length}</div>
           <div className="text-xs text-muted-foreground">Clientes</div>
         </div>
@@ -126,12 +121,13 @@ export function SalesTrackIntro({ track, personas, stages, onStart, onBack }: Sa
       {/* Persona Selection */}
       <div className="mb-6">
         <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-          <Briefcase className="w-4 h-4 text-purple-400" />
+          <Briefcase className="w-4 h-4 text-accent" />
           Escolha seu Cliente:
         </h3>
         <div className="space-y-3">
           {personas.map((persona) => {
-            const difficulty = DIFFICULTY_CONFIG[persona.difficulty as keyof typeof DIFFICULTY_CONFIG] || DIFFICULTY_CONFIG.medium;
+            const difficultyKey = persona.difficulty as keyof typeof DIFFICULTY_COLORS || 'medium';
+            const difficulty = DIFFICULTY_COLORS[difficultyKey] || DIFFICULTY_COLORS.medium;
             const personality = PERSONALITY_CONFIG[persona.personality] || { emoji: '👤', label: persona.personality };
             
             return (
@@ -143,15 +139,15 @@ export function SalesTrackIntro({ track, personas, stages, onStart, onBack }: Sa
                 className="w-full text-left bg-card/50 hover:bg-card/80 border border-border/50 hover:border-primary/50 rounded-xl p-4 transition-all group"
               >
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500/20 to-purple-500/20 flex items-center justify-center text-2xl flex-shrink-0">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center text-2xl flex-shrink-0">
                     {persona.avatar || personality.emoji}
                   </div>
                   
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <span className="font-semibold">{persona.name}</span>
-                      <Badge variant="outline" className={`text-xs ${difficulty.color}`}>
-                        {difficulty.label}
+                      <Badge variant="outline" className={`text-xs ${difficulty.bg} ${difficulty.text} ${difficulty.border}`}>
+                        {difficultyKey === 'easy' ? 'Fácil' : difficultyKey === 'hard' ? 'Difícil' : 'Médio'}
                       </Badge>
                       <Badge variant="outline" className="text-xs">
                         {personality.label}
@@ -165,7 +161,7 @@ export function SalesTrackIntro({ track, personas, stages, onStart, onBack }: Sa
                     {persona.pain_points && persona.pain_points.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-2">
                         {persona.pain_points.slice(0, 2).map((pain, i) => (
-                          <span key={i} className="text-xs bg-red-500/10 text-red-400 px-2 py-0.5 rounded">
+                          <span key={i} className="text-xs bg-destructive/10 text-destructive px-2 py-0.5 rounded">
                             {pain}
                           </span>
                         ))}
