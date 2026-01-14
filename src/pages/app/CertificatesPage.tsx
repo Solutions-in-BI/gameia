@@ -138,11 +138,11 @@ export default function CertificatesPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20">
+        <Card className="bg-gradient-to-br from-gameia-success/10 to-gameia-success/5 border-gameia-success/20">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-green-500/20">
-                <CheckCircle2 className="w-5 h-5 text-green-500" />
+              <div className="p-2 rounded-lg bg-gameia-success/20">
+                <CheckCircle2 className="w-5 h-5 text-gameia-success" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-foreground">{stats?.active || 0}</p>
@@ -152,11 +152,11 @@ export default function CertificatesPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-amber-500/10 to-amber-500/5 border-amber-500/20">
+        <Card className="bg-gradient-to-br from-gameia-warning/10 to-gameia-warning/5 border-gameia-warning/20">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-amber-500/20">
-                <Clock className="w-5 h-5 text-amber-500" />
+              <div className="p-2 rounded-lg bg-gameia-warning/20">
+                <Clock className="w-5 h-5 text-gameia-warning" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-foreground">
@@ -168,11 +168,11 @@ export default function CertificatesPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20">
+        <Card className="bg-gradient-to-br from-gameia-info/10 to-gameia-info/5 border-gameia-info/20">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-blue-500/20">
-                <TrendingUp className="w-5 h-5 text-blue-500" />
+              <div className="p-2 rounded-lg bg-gameia-info/20">
+                <TrendingUp className="w-5 h-5 text-gameia-info" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-foreground">

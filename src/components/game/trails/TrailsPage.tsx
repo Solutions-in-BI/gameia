@@ -95,34 +95,34 @@ export function InsigniasPage({ onBack }: InsigniasPageProps) {
         </motion.div>
 
         <motion.div
-          className="bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20 rounded-xl p-4"
+          className="bg-gradient-to-br from-gameia-success/10 to-gameia-success/5 border border-gameia-success/20 rounded-xl p-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Target className="w-6 h-6 text-emerald-500 mb-2" />
+          <Target className="w-6 h-6 text-gameia-success mb-2" />
           <p className="text-2xl font-bold text-foreground">{stats.completedMissions}</p>
           <p className="text-xs text-muted-foreground">Desafios Vencidos</p>
         </motion.div>
 
         <motion.div
-          className="bg-gradient-to-br from-violet-500/10 to-violet-500/5 border border-violet-500/20 rounded-xl p-4"
+          className="bg-gradient-to-br from-accent/10 to-accent/5 border border-accent/20 rounded-xl p-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Rocket className="w-6 h-6 text-violet-500 mb-2" />
+          <Rocket className="w-6 h-6 text-accent mb-2" />
           <p className="text-2xl font-bold text-foreground">{stats.totalTrails}</p>
           <p className="text-xs text-muted-foreground">Insígnias Disponíveis</p>
         </motion.div>
 
         <motion.div
-          className="bg-gradient-to-br from-amber-500/10 to-amber-500/5 border border-amber-500/20 rounded-xl p-4"
+          className="bg-gradient-to-br from-primary/10 to-accent/5 border border-primary/20 rounded-xl p-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <Star className="w-6 h-6 text-amber-500 mb-2" />
+          <Star className="w-6 h-6 text-primary mb-2" />
           <p className="text-2xl font-bold text-foreground">{stats.percentageComplete}%</p>
           <p className="text-xs text-muted-foreground">Evolução Total</p>
         </motion.div>
@@ -131,12 +131,12 @@ export function InsigniasPage({ onBack }: InsigniasPageProps) {
       {/* Insígnias Conquistadas Showcase */}
       {unlockedInsignias.length > 0 && (
         <motion.div
-          className="bg-gradient-to-r from-amber-500/5 via-amber-500/10 to-amber-500/5 border border-amber-500/20 rounded-xl p-4"
+          className="bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 border border-primary/20 rounded-xl p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >
           <h3 className="text-sm font-medium text-foreground mb-3 flex items-center gap-2">
-            <Trophy className="w-4 h-4 text-amber-500" />
+            <Trophy className="w-4 h-4 text-primary" />
             Suas Insígnias para a Camiseta 🎽
           </h3>
           <div className="flex flex-wrap gap-4">
@@ -215,7 +215,7 @@ export function InsigniasPage({ onBack }: InsigniasPageProps) {
         {unlockedInsignias.length > 0 && (
           <>
             <h3 className="text-lg font-semibold text-foreground mt-6 flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-amber-500" />
+              <Trophy className="w-5 h-5 text-primary" />
               Insígnias Conquistadas
             </h3>
             <div className="grid gap-4 md:grid-cols-2">
