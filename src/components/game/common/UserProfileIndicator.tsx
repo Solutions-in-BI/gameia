@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getLevelInfo, getLevelProgress, getLevelTier, LEVEL_COLORS } from "@/constants/levels";
+import { TIER_COLORS } from "@/constants/colors";
 
 interface UserProfileIndicatorProps {
   displayName: string;
@@ -17,16 +18,16 @@ interface UserProfileIndicatorProps {
   className?: string;
 }
 
-// Border colors based on tier
+// Border colors based on tier - usando sistema centralizado
 const TIER_BORDER_CLASSES: Record<string, string> = {
-  bronze: "ring-amber-700",
-  silver: "ring-slate-400",
-  gold: "ring-yellow-500",
-  platinum: "ring-cyan-400",
-  diamond: "ring-purple-400",
-  master: "ring-red-500",
-  grandmaster: "ring-pink-500",
-  legendary: "ring-orange-500",
+  bronze: "ring-tier-bronze",
+  silver: "ring-tier-silver",
+  gold: "ring-tier-gold",
+  platinum: "ring-tier-platinum",
+  diamond: "ring-tier-diamond",
+  master: "ring-tier-master",
+  grandmaster: "ring-tier-grandmaster",
+  legendary: "ring-primary",
 };
 
 export const UserProfileIndicator = forwardRef<
@@ -76,20 +77,20 @@ export const UserProfileIndicator = forwardRef<
             className={cn(
               "absolute -bottom-1 -right-1 flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold shadow-md border-2 border-card",
               tier === "legendary"
-                ? "bg-gradient-to-br from-orange-500 to-yellow-400 text-white"
+                ? "bg-gradient-to-br from-primary to-accent text-primary-foreground"
                 : tier === "grandmaster"
-                ? "bg-gradient-to-br from-pink-500 to-rose-400 text-white"
+                ? "bg-gradient-to-br from-tier-grandmaster to-accent text-white"
                 : tier === "master"
-                ? "bg-gradient-to-br from-red-500 to-orange-400 text-white"
+                ? "bg-gradient-to-br from-tier-master to-primary text-white"
                 : tier === "diamond"
-                ? "bg-gradient-to-br from-purple-500 to-violet-400 text-white"
+                ? "bg-gradient-to-br from-tier-diamond to-secondary text-white"
                 : tier === "platinum"
-                ? "bg-gradient-to-br from-cyan-400 to-sky-300 text-white"
+                ? "bg-gradient-to-br from-tier-platinum to-gameia-teal text-white"
                 : tier === "gold"
-                ? "bg-gradient-to-br from-yellow-500 to-amber-400 text-white"
+                ? "bg-gradient-to-br from-tier-gold to-primary text-white"
                 : tier === "silver"
-                ? "bg-gradient-to-br from-slate-400 to-slate-300 text-slate-800"
-                : "bg-gradient-to-br from-amber-700 to-amber-600 text-white"
+                ? "bg-gradient-to-br from-tier-silver to-muted text-foreground"
+                : "bg-gradient-to-br from-tier-bronze to-primary/80 text-white"
             )}
           >
             {level}

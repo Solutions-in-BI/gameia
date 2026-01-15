@@ -3,6 +3,7 @@ import { Clock, Target, ChevronRight, CheckCircle2, Star, Rocket, Shield, Award,
 import { cn } from "@/lib/utils";
 import { InsigniaBadge } from "./TrailBadge";
 import { Trail } from "@/hooks/useTrails";
+import { DIFFICULTY_COLORS, getDifficultyColors } from "@/constants/colors";
 
 interface InsigniaCardProps {
   trail: Trail;
@@ -23,11 +24,10 @@ const difficultyLabels: Record<string, string> = {
   expert: "Expert",
 };
 
-const difficultyColors: Record<string, string> = {
-  beginner: "text-emerald-500 bg-emerald-500/10",
-  intermediate: "text-violet-500 bg-violet-500/10",
-  advanced: "text-amber-500 bg-amber-500/10",
-  expert: "text-rose-500 bg-rose-500/10",
+// Usando sistema centralizado de cores
+const getDifficultyClasses = (difficulty: string) => {
+  const colors = getDifficultyColors(difficulty);
+  return `${colors.text} ${colors.bgSubtle}`;
 };
 
 export function InsigniaCard({ trail, shape = "hexagon", progress, isCompleted, onClick }: InsigniaCardProps) {
@@ -73,7 +73,7 @@ export function InsigniaCard({ trail, shape = "hexagon", progress, isCompleted, 
             {trail.difficulty && (
               <span className={cn(
                 "px-2 py-0.5 rounded-full font-medium",
-                difficultyColors[trail.difficulty]
+                getDifficultyClasses(trail.difficulty)
               )}>
                 {difficultyLabels[trail.difficulty]}
               </span>

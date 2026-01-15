@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { DIFFICULTY_COLORS, REWARD_COLORS, STATUS_COLORS } from "@/constants/colors";
 
 interface JourneyCardProps {
   id: string;
@@ -45,10 +46,11 @@ interface JourneyCardProps {
   onClick?: () => void;
 }
 
+// Usando sistema centralizado de cores
 const LEVEL_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  iniciante: { bg: "bg-emerald-500/10", text: "text-emerald-600", border: "border-emerald-500/30" },
-  intermediario: { bg: "bg-amber-500/10", text: "text-amber-600", border: "border-amber-500/30" },
-  avancado: { bg: "bg-rose-500/10", text: "text-rose-600", border: "border-rose-500/30" },
+  iniciante: { bg: DIFFICULTY_COLORS.beginner.bgSubtle, text: DIFFICULTY_COLORS.beginner.text, border: DIFFICULTY_COLORS.beginner.border },
+  intermediario: { bg: DIFFICULTY_COLORS.medium.bgSubtle, text: DIFFICULTY_COLORS.medium.text, border: DIFFICULTY_COLORS.medium.border },
+  avancado: { bg: DIFFICULTY_COLORS.hard.bgSubtle, text: DIFFICULTY_COLORS.hard.text, border: DIFFICULTY_COLORS.hard.border },
 };
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -97,7 +99,7 @@ export function JourneyCard({
         isFeatured 
           ? "bg-gradient-to-br from-primary/5 via-background to-secondary/5 border-primary/30 hover:border-primary/50 shadow-lg"
           : "bg-card border-border hover:border-primary/30 hover:shadow-md",
-        isCompleted && "border-emerald-500/30 bg-emerald-500/5"
+        isCompleted && `${STATUS_COLORS.success.border} ${STATUS_COLORS.success.bgSubtle}`
       )}
     >
       {/* Featured Badge */}
@@ -113,7 +115,7 @@ export function JourneyCard({
       {/* Completed Badge */}
       {isCompleted && (
         <div className="absolute top-3 right-3 z-10">
-          <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500 text-white text-xs font-medium">
+          <div className={`flex items-center gap-1 px-2 py-1 rounded-full ${STATUS_COLORS.success.bg} text-white text-xs font-medium`}>
             <CheckCircle2 className="w-3 h-3" />
             Concluída
           </div>
@@ -196,25 +198,25 @@ export function JourneyCard({
         {/* Rewards */}
         <div className="flex items-center gap-2 flex-wrap">
           {xpReward > 0 && (
-            <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-amber-500/10 text-amber-600 text-xs font-medium">
+            <div className={`flex items-center gap-1 px-2 py-1 rounded-md ${REWARD_COLORS.xp.bgSubtle} ${REWARD_COLORS.xp.text} text-xs font-medium`}>
               <Star className="w-3 h-3" />
               {xpReward} XP
             </div>
           )}
           {coinsReward > 0 && (
-            <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-yellow-500/10 text-yellow-600 text-xs font-medium">
+            <div className={`flex items-center gap-1 px-2 py-1 rounded-md ${REWARD_COLORS.coins.bgSubtle} ${REWARD_COLORS.coins.text} text-xs font-medium`}>
               <Coins className="w-3 h-3" />
               {coinsReward}
             </div>
           )}
           {hasCertificate && (
-            <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-blue-500/10 text-blue-600 text-xs font-medium">
+            <div className={`flex items-center gap-1 px-2 py-1 rounded-md ${STATUS_COLORS.info.bgSubtle} ${STATUS_COLORS.info.text} text-xs font-medium`}>
               <Award className="w-3 h-3" />
               Certificado
             </div>
           )}
           {hasInsignia && (
-            <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-purple-500/10 text-purple-600 text-xs font-medium">
+            <div className={`flex items-center gap-1 px-2 py-1 rounded-md ${REWARD_COLORS.badge.bgSubtle} ${REWARD_COLORS.badge.text} text-xs font-medium`}>
               <Trophy className="w-3 h-3" />
               Insígnia
             </div>

@@ -37,6 +37,7 @@ import { useOrganization } from "@/hooks/useOrganization";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { SOURCE_TYPE_COLORS, ASSESSMENT_TYPE_COLORS, STATUS_COLORS } from "@/constants/colors";
 
 interface TeamMember {
   id: string;
@@ -74,32 +75,32 @@ interface TeamSuggestion {
   profiles?: TeamMember;
 }
 
-// Configuração visual por tipo de origem
+// Configuração visual por tipo de origem - usando sistema centralizado
 const ORIGIN_CONFIG: Record<string, { label: string; icon: typeof Brain; color: string }> = {
-  game: { label: "Jogo", icon: Zap, color: "text-yellow-600" },
-  arena_game: { label: "Arena", icon: Zap, color: "text-yellow-600" },
-  cognitive_test: { label: "Teste Cognitivo", icon: Brain, color: "text-purple-600" },
-  feedback_360: { label: "Feedback 360°", icon: Users, color: "text-blue-600" },
-  pdi_goal: { label: "Meta PDI", icon: Target, color: "text-green-600" },
-  goal: { label: "Meta", icon: Target, color: "text-green-600" },
-  one_on_one: { label: "1:1", icon: Calendar, color: "text-orange-600" },
-  streak_break: { label: "Quebra Streak", icon: TrendingDown, color: "text-red-600" },
-  low_score: { label: "Score Baixo", icon: TrendingDown, color: "text-amber-600" },
-  training: { label: "Treinamento", icon: Brain, color: "text-pink-600" },
-  challenge: { label: "Desafio", icon: Target, color: "text-cyan-600" },
-  manual: { label: "Manual", icon: GitBranch, color: "text-gray-600" },
+  game: { label: "Jogo", icon: Zap, color: SOURCE_TYPE_COLORS.game.text },
+  arena_game: { label: "Arena", icon: Zap, color: SOURCE_TYPE_COLORS.game.text },
+  cognitive_test: { label: "Teste Cognitivo", icon: Brain, color: SOURCE_TYPE_COLORS.cognitive_test.text },
+  feedback_360: { label: "Feedback 360°", icon: Users, color: SOURCE_TYPE_COLORS.feedback_360.text },
+  pdi_goal: { label: "Meta PDI", icon: Target, color: SOURCE_TYPE_COLORS.pdi_goal.text },
+  goal: { label: "Meta", icon: Target, color: SOURCE_TYPE_COLORS.pdi_goal.text },
+  one_on_one: { label: "1:1", icon: Calendar, color: SOURCE_TYPE_COLORS.one_on_one.text },
+  streak_break: { label: "Quebra Streak", icon: TrendingDown, color: STATUS_COLORS.error.text },
+  low_score: { label: "Score Baixo", icon: TrendingDown, color: STATUS_COLORS.warning.text },
+  training: { label: "Treinamento", icon: Brain, color: SOURCE_TYPE_COLORS.training.text },
+  challenge: { label: "Desafio", icon: Target, color: SOURCE_TYPE_COLORS.challenge.text },
+  manual: { label: "Manual", icon: GitBranch, color: "text-muted-foreground" },
 };
 
 const SUGGESTION_CONFIG: Record<string, { label: string; icon: typeof Brain; color: string }> = {
-  low_score_assessment: { label: "Score Baixo", icon: TrendingDown, color: "text-amber-600" },
-  streak_recovery: { label: "Recuperar Streak", icon: TrendingDown, color: "text-red-600" },
-  goal_failed: { label: "Meta Falha", icon: Target, color: "text-orange-600" },
-  peer_feedback: { label: "Feedback Pares", icon: Users, color: "text-blue-600" },
-  scheduled: { label: "Agendada", icon: Calendar, color: "text-purple-600" },
-  manager_request: { label: "Gestor", icon: Users, color: "text-indigo-600" },
-  self_assessment: { label: "Autoavaliação", icon: Lightbulb, color: "text-green-600" },
-  auto: { label: "Automática", icon: Sparkles, color: "text-cyan-600" },
-  manual: { label: "Manual", icon: Lightbulb, color: "text-gray-600" },
+  low_score_assessment: { label: "Score Baixo", icon: TrendingDown, color: STATUS_COLORS.warning.text },
+  streak_recovery: { label: "Recuperar Streak", icon: TrendingDown, color: STATUS_COLORS.error.text },
+  goal_failed: { label: "Meta Falha", icon: Target, color: "text-primary" },
+  peer_feedback: { label: "Feedback Pares", icon: Users, color: STATUS_COLORS.info.text },
+  scheduled: { label: "Agendada", icon: Calendar, color: ASSESSMENT_TYPE_COLORS.scheduled.text },
+  manager_request: { label: "Gestor", icon: Users, color: ASSESSMENT_TYPE_COLORS.manager_request.text },
+  self_assessment: { label: "Autoavaliação", icon: Lightbulb, color: ASSESSMENT_TYPE_COLORS.self_assessment.text },
+  auto: { label: "Automática", icon: Sparkles, color: ASSESSMENT_TYPE_COLORS.auto.text },
+  manual: { label: "Manual", icon: Lightbulb, color: "text-muted-foreground" },
 };
 
 export function TeamAssessmentsPanel() {

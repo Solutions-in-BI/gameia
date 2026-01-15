@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { SuggestionType } from "@/types/contextualAssessments";
+import { ASSESSMENT_TYPE_COLORS, STATUS_COLORS } from "@/constants/colors";
 
 interface AssessmentSuggestionCardProps {
   id: string;
@@ -37,7 +38,7 @@ interface AssessmentSuggestionCardProps {
   isLoading?: boolean;
 }
 
-// Configuração visual por tipo de sugestão
+// Configuração visual por tipo de sugestão - usando sistema centralizado
 const SUGGESTION_CONFIG: Record<string, {
   label: string;
   icon: typeof Brain;
@@ -48,65 +49,65 @@ const SUGGESTION_CONFIG: Record<string, {
   low_score_assessment: {
     label: "Score Baixo",
     icon: TrendingDown,
-    color: "text-amber-600",
-    bgColor: "bg-amber-500/10",
-    borderColor: "border-amber-500/30",
+    color: STATUS_COLORS.warning.text,
+    bgColor: STATUS_COLORS.warning.bgSubtle,
+    borderColor: STATUS_COLORS.warning.border,
   },
   streak_recovery: {
     label: "Recuperar Streak",
     icon: AlertCircle,
-    color: "text-red-600",
-    bgColor: "bg-red-500/10",
-    borderColor: "border-red-500/30",
+    color: STATUS_COLORS.error.text,
+    bgColor: STATUS_COLORS.error.bgSubtle,
+    borderColor: STATUS_COLORS.error.border,
   },
   goal_failed: {
     label: "Meta não Atingida",
     icon: Target,
-    color: "text-orange-600",
-    bgColor: "bg-orange-500/10",
-    borderColor: "border-orange-500/30",
+    color: "text-primary",
+    bgColor: "bg-primary/10",
+    borderColor: "border-primary/30",
   },
   peer_feedback: {
     label: "Feedback de Pares",
     icon: Users,
-    color: "text-blue-600",
-    bgColor: "bg-blue-500/10",
-    borderColor: "border-blue-500/30",
+    color: STATUS_COLORS.info.text,
+    bgColor: STATUS_COLORS.info.bgSubtle,
+    borderColor: STATUS_COLORS.info.border,
   },
   scheduled: {
     label: "Agendada",
     icon: Calendar,
-    color: "text-purple-600",
-    bgColor: "bg-purple-500/10",
-    borderColor: "border-purple-500/30",
+    color: ASSESSMENT_TYPE_COLORS.scheduled.text,
+    bgColor: ASSESSMENT_TYPE_COLORS.scheduled.bgSubtle,
+    borderColor: ASSESSMENT_TYPE_COLORS.scheduled.border,
   },
   manager_request: {
     label: "Solicitação do Gestor",
     icon: Users,
-    color: "text-indigo-600",
-    bgColor: "bg-indigo-500/10",
-    borderColor: "border-indigo-500/30",
+    color: ASSESSMENT_TYPE_COLORS.manager_request.text,
+    bgColor: ASSESSMENT_TYPE_COLORS.manager_request.bgSubtle,
+    borderColor: ASSESSMENT_TYPE_COLORS.manager_request.border,
   },
   self_assessment: {
     label: "Autoavaliação",
     icon: Lightbulb,
-    color: "text-green-600",
-    bgColor: "bg-green-500/10",
-    borderColor: "border-green-500/30",
+    color: ASSESSMENT_TYPE_COLORS.self_assessment.text,
+    bgColor: ASSESSMENT_TYPE_COLORS.self_assessment.bgSubtle,
+    borderColor: ASSESSMENT_TYPE_COLORS.self_assessment.border,
   },
   auto: {
     label: "Automática",
     icon: Sparkles,
-    color: "text-cyan-600",
-    bgColor: "bg-cyan-500/10",
-    borderColor: "border-cyan-500/30",
+    color: ASSESSMENT_TYPE_COLORS.auto.text,
+    bgColor: ASSESSMENT_TYPE_COLORS.auto.bgSubtle,
+    borderColor: ASSESSMENT_TYPE_COLORS.auto.border,
   },
   manual: {
     label: "Manual",
     icon: Lightbulb,
-    color: "text-gray-600",
-    bgColor: "bg-gray-500/10",
-    borderColor: "border-gray-500/30",
+    color: "text-muted-foreground",
+    bgColor: "bg-muted/50",
+    borderColor: "border-border",
   },
 };
 
@@ -134,9 +135,9 @@ export function AssessmentSuggestionCard({
   const SuggestionIcon = config.icon;
   const ContextIcon = contextType ? CONTEXT_ICON[contextType] || Lightbulb : Lightbulb;
 
-  // Priority indicator
+  // Priority indicator - usando sistema centralizado
   const priorityLabel = priority <= 3 ? "Alta" : priority <= 6 ? "Média" : "Baixa";
-  const priorityColor = priority <= 3 ? "text-red-500" : priority <= 6 ? "text-amber-500" : "text-green-500";
+  const priorityColor = priority <= 3 ? STATUS_COLORS.error.text : priority <= 6 ? STATUS_COLORS.warning.text : STATUS_COLORS.success.text;
 
   return (
     <motion.div
