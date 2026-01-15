@@ -35,6 +35,7 @@ import { EvolutionStatusIndicator } from "./EvolutionStatusIndicator";
 import { format, formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
+import { SOURCE_TYPE_COLORS, getSourceTypeColors } from "@/constants/colors";
 
 export type EvolutionTab = "overview" | "cognitive" | "assessments" | "pdi" | "one-on-one" | "profile" | "commitments";
 
@@ -44,13 +45,13 @@ interface EvolutionDashboardProps {
 
 // Mapeamento de source_type para labels e ícones
 const SOURCE_CONFIG: Record<SourceType, { label: string; icon: typeof Brain; color: string }> = {
-  game: { label: "Jogo", icon: Zap, color: "text-yellow-500" },
-  cognitive_test: { label: "Teste Mental", icon: Brain, color: "text-purple-500" },
-  feedback_360: { label: "Feedback", icon: Users, color: "text-blue-500" },
-  pdi_goal: { label: "Meta PDI", icon: Target, color: "text-green-500" },
-  one_on_one: { label: "1:1", icon: Calendar, color: "text-orange-500" },
-  training: { label: "Treinamento", icon: Award, color: "text-pink-500" },
-  challenge: { label: "Desafio", icon: Sparkles, color: "text-cyan-500" },
+  game: { label: "Jogo", icon: Zap, color: getSourceTypeColors("game").text },
+  cognitive_test: { label: "Teste Mental", icon: Brain, color: getSourceTypeColors("cognitive_test").text },
+  feedback_360: { label: "Feedback", icon: Users, color: getSourceTypeColors("feedback_360").text },
+  pdi_goal: { label: "Meta PDI", icon: Target, color: getSourceTypeColors("pdi_goal").text },
+  one_on_one: { label: "1:1", icon: Calendar, color: getSourceTypeColors("one_on_one").text },
+  training: { label: "Treinamento", icon: Award, color: getSourceTypeColors("training").text },
+  challenge: { label: "Desafio", icon: Sparkles, color: getSourceTypeColors("challenge").text },
 };
 
 export function EvolutionDashboard({ onTabChange }: EvolutionDashboardProps) {
