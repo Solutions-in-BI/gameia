@@ -654,3 +654,483 @@ export const FRAME_RARITY_COLORS = {
 } as const;
 
 export type FrameRarityKey = keyof typeof FRAME_RARITY_COLORS;
+
+// ============================================
+// CORES DE FONTE DE DADOS (Evolution Dashboard)
+// ============================================
+export const SOURCE_TYPE_COLORS = {
+  game: {
+    text: "text-secondary-foreground",
+    bg: "bg-secondary",
+    bgSubtle: "bg-secondary/20",
+    border: "border-secondary/30",
+    gradient: "from-secondary to-muted",
+    icon: "text-secondary-foreground",
+    label: "Jogos",
+  },
+  cognitive_test: {
+    text: "text-gameia-info",
+    bg: "bg-gameia-info",
+    bgSubtle: "bg-gameia-info/20",
+    border: "border-gameia-info/30",
+    gradient: "from-gameia-info to-gameia-teal",
+    icon: "text-gameia-info",
+    label: "Testes Cognitivos",
+  },
+  feedback_360: {
+    text: "text-gameia-success",
+    bg: "bg-gameia-success",
+    bgSubtle: "bg-gameia-success/20",
+    border: "border-gameia-success/30",
+    gradient: "from-gameia-success to-gameia-teal",
+    icon: "text-gameia-success",
+    label: "Feedback 360°",
+  },
+  pdi_goal: {
+    text: "text-primary",
+    bg: "bg-primary",
+    bgSubtle: "bg-primary/20",
+    border: "border-primary/30",
+    gradient: "from-primary to-accent",
+    icon: "text-primary",
+    label: "Metas PDI",
+  },
+  one_on_one: {
+    text: "text-gameia-teal",
+    bg: "bg-gameia-teal",
+    bgSubtle: "bg-gameia-teal/20",
+    border: "border-gameia-teal/30",
+    gradient: "from-gameia-teal to-gameia-info",
+    icon: "text-gameia-teal",
+    label: "1:1",
+  },
+  training: {
+    text: "text-gameia-info",
+    bg: "bg-gameia-info",
+    bgSubtle: "bg-gameia-info/20",
+    border: "border-gameia-info/30",
+    gradient: "from-gameia-info to-accent",
+    icon: "text-gameia-info",
+    label: "Treinamento",
+  },
+  challenge: {
+    text: "text-destructive",
+    bg: "bg-destructive",
+    bgSubtle: "bg-destructive/20",
+    border: "border-destructive/30",
+    gradient: "from-destructive to-accent",
+    icon: "text-destructive",
+    label: "Desafio",
+  },
+  assessment: {
+    text: "text-accent",
+    bg: "bg-accent",
+    bgSubtle: "bg-accent/20",
+    border: "border-accent/30",
+    gradient: "from-accent to-primary",
+    icon: "text-accent",
+    label: "Avaliação",
+  },
+} as const;
+
+export type SourceTypeKey = keyof typeof SOURCE_TYPE_COLORS;
+
+export function getSourceTypeColors(source: string) {
+  const normalized = source?.toLowerCase().replace(/[-\s]/g, '_') || 'assessment';
+  return SOURCE_TYPE_COLORS[normalized as SourceTypeKey] || SOURCE_TYPE_COLORS.assessment;
+}
+
+// ============================================
+// CORES DE TIPOS DE AVALIAÇÃO
+// ============================================
+export const ASSESSMENT_TYPE_COLORS = {
+  scheduled: {
+    text: "text-gameia-info",
+    bg: "bg-gameia-info",
+    bgSubtle: "bg-gameia-info/10",
+    border: "border-gameia-info/30",
+    icon: "text-gameia-info",
+    label: "Agendado",
+  },
+  manager_request: {
+    text: "text-secondary-foreground",
+    bg: "bg-secondary",
+    bgSubtle: "bg-secondary/10",
+    border: "border-secondary/30",
+    icon: "text-secondary-foreground",
+    label: "Solicitação do Gestor",
+  },
+  self_assessment: {
+    text: "text-gameia-success",
+    bg: "bg-gameia-success",
+    bgSubtle: "bg-gameia-success/10",
+    border: "border-gameia-success/30",
+    icon: "text-gameia-success",
+    label: "Auto Avaliação",
+  },
+  auto: {
+    text: "text-accent",
+    bg: "bg-accent",
+    bgSubtle: "bg-accent/10",
+    border: "border-accent/30",
+    icon: "text-accent",
+    label: "Automático",
+  },
+  peer_review: {
+    text: "text-gameia-teal",
+    bg: "bg-gameia-teal",
+    bgSubtle: "bg-gameia-teal/10",
+    border: "border-gameia-teal/30",
+    icon: "text-gameia-teal",
+    label: "Avaliação de Par",
+  },
+  post_training: {
+    text: "text-primary",
+    bg: "bg-primary",
+    bgSubtle: "bg-primary/10",
+    border: "border-primary/30",
+    icon: "text-primary",
+    label: "Pós-Treinamento",
+  },
+  post_challenge: {
+    text: "text-destructive",
+    bg: "bg-destructive",
+    bgSubtle: "bg-destructive/10",
+    border: "border-destructive/30",
+    icon: "text-destructive",
+    label: "Pós-Desafio",
+  },
+  quick_reflection: {
+    text: "text-gameia-warning",
+    bg: "bg-gameia-warning",
+    bgSubtle: "bg-gameia-warning/10",
+    border: "border-gameia-warning/30",
+    icon: "text-gameia-warning",
+    label: "Reflexão Rápida",
+  },
+} as const;
+
+export type AssessmentTypeKey = keyof typeof ASSESSMENT_TYPE_COLORS;
+
+export function getAssessmentTypeColors(type: string) {
+  const normalized = type?.toLowerCase().replace(/[-\s]/g, '_') || 'auto';
+  return ASSESSMENT_TYPE_COLORS[normalized as AssessmentTypeKey] || ASSESSMENT_TYPE_COLORS.auto;
+}
+
+// ============================================
+// CORES DE TESTES COGNITIVOS
+// ============================================
+export const COGNITIVE_TEST_COLORS = {
+  logic: {
+    text: "text-gameia-info",
+    bg: "bg-gameia-info",
+    bgSubtle: "bg-gameia-info/10",
+    border: "border-gameia-info/30",
+    gradient: "from-gameia-info to-gameia-teal",
+    icon: "text-gameia-info",
+    label: "Lógica",
+  },
+  verbal: {
+    text: "text-secondary-foreground",
+    bg: "bg-secondary",
+    bgSubtle: "bg-secondary/10",
+    border: "border-secondary/30",
+    gradient: "from-secondary to-muted",
+    icon: "text-secondary-foreground",
+    label: "Verbal",
+  },
+  spatial: {
+    text: "text-gameia-teal",
+    bg: "bg-gameia-teal",
+    bgSubtle: "bg-gameia-teal/10",
+    border: "border-gameia-teal/30",
+    gradient: "from-gameia-teal to-gameia-info",
+    icon: "text-gameia-teal",
+    label: "Espacial",
+  },
+  attention: {
+    text: "text-primary",
+    bg: "bg-primary",
+    bgSubtle: "bg-primary/10",
+    border: "border-primary/30",
+    gradient: "from-primary to-accent",
+    icon: "text-primary",
+    label: "Atenção",
+  },
+  memory: {
+    text: "text-accent",
+    bg: "bg-accent",
+    bgSubtle: "bg-accent/10",
+    border: "border-accent/30",
+    gradient: "from-accent to-primary",
+    icon: "text-accent",
+    label: "Memória",
+  },
+  numerical: {
+    text: "text-gameia-success",
+    bg: "bg-gameia-success",
+    bgSubtle: "bg-gameia-success/10",
+    border: "border-gameia-success/30",
+    gradient: "from-gameia-success to-gameia-teal",
+    icon: "text-gameia-success",
+    label: "Numérico",
+  },
+  processing_speed: {
+    text: "text-destructive",
+    bg: "bg-destructive",
+    bgSubtle: "bg-destructive/10",
+    border: "border-destructive/30",
+    gradient: "from-destructive to-accent",
+    icon: "text-destructive",
+    label: "Velocidade",
+  },
+} as const;
+
+export type CognitiveTestKey = keyof typeof COGNITIVE_TEST_COLORS;
+
+export function getCognitiveTestColors(type: string) {
+  const normalized = type?.toLowerCase().replace(/[-\s]/g, '_') || 'logic';
+  return COGNITIVE_TEST_COLORS[normalized as CognitiveTestKey] || COGNITIVE_TEST_COLORS.logic;
+}
+
+// ============================================
+// CORES DE STATUS DE CERTIFICADO
+// ============================================
+export const CERTIFICATE_STATUS_COLORS = {
+  active: {
+    text: "text-gameia-success",
+    bg: "bg-gameia-success",
+    bgSubtle: "bg-gameia-success/10",
+    border: "border-gameia-success/30",
+    icon: "text-gameia-success",
+    label: "Ativo",
+  },
+  pending_approval: {
+    text: "text-gameia-warning",
+    bg: "bg-gameia-warning",
+    bgSubtle: "bg-gameia-warning/10",
+    border: "border-gameia-warning/30",
+    icon: "text-gameia-warning",
+    label: "Pendente",
+  },
+  expired: {
+    text: "text-muted-foreground",
+    bg: "bg-muted",
+    bgSubtle: "bg-muted/50",
+    border: "border-border",
+    icon: "text-muted-foreground",
+    label: "Expirado",
+  },
+  revoked: {
+    text: "text-destructive",
+    bg: "bg-destructive",
+    bgSubtle: "bg-destructive/10",
+    border: "border-destructive/30",
+    icon: "text-destructive",
+    label: "Revogado",
+  },
+} as const;
+
+export type CertificateStatusKey = keyof typeof CERTIFICATE_STATUS_COLORS;
+
+export function getCertificateStatusColors(status: string) {
+  const normalized = status?.toLowerCase().replace(/[-\s]/g, '_') || 'active';
+  return CERTIFICATE_STATUS_COLORS[normalized as CertificateStatusKey] || CERTIFICATE_STATUS_COLORS.active;
+}
+
+// ============================================
+// CORES DE COMPORTAMENTO DE ITENS (Marketplace)
+// ============================================
+export const ITEM_BEHAVIOR_COLORS = {
+  equippable: {
+    text: "text-secondary-foreground",
+    bg: "bg-secondary",
+    bgSubtle: "bg-secondary/10",
+    border: "border-secondary/30",
+    icon: "text-secondary-foreground",
+    label: "Equipável",
+  },
+  consumable: {
+    text: "text-gameia-success",
+    bg: "bg-gameia-success",
+    bgSubtle: "bg-gameia-success/10",
+    border: "border-gameia-success/30",
+    icon: "text-gameia-success",
+    label: "Consumível",
+  },
+  redeemable: {
+    text: "text-primary",
+    bg: "bg-primary",
+    bgSubtle: "bg-primary/10",
+    border: "border-primary/30",
+    icon: "text-primary",
+    label: "Resgatável",
+  },
+  permanent: {
+    text: "text-gameia-info",
+    bg: "bg-gameia-info",
+    bgSubtle: "bg-gameia-info/10",
+    border: "border-gameia-info/30",
+    icon: "text-gameia-info",
+    label: "Permanente",
+  },
+  collectible: {
+    text: "text-accent",
+    bg: "bg-accent",
+    bgSubtle: "bg-accent/10",
+    border: "border-accent/30",
+    icon: "text-accent",
+    label: "Colecionável",
+  },
+} as const;
+
+export type ItemBehaviorKey = keyof typeof ITEM_BEHAVIOR_COLORS;
+
+export function getItemBehaviorColors(behavior: string) {
+  const normalized = behavior?.toLowerCase().replace(/[-\s]/g, '_') || 'equippable';
+  return ITEM_BEHAVIOR_COLORS[normalized as ItemBehaviorKey] || ITEM_BEHAVIOR_COLORS.equippable;
+}
+
+// ============================================
+// GRADIENTES HERO/PREMIUM
+// ============================================
+export const HERO_GRADIENTS = {
+  primary: {
+    gradient: "from-primary via-accent to-primary",
+    gradientSubtle: "from-primary/20 via-accent/20 to-primary/20",
+    mesh: "radial-gradient(ellipse at 30% 20%, hsl(var(--primary) / 0.15) 0%, transparent 50%)",
+  },
+  secondary: {
+    gradient: "from-secondary via-muted to-secondary",
+    gradientSubtle: "from-secondary/20 via-muted/20 to-secondary/20",
+    mesh: "radial-gradient(ellipse at 70% 80%, hsl(var(--secondary) / 0.15) 0%, transparent 50%)",
+  },
+  success: {
+    gradient: "from-gameia-success via-gameia-teal to-gameia-success",
+    gradientSubtle: "from-gameia-success/20 via-gameia-teal/20 to-gameia-success/20",
+    mesh: "radial-gradient(ellipse at 50% 50%, hsl(var(--gameia-success) / 0.15) 0%, transparent 50%)",
+  },
+  info: {
+    gradient: "from-gameia-info via-gameia-teal to-gameia-info",
+    gradientSubtle: "from-gameia-info/20 via-gameia-teal/20 to-gameia-info/20",
+    mesh: "radial-gradient(ellipse at 30% 70%, hsl(var(--gameia-info) / 0.15) 0%, transparent 50%)",
+  },
+  premium: {
+    gradient: "from-primary via-accent to-secondary",
+    gradientSubtle: "from-primary/20 via-accent/20 to-secondary/20",
+    mesh: "radial-gradient(ellipse at 20% 30%, hsl(var(--primary) / 0.2) 0%, transparent 40%), radial-gradient(ellipse at 80% 70%, hsl(var(--accent) / 0.15) 0%, transparent 40%)",
+  },
+} as const;
+
+export type HeroGradientKey = keyof typeof HERO_GRADIENTS;
+
+// ============================================
+// CORES SELECIONÁVEIS (Paleta para UI pickers)
+// Usado em BasicInfoStep, TrainingFormModal, etc.
+// ============================================
+export const SELECTABLE_COLORS = [
+  { value: "hsl(var(--primary))", label: "Honey", preview: "bg-primary" },
+  { value: "hsl(var(--secondary))", label: "Charcoal", preview: "bg-secondary" },
+  { value: "hsl(var(--accent))", label: "Accent", preview: "bg-accent" },
+  { value: "hsl(var(--gameia-success))", label: "Success", preview: "bg-gameia-success" },
+  { value: "hsl(var(--gameia-warning))", label: "Warning", preview: "bg-gameia-warning" },
+  { value: "hsl(var(--gameia-info))", label: "Info", preview: "bg-gameia-info" },
+  { value: "hsl(var(--gameia-teal))", label: "Teal", preview: "bg-gameia-teal" },
+  { value: "hsl(var(--destructive))", label: "Danger", preview: "bg-destructive" },
+  { value: "hsl(var(--tier-gold))", label: "Gold", preview: "bg-tier-gold" },
+  { value: "hsl(var(--tier-diamond))", label: "Diamond", preview: "bg-tier-diamond" },
+] as const;
+
+// ============================================
+// CORES DE FORMATO DE CONTEÚDO (Notes, Docs)
+// ============================================
+export const CONTENT_FORMAT_COLORS = {
+  video: {
+    text: "text-destructive",
+    bg: "bg-destructive",
+    bgSubtle: "bg-destructive/10",
+    border: "border-destructive/30",
+    icon: "text-destructive",
+    label: "Vídeo",
+  },
+  text: {
+    text: "text-gameia-info",
+    bg: "bg-gameia-info",
+    bgSubtle: "bg-gameia-info/10",
+    border: "border-gameia-info/30",
+    icon: "text-gameia-info",
+    label: "Texto",
+  },
+  quiz: {
+    text: "text-secondary-foreground",
+    bg: "bg-secondary",
+    bgSubtle: "bg-secondary/10",
+    border: "border-secondary/30",
+    icon: "text-secondary-foreground",
+    label: "Quiz",
+  },
+  audio: {
+    text: "text-gameia-success",
+    bg: "bg-gameia-success",
+    bgSubtle: "bg-gameia-success/10",
+    border: "border-gameia-success/30",
+    icon: "text-gameia-success",
+    label: "Áudio",
+  },
+  document: {
+    text: "text-primary",
+    bg: "bg-primary",
+    bgSubtle: "bg-primary/10",
+    border: "border-primary/30",
+    icon: "text-primary",
+    label: "Documento",
+  },
+  interactive: {
+    text: "text-accent",
+    bg: "bg-accent",
+    bgSubtle: "bg-accent/10",
+    border: "border-accent/30",
+    icon: "text-accent",
+    label: "Interativo",
+  },
+} as const;
+
+export type ContentFormatKey = keyof typeof CONTENT_FORMAT_COLORS;
+
+export function getContentFormatColors(format: string) {
+  const normalized = format?.toLowerCase().replace(/[-\s]/g, '_') || 'text';
+  return CONTENT_FORMAT_COLORS[normalized as ContentFormatKey] || CONTENT_FORMAT_COLORS.text;
+}
+
+// ============================================
+// CORES DE INDICADOR DE PROGRESSO DINÂMICO
+// Para barras de progresso e indicadores circulares
+// ============================================
+export const DYNAMIC_PROGRESS_COLORS = {
+  getColor: (percentage: number) => {
+    if (percentage >= 90) return { 
+      stroke: "hsl(var(--primary))",
+      fill: "hsl(var(--primary) / 0.2)",
+      text: "text-primary",
+      bg: "bg-primary",
+    };
+    if (percentage >= 70) return { 
+      stroke: "hsl(var(--gameia-success))",
+      fill: "hsl(var(--gameia-success) / 0.2)",
+      text: "text-gameia-success",
+      bg: "bg-gameia-success",
+    };
+    if (percentage >= 40) return { 
+      stroke: "hsl(var(--gameia-warning))",
+      fill: "hsl(var(--gameia-warning) / 0.2)",
+      text: "text-gameia-warning",
+      bg: "bg-gameia-warning",
+    };
+    return { 
+      stroke: "hsl(var(--destructive))",
+      fill: "hsl(var(--destructive) / 0.2)",
+      text: "text-destructive",
+      bg: "bg-destructive",
+    };
+  },
+} as const;
