@@ -11,7 +11,7 @@ import {
 import { MarketplaceItem } from "@/hooks/useMarketplace";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { RARITY_COLORS } from "@/constants/colors";
+import { getRarityColors, getItemBehaviorColors } from "@/constants/colors";
 
 interface EnhancedItemCardProps {
   item: MarketplaceItem;
@@ -21,28 +21,28 @@ interface EnhancedItemCardProps {
   index?: number;
 }
 
-// Behavior type configuration (functional type)
-const BEHAVIOR_CONFIG = {
-  equippable: { icon: Shirt, label: "Equipável", color: "text-accent bg-accent/10" },
-  consumable: { icon: Zap, label: "Consumível", color: "text-primary bg-primary/10" },
-  redeemable: { icon: HandHeart, label: "Benefício real", color: "text-gameia-success bg-gameia-success/10" },
-  permanent: { icon: Crown, label: "Permanente", color: "text-gameia-info bg-gameia-info/10" },
+// Behavior type icons configuration
+const BEHAVIOR_ICONS = {
+  equippable: Shirt,
+  consumable: Zap,
+  redeemable: HandHeart,
+  permanent: Crown,
 };
 
-// Item type display configuration
-const ITEM_TYPE_CONFIG = {
-  cosmetic: { icon: Sparkles, label: "Personalização", color: "text-accent" },
-  boost: { icon: Zap, label: "Vantagem", color: "text-primary" },
-  experience: { icon: Gift, label: "Experiência", color: "text-gameia-success" },
-  functional: { icon: Star, label: "Funcional", color: "text-accent" },
+// Item type icons configuration  
+const ITEM_TYPE_ICONS = {
+  cosmetic: Sparkles,
+  boost: Zap,
+  experience: Gift,
+  functional: Star,
 };
 
 // Determine behavior type from item
-function getBehaviorType(item: MarketplaceItem): keyof typeof BEHAVIOR_CONFIG {
+function getBehaviorType(item: MarketplaceItem): string {
   // Check explicit behavior_type first
   const explicitBehavior = (item as any).behavior_type;
-  if (explicitBehavior && BEHAVIOR_CONFIG[explicitBehavior as keyof typeof BEHAVIOR_CONFIG]) {
-    return explicitBehavior as keyof typeof BEHAVIOR_CONFIG;
+  if (explicitBehavior && BEHAVIOR_ICONS[explicitBehavior as keyof typeof BEHAVIOR_ICONS]) {
+    return explicitBehavior;
   }
   
   // Infer from category/item_type
@@ -63,19 +63,16 @@ function getBehaviorType(item: MarketplaceItem): keyof typeof BEHAVIOR_CONFIG {
 
 export const EnhancedItemCard = forwardRef<HTMLDivElement, EnhancedItemCardProps>(
   function EnhancedItemCard({ item, owned, canAfford, onPurchase, index = 0 }, ref) {
-    const rarityKey = item.rarity as keyof typeof RARITY_COLORS || 'common';
-    const rarityConfig = RARITY_COLORS[rarityKey] || RARITY_COLORS.common;
+    const rarityConfig = getRarityColors(item.rarity || 'common');
     const behaviorType = getBehaviorType(item);
-    const behaviorConfig = BEHAVIOR_CONFIG[behaviorType];
-    const typeConfig = ITEM_TYPE_CONFIG[(item.item_type || "cosmetic") as keyof typeof ITEM_TYPE_CONFIG] || ITEM_TYPE_CONFIG.cosmetic;
+    const behaviorColors = getItemBehaviorColors(behaviorType);
+    const BehaviorIcon = BEHAVIOR_ICONS[behaviorType as keyof typeof BEHAVIOR_ICONS] || Zap;
     
     const isLegendary = item.rarity === "legendary";
     const isBoost = item.item_type === "boost" || item.category === "boost";
     const hasExpiration = item.expires_after_purchase !== null && item.expires_after_purchase > 0;
     const requiresApproval = item.requires_approval;
     const isSingleUse = item.max_uses === 1;
-    
-    const BehaviorIcon = behaviorConfig.icon;
 
     return (
       <motion.div
@@ -106,10 +103,10 @@ export const EnhancedItemCard = forwardRef<HTMLDivElement, EnhancedItemCardProps
           <div className="absolute top-2 left-2">
             <span className={cn(
               "flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full backdrop-blur-sm",
-              behaviorConfig.color
+              behaviorColors.text, behaviorColors.bg
             )}>
               <BehaviorIcon className="w-3 h-3" />
-              {behaviorConfig.label}
+              {behaviorColors.label}
             </span>
           </div>
 

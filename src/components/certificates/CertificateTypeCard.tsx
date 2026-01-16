@@ -8,7 +8,7 @@ import { Award, BookOpen, Route, Star, Medal, Users, CheckCircle2, Clock, XCircl
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { CertificateWithDetails } from "@/hooks/useCertificates";
-import { CONTENT_TYPE_COLORS, STATUS_COLORS } from "@/constants/colors";
+import { CONTENT_TYPE_COLORS, getCertificateStatusColors } from "@/constants/colors";
 
 interface CertificateTypeCardProps {
   certificate: CertificateWithDetails;
@@ -61,14 +61,7 @@ const STATUS_CONFIG = {
   },
 };
 
-// Map certificate status to STATUS_COLORS keys
-const STATUS_COLOR_MAP: Record<string, keyof typeof STATUS_COLORS> = {
-  active: 'success',
-  pending_approval: 'warning',
-  expired: 'warning',
-  revoked: 'error',
-  rejected: 'error',
-};
+// Status colors now come from getCertificateStatusColors helper
 
 export function CertificateTypeCard({ certificate, onClick }: CertificateTypeCardProps) {
   const certType = (certificate as any).certificate_type || "training";
@@ -77,8 +70,7 @@ export function CertificateTypeCard({ certificate, onClick }: CertificateTypeCar
   
   const statusKey = certificate.status as keyof typeof STATUS_CONFIG;
   const statusConfig = STATUS_CONFIG[statusKey] || STATUS_CONFIG.active;
-  const statusColorKey = STATUS_COLOR_MAP[statusKey] || 'success';
-  const statusColors = STATUS_COLORS[statusColorKey];
+  const statusColors = getCertificateStatusColors(statusKey);
   
   const TypeIcon = typeConfig.icon;
   const StatusIcon = statusConfig.icon;
