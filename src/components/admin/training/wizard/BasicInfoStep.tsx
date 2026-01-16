@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type { TrainingFormData } from "../TrainingWizard";
+import { getDifficultyColors, SELECTABLE_COLORS } from "@/constants/colors";
 
 interface BasicInfoStepProps {
   formData: TrainingFormData;
@@ -39,21 +40,15 @@ const CATEGORIES = [
 ];
 
 const DIFFICULTIES = [
-  { value: "beginner", label: "Iniciante", color: "text-emerald-500" },
-  { value: "intermediate", label: "Intermediário", color: "text-amber-500" },
-  { value: "advanced", label: "Avançado", color: "text-orange-500" },
-  { value: "expert", label: "Expert", color: "text-red-500" },
+  { value: "beginner", label: "Iniciante" },
+  { value: "intermediate", label: "Intermediário" },
+  { value: "advanced", label: "Avançado" },
+  { value: "expert", label: "Expert" },
 ];
 
 const EMOJIS = [
   "📚", "🎯", "🚀", "💡", "🎓", "📊", "💼", "🏆", 
   "⭐", "🔥", "💪", "🎨", "🔧", "📱", "💻", "🌟"
-];
-
-const COLORS = [
-  "#6366f1", "#8b5cf6", "#ec4899", "#ef4444", 
-  "#f97316", "#eab308", "#22c55e", "#14b8a6",
-  "#06b6d4", "#3b82f6", "#6b7280", "#1f2937"
 ];
 
 export function BasicInfoStep({ formData, setFormData }: BasicInfoStepProps) {
@@ -174,15 +169,14 @@ export function BasicInfoStep({ formData, setFormData }: BasicInfoStepProps) {
             Cor
           </Label>
           <div className="flex flex-wrap gap-2 p-3 rounded-lg border border-border bg-muted/30">
-            {COLORS.map((color) => (
+            {SELECTABLE_COLORS.map((colorObj) => (
               <button
-                key={color}
+                key={colorObj.value}
                 type="button"
-                onClick={() => setFormData(prev => ({ ...prev, color }))}
-                className={`w-8 h-8 rounded-lg transition-all ${
-                  formData.color === color ? "ring-2 ring-offset-2 ring-primary" : ""
+                onClick={() => setFormData(prev => ({ ...prev, color: colorObj.value }))}
+                className={`w-8 h-8 rounded-lg transition-all ${colorObj.preview} ${
+                  formData.color === colorObj.value ? "ring-2 ring-offset-2 ring-primary" : ""
                 }`}
-                style={{ backgroundColor: color }}
               />
             ))}
           </div>
@@ -220,11 +214,14 @@ export function BasicInfoStep({ formData, setFormData }: BasicInfoStepProps) {
               <SelectValue placeholder="Selecione" />
             </SelectTrigger>
             <SelectContent>
-              {DIFFICULTIES.map((diff) => (
-                <SelectItem key={diff.value} value={diff.value}>
-                  <span className={diff.color}>{diff.label}</span>
-                </SelectItem>
-              ))}
+              {DIFFICULTIES.map((diff) => {
+                const diffColors = getDifficultyColors(diff.value);
+                return (
+                  <SelectItem key={diff.value} value={diff.value}>
+                    <span className={diffColors.text}>{diff.label}</span>
+                  </SelectItem>
+                );
+              })}
             </SelectContent>
           </Select>
         </div>
