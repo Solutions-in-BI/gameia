@@ -42,6 +42,8 @@ interface ExperienceCardProps {
   className?: string;
 }
 
+import { getSourceTypeColors, getDifficultyColors } from "@/constants/colors";
+
 const TYPE_CONFIG: Record<ExperienceType, { 
   label: string; 
   icon: React.ReactNode; 
@@ -51,39 +53,39 @@ const TYPE_CONFIG: Record<ExperienceType, {
   game: {
     label: 'Jogo',
     icon: <Gamepad2 className="w-3.5 h-3.5" />,
-    color: 'text-purple-600 dark:text-purple-400',
-    bgColor: 'bg-purple-500/10'
+    color: getSourceTypeColors('game').text,
+    bgColor: getSourceTypeColors('game').bg
   },
   training: {
     label: 'Treinamento',
     icon: <GraduationCap className="w-3.5 h-3.5" />,
-    color: 'text-blue-600 dark:text-blue-400',
-    bgColor: 'bg-blue-500/10'
+    color: getSourceTypeColors('training').text,
+    bgColor: getSourceTypeColors('training').bg
   },
   cognitive_test: {
     label: 'Teste',
     icon: <Brain className="w-3.5 h-3.5" />,
-    color: 'text-emerald-600 dark:text-emerald-400',
-    bgColor: 'bg-emerald-500/10'
+    color: getSourceTypeColors('cognitive_test').text,
+    bgColor: getSourceTypeColors('cognitive_test').bg
   },
   challenge: {
     label: 'Desafio',
     icon: <Target className="w-3.5 h-3.5" />,
-    color: 'text-orange-600 dark:text-orange-400',
-    bgColor: 'bg-orange-500/10'
+    color: getSourceTypeColors('challenge').text,
+    bgColor: getSourceTypeColors('challenge').bg
   },
   simulation: {
     label: 'Simulação',
     icon: <MessageSquare className="w-3.5 h-3.5" />,
-    color: 'text-pink-600 dark:text-pink-400',
-    bgColor: 'bg-pink-500/10'
+    color: 'text-accent',
+    bgColor: 'bg-accent/10'
   }
 };
 
 const DIFFICULTY_CONFIG = {
-  easy: { label: 'Fácil', color: 'text-green-600 bg-green-500/10' },
-  medium: { label: 'Médio', color: 'text-amber-600 bg-amber-500/10' },
-  hard: { label: 'Difícil', color: 'text-red-600 bg-red-500/10' }
+  easy: { label: 'Fácil', color: `${getDifficultyColors('easy').text} ${getDifficultyColors('easy').bg}` },
+  medium: { label: 'Médio', color: `${getDifficultyColors('medium').text} ${getDifficultyColors('medium').bg}` },
+  hard: { label: 'Difícil', color: `${getDifficultyColors('hard').text} ${getDifficultyColors('hard').bg}` }
 };
 
 export function ExperienceCard({

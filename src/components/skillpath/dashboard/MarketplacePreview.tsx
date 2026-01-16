@@ -34,19 +34,20 @@ interface MarketplacePreviewProps {
   onViewAll: () => void;
 }
 
-const RARITY_COLORS = {
-  common: "border-muted bg-muted/10",
-  uncommon: "border-green-400/30 bg-green-500/10",
-  rare: "border-blue-400/30 bg-blue-500/10",
-  epic: "border-purple-400/30 bg-purple-500/10",
-  legendary: "border-yellow-400/30 bg-yellow-500/10",
+import { RARITY_COLORS, ITEM_BEHAVIOR_COLORS, getRarityColors, getItemBehaviorColors } from "@/constants/colors";
+
+// Map rarity to border/bg classes
+const getRarityClasses = (rarity: string) => {
+  const colors = getRarityColors(rarity);
+  if (rarity === 'common') return "border-muted bg-muted/10";
+  return `border-${rarity === 'legendary' ? 'primary' : rarity === 'epic' ? 'secondary' : rarity === 'rare' ? 'gameia-info' : 'gameia-success'}/30 ${colors.bg}`;
 };
 
 const BEHAVIOR_CONFIG = {
-  equippable: { icon: Shirt, label: "Equipável", color: "text-pink-500 bg-pink-500/10" },
-  consumable: { icon: Zap, label: "Vantagem", color: "text-amber-500 bg-amber-500/10" },
-  redeemable: { icon: Gift, label: "Benefício", color: "text-emerald-500 bg-emerald-500/10" },
-  permanent: { icon: GraduationCap, label: "Curso", color: "text-blue-500 bg-blue-500/10" },
+  equippable: { icon: Shirt, label: "Equipável", color: `${ITEM_BEHAVIOR_COLORS.equippable.text} ${ITEM_BEHAVIOR_COLORS.equippable.bg}` },
+  consumable: { icon: Zap, label: "Vantagem", color: `${ITEM_BEHAVIOR_COLORS.consumable.text} ${ITEM_BEHAVIOR_COLORS.consumable.bg}` },
+  redeemable: { icon: Gift, label: "Benefício", color: `${ITEM_BEHAVIOR_COLORS.redeemable.text} ${ITEM_BEHAVIOR_COLORS.redeemable.bg}` },
+  permanent: { icon: GraduationCap, label: "Curso", color: `${ITEM_BEHAVIOR_COLORS.permanent.text} ${ITEM_BEHAVIOR_COLORS.permanent.bg}` },
 };
 
 function getBehaviorType(item: MarketplaceItem): keyof typeof BEHAVIOR_CONFIG {
@@ -114,7 +115,7 @@ export function MarketplacePreview({
               className={cn(
                 "relative p-4 rounded-2xl border backdrop-blur-sm",
                 "hover:scale-[1.02] transition-all duration-200",
-                RARITY_COLORS[item.rarity as keyof typeof RARITY_COLORS] || RARITY_COLORS.common
+                getRarityClasses(item.rarity)
               )}
             >
               {/* Behavior type badge */}
@@ -132,10 +133,7 @@ export function MarketplacePreview({
                 <div className="absolute top-2 right-2">
                   <Sparkles className={cn(
                     "w-4 h-4",
-                    item.rarity === "legendary" && "text-yellow-400",
-                    item.rarity === "epic" && "text-purple-400",
-                    item.rarity === "rare" && "text-blue-400",
-                    item.rarity === "uncommon" && "text-green-400",
+                    getRarityColors(item.rarity).text
                   )} />
                 </div>
               )}
