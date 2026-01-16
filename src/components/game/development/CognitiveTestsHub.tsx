@@ -27,19 +27,21 @@ import { useCognitiveTests } from "@/hooks/useCognitiveTests";
 import { CognitiveTestPlayer } from "./CognitiveTestPlayer";
 import { MyCognitiveProfile } from "./MyCognitiveProfile";
 
+import { getCognitiveTestColors, getDifficultyColors } from "@/constants/colors";
+
 const TEST_TYPE_CONFIG: Record<string, { icon: React.ElementType; color: string; gradient: string }> = {
-  logic: { icon: Brain, color: "text-violet-500", gradient: "from-violet-500 to-purple-600" },
-  verbal: { icon: MessageSquare, color: "text-blue-500", gradient: "from-blue-500 to-cyan-600" },
-  spatial: { icon: RotateCcw, color: "text-pink-500", gradient: "from-pink-500 to-rose-600" },
-  attention: { icon: Eye, color: "text-emerald-500", gradient: "from-emerald-500 to-green-600" },
-  memory: { icon: BookOpen, color: "text-amber-500", gradient: "from-amber-500 to-orange-600" },
-  numerical: { icon: Calculator, color: "text-red-500", gradient: "from-red-500 to-rose-600" },
+  logic: { icon: Brain, color: getCognitiveTestColors('logic').text, gradient: getCognitiveTestColors('logic').gradient },
+  verbal: { icon: MessageSquare, color: getCognitiveTestColors('verbal').text, gradient: getCognitiveTestColors('verbal').gradient },
+  spatial: { icon: RotateCcw, color: getCognitiveTestColors('spatial').text, gradient: getCognitiveTestColors('spatial').gradient },
+  attention: { icon: Eye, color: getCognitiveTestColors('attention').text, gradient: getCognitiveTestColors('attention').gradient },
+  memory: { icon: BookOpen, color: getCognitiveTestColors('memory').text, gradient: getCognitiveTestColors('memory').gradient },
+  numerical: { icon: Calculator, color: getCognitiveTestColors('numerical').text, gradient: getCognitiveTestColors('numerical').gradient },
 };
 
 const DIFFICULTY_CONFIG: Record<string, { label: string; color: string }> = {
-  easy: { label: "Fácil", color: "bg-emerald-500/20 text-emerald-500" },
-  medium: { label: "Médio", color: "bg-amber-500/20 text-amber-500" },
-  hard: { label: "Difícil", color: "bg-red-500/20 text-red-500" },
+  easy: { label: "Fácil", color: `${getDifficultyColors('easy').bg} ${getDifficultyColors('easy').text}` },
+  medium: { label: "Médio", color: `${getDifficultyColors('medium').bg} ${getDifficultyColors('medium').text}` },
+  hard: { label: "Difícil", color: `${getDifficultyColors('hard').bg} ${getDifficultyColors('hard').text}` },
 };
 
 interface CognitiveTestsHubProps {

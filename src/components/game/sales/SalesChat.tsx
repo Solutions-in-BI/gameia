@@ -37,10 +37,10 @@ export function SalesChat({
   onExit 
 }: SalesChatProps) {
   const getRapportColor = () => {
-    if (rapport >= 70) return 'from-green-500 to-emerald-400';
-    if (rapport >= 40) return 'from-cyan-500 to-blue-400';
-    if (rapport >= 20) return 'from-amber-500 to-orange-400';
-    return 'from-red-500 to-rose-400';
+    if (rapport >= 70) return 'from-gameia-success to-gameia-success/80';
+    if (rapport >= 40) return 'from-gameia-info to-gameia-info/80';
+    if (rapport >= 20) return 'from-gameia-warning to-primary';
+    return 'from-destructive to-destructive/80';
   };
 
   const getRapportStatus = () => {
@@ -64,11 +64,11 @@ export function SalesChat({
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 bg-card/50 border border-border/50 rounded-full px-3 py-1.5">
-            <Clock className="w-4 h-4 text-cyan-400" />
+            <Clock className="w-4 h-4 text-gameia-info" />
             <span className="font-mono font-bold text-sm">{timeLeft}</span>
           </div>
           <div className="flex items-center gap-2 bg-card/50 border border-border/50 rounded-full px-3 py-1.5">
-            <Star className="w-4 h-4 text-amber-400" />
+            <Star className="w-4 h-4 text-reward-xp" />
             <span className="font-bold text-sm">{score}</span>
           </div>
         </div>
@@ -83,7 +83,7 @@ export function SalesChat({
       <div className="bg-card/50 border border-border/50 rounded-xl p-4 mb-4">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-500/20 to-emerald-500/20 flex items-center justify-center text-2xl">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gameia-success/20 to-gameia-success/10 flex items-center justify-center text-2xl">
               {persona.avatar || '👤'}
             </div>
             <div>
@@ -99,7 +99,7 @@ export function SalesChat({
             <div className="text-xs text-muted-foreground mb-1">Rapport</div>
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-muted-foreground">{getRapportStatus()}</span>
-              <span className="text-lg font-bold text-cyan-400">{rapport}%</span>
+              <span className="text-lg font-bold text-gameia-info">{rapport}%</span>
             </div>
             <div className="w-24 h-2 bg-muted rounded-full overflow-hidden mt-1">
               <motion.div 

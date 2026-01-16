@@ -58,11 +58,15 @@ interface GameHubProps {
   onSelectGame: (game: string) => void;
 }
 
-// Estilos por dificuldade
-const DIFFICULTY_STYLES: Record<GameDifficulty, { label: string; color: string }> = {
-  easy: { label: "EASY", color: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" },
-  medium: { label: "MEDIUM", color: "bg-amber-500/20 text-amber-400 border-amber-500/30" },
-  hard: { label: "HARD", color: "bg-rose-500/20 text-rose-400 border-rose-500/30" },
+import { getDifficultyColors, REWARD_COLORS } from "@/constants/colors";
+
+// Estilos por dificuldade usando sistema centralizado
+const getDifficultyStyle = (difficulty: GameDifficulty) => {
+  const colors = getDifficultyColors(difficulty);
+  return {
+    label: difficulty.toUpperCase(),
+    color: `${colors.bg} ${colors.text} border-${difficulty === 'easy' ? 'gameia-success' : difficulty === 'medium' ? 'gameia-warning' : 'destructive'}/30`
+  };
 };
 
 // Jogos Empresariais
@@ -276,7 +280,7 @@ interface EnterpriseGameCardProps {
 }
 
 function EnterpriseGameCard({ game, onClick, delay = 0 }: EnterpriseGameCardProps) {
-  const diffStyle = DIFFICULTY_STYLES[game.difficulty];
+  const diffStyle = getDifficultyStyle(game.difficulty);
 
   return (
     <motion.div
@@ -328,11 +332,11 @@ function EnterpriseGameCard({ game, onClick, delay = 0 }: EnterpriseGameCardProp
 
           {/* Rewards */}
           <div className="flex items-center gap-3 text-xs">
-            <span className="flex items-center gap-1 text-amber-400">
+            <span className="flex items-center gap-1 text-reward-xp">
               <Star className="w-3.5 h-3.5" />
               +{game.xpReward} XP
             </span>
-            <span className="flex items-center gap-1 text-emerald-400">
+            <span className="flex items-center gap-1 text-reward-coins">
               <Coins className="w-3.5 h-3.5" />
               +{game.coinsReward} Moedas
             </span>

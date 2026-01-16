@@ -70,11 +70,13 @@ interface UserTrainingProgress {
   completed_at: string | null;
 }
 
+import { getDifficultyColors } from "@/constants/colors";
+
 const DIFFICULTY_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  beginner: { label: "Iniciante", color: "text-emerald-600", bg: "bg-emerald-500/10" },
-  intermediate: { label: "Intermediário", color: "text-amber-600", bg: "bg-amber-500/10" },
-  advanced: { label: "Avançado", color: "text-orange-600", bg: "bg-orange-500/10" },
-  expert: { label: "Expert", color: "text-red-600", bg: "bg-red-500/10" },
+  beginner: { label: "Iniciante", color: getDifficultyColors('easy').text, bg: getDifficultyColors('easy').bg },
+  intermediate: { label: "Intermediário", color: getDifficultyColors('medium').text, bg: getDifficultyColors('medium').bg },
+  advanced: { label: "Avançado", color: getDifficultyColors('hard').text, bg: getDifficultyColors('hard').bg },
+  expert: { label: "Expert", color: "text-destructive", bg: "bg-destructive/10" },
 };
 
 const CONTENT_TYPE_ICONS: Record<string, string> = {

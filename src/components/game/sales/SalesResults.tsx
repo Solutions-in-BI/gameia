@@ -85,8 +85,8 @@ export function SalesResults({
           transition={{ type: "spring", delay: 0.2 }}
           className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 ${
             saleClosed 
-              ? 'bg-gradient-to-br from-green-500 to-emerald-500' 
-              : 'bg-gradient-to-br from-amber-500 to-orange-500'
+              ? 'bg-gradient-to-br from-gameia-success to-gameia-success/80' 
+              : 'bg-gradient-to-br from-gameia-warning to-primary'
           }`}
         >
           <span className="text-4xl">{performance.emoji}</span>
@@ -105,7 +105,7 @@ export function SalesResults({
 
       {/* Sale Status */}
       <div className={`flex items-center justify-center gap-2 mb-6 px-4 py-2 rounded-full mx-auto w-fit ${
-        saleClosed ? 'bg-green-500/20 text-green-400' : 'bg-amber-500/20 text-amber-400'
+        saleClosed ? 'bg-gameia-success/20 text-gameia-success' : 'bg-gameia-warning/20 text-gameia-warning'
       }`}>
         {saleClosed ? (
           <>
@@ -128,7 +128,7 @@ export function SalesResults({
           transition={{ delay: 0.3 }}
           className="bg-card/50 border border-border/50 rounded-xl p-3 text-center"
         >
-          <Target className="w-5 h-5 text-cyan-400 mx-auto mb-1" />
+          <Target className="w-5 h-5 text-gameia-info mx-auto mb-1" />
           <div className="text-xl font-bold">{rapport}%</div>
           <div className="text-xs text-muted-foreground">Rapport Final</div>
         </motion.div>
@@ -139,7 +139,7 @@ export function SalesResults({
           transition={{ delay: 0.4 }}
           className="bg-card/50 border border-border/50 rounded-xl p-3 text-center"
         >
-          <Star className="w-5 h-5 text-amber-400 mx-auto mb-1" />
+          <Star className="w-5 h-5 text-reward-xp mx-auto mb-1" />
           <div className="text-xl font-bold">{score}</div>
           <div className="text-xs text-muted-foreground">Pontuação</div>
         </motion.div>
@@ -150,7 +150,7 @@ export function SalesResults({
           transition={{ delay: 0.5 }}
           className="bg-card/50 border border-border/50 rounded-xl p-3 text-center"
         >
-          <Trophy className="w-5 h-5 text-purple-400 mx-auto mb-1" />
+          <Trophy className="w-5 h-5 text-secondary mx-auto mb-1" />
           <div className="text-xl font-bold">{Object.keys(stagePerformance).length}</div>
           <div className="text-xs text-muted-foreground">Etapas</div>
         </motion.div>
@@ -175,7 +175,7 @@ export function SalesResults({
                 className="flex items-center justify-between bg-background/50 rounded-lg px-3 py-2"
               >
                 <span className="text-sm text-muted-foreground truncate">{skill.name}</span>
-                <span className="text-sm font-bold text-green-400">+{skill.impact}</span>
+                <span className="text-sm font-bold text-gameia-success">+{skill.impact}</span>
               </div>
             ))}
           </div>
@@ -190,7 +190,7 @@ export function SalesResults({
         className="bg-card/50 border border-border/50 rounded-xl p-4 mb-6"
       >
         <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 text-green-400" />
+          <TrendingUp className="w-4 h-4 text-gameia-success" />
           Suas Competências
         </h3>
         
@@ -201,7 +201,7 @@ export function SalesResults({
                 <span className="text-muted-foreground">
                   {SKILL_LABELS[key as keyof SkillScore]}
                 </span>
-                <span className={`font-medium ${value >= 60 ? 'text-green-400' : value >= 40 ? 'text-amber-400' : 'text-red-400'}`}>
+                <span className={`font-medium ${value >= 60 ? 'text-gameia-success' : value >= 40 ? 'text-gameia-warning' : 'text-destructive'}`}>
                   {value}%
                 </span>
               </div>
@@ -220,7 +220,7 @@ export function SalesResults({
               {weakSkills
                 .filter(([_, value]) => value < 50)
                 .map(([key]) => (
-                  <span key={key} className="text-xs bg-amber-500/10 text-amber-400 px-2 py-1 rounded">
+                  <span key={key} className="text-xs bg-gameia-warning/10 text-gameia-warning px-2 py-1 rounded">
                     {SKILL_LABELS[key as keyof SkillScore]}
                   </span>
                 ))
@@ -235,15 +235,15 @@ export function SalesResults({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.7 }}
-        className="bg-gradient-to-r from-cyan-500/10 to-green-500/10 border border-cyan-500/30 rounded-xl p-4 mb-6"
+        className="bg-gradient-to-r from-gameia-info/10 to-gameia-success/10 border border-gameia-info/30 rounded-xl p-4 mb-6"
       >
         <h3 className="text-sm font-semibold mb-3 text-center">Recompensas</h3>
         <div className="flex justify-center gap-8">
           <div className="text-center">
-            <div className="text-xl font-bold text-cyan-400">+{xpEarned} XP</div>
+            <div className="text-xl font-bold text-reward-xp">+{xpEarned} XP</div>
           </div>
           <div className="text-center">
-            <div className="text-xl font-bold text-amber-400">+{coinsEarned} 🪙</div>
+            <div className="text-xl font-bold text-reward-coins">+{coinsEarned} 🪙</div>
           </div>
         </div>
       </motion.div>
@@ -256,7 +256,7 @@ export function SalesResults({
         </Button>
         <Button 
           onClick={onRestart} 
-          className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
+          className="flex-1 bg-gradient-to-r from-gameia-success to-gameia-success/80 hover:from-gameia-success/90 hover:to-gameia-success/70 text-white"
         >
           <RotateCcw className="w-4 h-4 mr-2" />
           Jogar Novamente
