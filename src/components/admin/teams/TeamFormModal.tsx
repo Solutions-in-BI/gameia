@@ -19,12 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { OrgTeam } from "@/hooks/useOrgTeams";
-
-const TEAM_COLORS = [
-  "#6366f1", "#8b5cf6", "#ec4899", "#f43f5e",
-  "#f97316", "#eab308", "#22c55e", "#14b8a6",
-  "#06b6d4", "#3b82f6", "#6b7280", "#1f2937",
-];
+import { SELECTABLE_COLORS } from "@/constants/colors";
 
 const TEAM_ICONS = [
   "👥", "🚀", "⭐", "💡", "🎯", "🔥", "💪", "🏆",
@@ -48,7 +43,7 @@ export function TeamFormModal({
 }: TeamFormModalProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [color, setColor] = useState(TEAM_COLORS[0]);
+  const [color, setColor] = useState<string>(SELECTABLE_COLORS[0].value);
   const [icon, setIcon] = useState(TEAM_ICONS[0]);
   const [managerId, setManagerId] = useState<string>("");
 
@@ -62,7 +57,7 @@ export function TeamFormModal({
     } else {
       setName("");
       setDescription("");
-      setColor(TEAM_COLORS[0]);
+      setColor(SELECTABLE_COLORS[0].value);
       setIcon(TEAM_ICONS[0]);
       setManagerId("");
     }
@@ -122,15 +117,15 @@ export function TeamFormModal({
               Cor
             </Label>
             <div className="flex flex-wrap gap-2">
-              {TEAM_COLORS.map((c) => (
+              {SELECTABLE_COLORS.map((colorOption) => (
                 <button
-                  key={c}
+                  key={colorOption.value}
                   type="button"
-                  onClick={() => setColor(c)}
-                  className={`h-8 w-8 rounded-full border-2 transition-transform hover:scale-110 ${
-                    color === c ? "border-foreground scale-110" : "border-transparent"
+                  onClick={() => setColor(colorOption.value)}
+                  className={`h-8 w-8 rounded-full border-2 transition-transform hover:scale-110 ${colorOption.preview} ${
+                    color === colorOption.value ? "border-foreground scale-110" : "border-transparent"
                   }`}
-                  style={{ backgroundColor: c }}
+                  title={colorOption.label}
                 />
               ))}
             </div>

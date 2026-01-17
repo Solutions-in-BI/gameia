@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { JOURNEY_CATEGORIES, JOURNEY_LEVELS, JOURNEY_IMPORTANCE } from "@/hooks/useTrainingJourneys";
+import { SELECTABLE_COLORS } from "@/constants/colors";
 import type { JourneyFormData } from "../JourneyWizard";
 
 interface BasicInfoStepProps {
@@ -21,19 +22,6 @@ interface BasicInfoStepProps {
   updateFormData: (updates: Partial<JourneyFormData>) => void;
   isEditing: boolean;
 }
-
-const COLORS = [
-  "#6366f1", // indigo
-  "#8b5cf6", // violet
-  "#ec4899", // pink
-  "#ef4444", // red
-  "#f97316", // orange
-  "#eab308", // yellow
-  "#22c55e", // green
-  "#14b8a6", // teal
-  "#0ea5e9", // sky
-  "#3b82f6", // blue
-];
 
 export function BasicInfoStep({ formData, updateFormData, isEditing }: BasicInfoStepProps) {
   return (
@@ -130,16 +118,17 @@ export function BasicInfoStep({ formData, updateFormData, isEditing }: BasicInfo
       <div className="space-y-3">
         <Label>Cor do Tema</Label>
         <div className="flex flex-wrap gap-2">
-          {COLORS.map(color => (
+          {SELECTABLE_COLORS.map(colorOption => (
             <button
-              key={color}
+              key={colorOption.value}
               type="button"
-              onClick={() => updateFormData({ color })}
-              className="w-8 h-8 rounded-lg transition-all hover:scale-110"
-              style={{
-                backgroundColor: color,
-                boxShadow: formData.color === color ? `0 0 0 2px white, 0 0 0 4px ${color}` : 'none',
-              }}
+              onClick={() => updateFormData({ color: colorOption.value })}
+              className={`w-8 h-8 rounded-lg transition-all hover:scale-110 ${colorOption.preview} ${
+                formData.color === colorOption.value 
+                  ? 'ring-2 ring-offset-2 ring-offset-background ring-foreground' 
+                  : ''
+              }`}
+              title={colorOption.label}
             />
           ))}
         </div>

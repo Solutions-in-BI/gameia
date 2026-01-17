@@ -5,6 +5,7 @@
 import { Target, TrendingUp, TrendingDown, Users, Award } from "lucide-react";
 import { MetricCard } from "./MetricCard";
 import { CompetencyMetrics as CompetencyMetricsType } from "@/hooks/useOrgMetrics";
+import { getProgressColors } from "@/constants/colors";
 import {
   ResponsiveContainer,
   RadarChart,
@@ -155,16 +156,8 @@ export function CompetencyMetrics({ metrics, isLoading }: Props) {
                   </div>
                   <div className="h-2 bg-muted rounded-full overflow-hidden">
                     <div
-                      className="h-full rounded-full transition-all duration-500"
-                      style={{
-                        width: `${skill.avg_score}%`,
-                        backgroundColor:
-                          skill.avg_score >= 70
-                            ? "hsl(142 76% 36%)"
-                            : skill.avg_score >= 40
-                            ? "hsl(38 92% 50%)"
-                            : "hsl(0 84% 60%)",
-                      }}
+                      className={`h-full rounded-full transition-all duration-500 ${getProgressColors(skill.avg_score).bg}`}
+                      style={{ width: `${skill.avg_score}%` }}
                     />
                   </div>
                 </div>
