@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -52,6 +53,33 @@ serve(async (req) => {
   }
 
   try {
+    // Validate authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const userId = claimsData.claims.sub;
+    console.log("[generate-sales-response] Authenticated user:", userId);
+
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
@@ -226,7 +254,7 @@ Forneça 3-4 opções de resposta do vendedor com diferentes qualidades.`;
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('[generate-sales-response] AI gateway error:', response.status, errorText);
+      console.error('[generate-sales-response] AI gateway error:', response.status);
       
       if (response.status === 429) {
         return new Response(JSON.stringify({ 
@@ -252,7 +280,7 @@ Forneça 3-4 opções de resposta do vendedor com diferentes qualidades.`;
     const data = await response.json();
     const content = data.choices[0].message.content;
 
-    console.log('[generate-sales-response] Raw AI response:', content.substring(0, 200));
+    console.log('[generate-sales-response] Raw AI response received');
 
     // Parse JSON response
     let parsedResponse;
@@ -261,7 +289,7 @@ Forneça 3-4 opções de resposta do vendedor com diferentes qualidades.`;
       const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, content];
       parsedResponse = JSON.parse(jsonMatch[1].trim());
     } catch (e) {
-      console.error('[generate-sales-response] Failed to parse AI response:', content);
+      console.error('[generate-sales-response] Failed to parse AI response');
       
       // Fallback response based on track
       const fallbackOptions = track_key === 'sdr' 
