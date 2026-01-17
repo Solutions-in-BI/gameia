@@ -1,6 +1,6 @@
 /**
  * ChallengeCard - Card visual para desafios
- * Mostra progresso, participantes, torcida e multiplicador
+ * Mostra progresso, participantes, torcida, tipo e prazo
  */
 
 import { motion } from "framer-motion";
@@ -17,12 +17,25 @@ import {
   Crown,
   Sparkles,
   Heart,
+  Clock,
+  AlertTriangle,
+  Diamond,
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Challenge } from "@/hooks/useChallenges";
+import {
+  CHALLENGE_TYPE_CONFIG,
+  CHALLENGE_ORIGIN_CONFIG,
+  getChallengeTypeClasses,
+  getDeadlinePriority,
+  getDeadlineClasses,
+  formatDeadlineText,
+  type ChallengeType,
+  type ChallengeOrigin,
+} from "@/constants/challengeTypes";
 
 const ICON_MAP: Record<string, typeof Trophy> = {
   trophy: Trophy,
@@ -63,12 +76,27 @@ export function ChallengeCard({
   const Icon = ICON_MAP[challenge.icon] || Target;
   const scopeStyle = SCOPE_LABELS[challenge.scope] || SCOPE_LABELS.personal;
   
+  // Get challenge type config
+  const challengeType = challenge.challenge_type || "practical";
+  const typeConfig = CHALLENGE_TYPE_CONFIG[challengeType as ChallengeType];
+  const typeClasses = getChallengeTypeClasses(challengeType as ChallengeType);
+  
+  // Get origin config
+  const originSource = challenge.origin_source || "manual";
+  const originConfig = CHALLENGE_ORIGIN_CONFIG[originSource as ChallengeOrigin];
+  
+  // Calculate deadline priority
+  const deadlinePriority = getDeadlinePriority(challenge.ends_at);
+  const deadlineClasses = getDeadlineClasses(deadlinePriority);
+  const deadlineText = formatDeadlineText(challenge.ends_at, challenge.is_overdue || false);
+  
   const progress = challenge.target_value > 0
     ? Math.round((challenge.current_value / challenge.target_value) * 100)
     : 0;
   
   const isComplete = progress >= 100;
   const hasMultiplier = challenge.supporter_multiplier > 1;
+  const hasDiamonds = (challenge.diamonds_reward || 0) > 0;
 
   if (variant === "compact") {
     return (
@@ -216,28 +244,47 @@ export function ChallengeCard({
         "p-4 rounded-xl border cursor-pointer transition-all",
         isComplete 
           ? "border-green-500/30 bg-green-500/5" 
-          : "border-border/30 bg-muted/20 hover:border-primary/30"
+          : challenge.is_overdue
+            ? "border-red-500/30 bg-red-500/5"
+            : "border-border/30 bg-muted/20 hover:border-primary/30"
       )}
     >
       <div className="flex items-start gap-3">
         <div className={cn(
           "p-2.5 rounded-lg shrink-0",
-          isComplete ? "bg-green-500/20 text-green-400" : "bg-primary/10 text-primary"
+          isComplete ? "bg-green-500/20 text-green-400" : typeClasses.bg, typeClasses.text
         )}>
           <Icon className="w-5 h-5" />
         </div>
 
         <div className="flex-1 min-w-0">
+          {/* Header with name and badges */}
           <div className="flex items-center justify-between gap-2 mb-1">
             <h4 className="font-medium truncate">{challenge.name}</h4>
-            <Badge variant="outline" className={cn("text-xs shrink-0", scopeStyle.color)}>
-              {scopeStyle.label}
-            </Badge>
+            <div className="flex items-center gap-1.5 shrink-0">
+              {/* Type badge */}
+              <Badge variant="outline" className={cn("text-[10px] px-1.5", typeClasses.badge)}>
+                {typeConfig?.emoji} {typeConfig?.label}
+              </Badge>
+              {/* Scope badge */}
+              <Badge variant="outline" className={cn("text-[10px] px-1.5", scopeStyle.color)}>
+                {scopeStyle.label}
+              </Badge>
+            </div>
           </div>
           
-          <p className="text-xs text-muted-foreground mb-2 line-clamp-1">
-            {challenge.description}
-          </p>
+          {/* Origin and deadline row */}
+          <div className="flex items-center gap-2 mb-2 text-xs">
+            {originConfig && originSource !== "manual" && (
+              <span className="text-muted-foreground">
+                De: {originConfig.label}
+              </span>
+            )}
+            <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 h-5", deadlineClasses.bg, deadlineClasses.text, deadlineClasses.border)}>
+              <Clock className="w-3 h-3 mr-1" />
+              {deadlineText}
+            </Badge>
+          </div>
 
           {/* Progress bar */}
           <div className="flex items-center gap-2 mb-2">
@@ -270,6 +317,11 @@ export function ChallengeCard({
             <div className="flex items-center gap-2 text-xs">
               <span className="text-primary">+{challenge.xp_reward} XP</span>
               <span className="text-amber-400">+{challenge.coins_reward} 🪙</span>
+              {hasDiamonds && (
+                <span className="text-cyan-400 flex items-center gap-0.5">
+                  +{challenge.diamonds_reward} <Diamond className="w-3 h-3" />
+                </span>
+              )}
             </div>
           </div>
         </div>

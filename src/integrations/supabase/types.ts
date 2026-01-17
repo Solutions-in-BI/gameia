@@ -1135,6 +1135,60 @@ export type Database = {
           },
         ]
       }
+      challenge_proofs: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          commitment_id: string
+          content: string | null
+          created_at: string | null
+          file_url: string | null
+          id: string
+          proof_type: string
+          submitted_at: string | null
+          user_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          commitment_id: string
+          content?: string | null
+          created_at?: string | null
+          file_url?: string | null
+          id?: string
+          proof_type: string
+          submitted_at?: string | null
+          user_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          commitment_id?: string
+          content?: string | null
+          created_at?: string | null
+          file_url?: string | null
+          id?: string
+          proof_type?: string
+          submitted_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_proofs_commitment_id_fkey"
+            columns: ["commitment_id"]
+            isOneToOne: false
+            referencedRelation: "commitments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "challenge_proofs_commitment_id_fkey"
+            columns: ["commitment_id"]
+            isOneToOne: false
+            referencedRelation: "vw_challenges_with_stats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       challenge_supporters: {
         Row: {
           coins_staked: number
@@ -1504,23 +1558,32 @@ export type Database = {
       commitments: {
         Row: {
           auto_enroll: boolean
+          challenge_type: string | null
           coins_reward: number
+          context_why: string | null
           created_at: string
           created_by: string
           current_value: number
           description: string
+          diamonds_reward: number | null
           ends_at: string
           icon: string | null
           id: string
           insignia_id: string | null
           is_featured: boolean | null
+          is_overdue: boolean | null
+          last_reminder_at: string | null
           max_participants: number | null
           metric_type: string
           name: string
           organization_id: string
+          origin_id: string | null
+          origin_source: string | null
+          proof_type: string | null
           reward_items: Json | null
           reward_type: Database["public"]["Enums"]["commitment_reward_type"]
           scope: Database["public"]["Enums"]["commitment_scope"]
+          skill_ids: string[] | null
           source: Database["public"]["Enums"]["commitment_source"]
           starts_at: string
           status: Database["public"]["Enums"]["commitment_status"]
@@ -1535,23 +1598,32 @@ export type Database = {
         }
         Insert: {
           auto_enroll?: boolean
+          challenge_type?: string | null
           coins_reward?: number
+          context_why?: string | null
           created_at?: string
           created_by: string
           current_value?: number
           description: string
+          diamonds_reward?: number | null
           ends_at: string
           icon?: string | null
           id?: string
           insignia_id?: string | null
           is_featured?: boolean | null
+          is_overdue?: boolean | null
+          last_reminder_at?: string | null
           max_participants?: number | null
           metric_type?: string
           name: string
           organization_id: string
+          origin_id?: string | null
+          origin_source?: string | null
+          proof_type?: string | null
           reward_items?: Json | null
           reward_type?: Database["public"]["Enums"]["commitment_reward_type"]
           scope: Database["public"]["Enums"]["commitment_scope"]
+          skill_ids?: string[] | null
           source: Database["public"]["Enums"]["commitment_source"]
           starts_at: string
           status?: Database["public"]["Enums"]["commitment_status"]
@@ -1566,23 +1638,32 @@ export type Database = {
         }
         Update: {
           auto_enroll?: boolean
+          challenge_type?: string | null
           coins_reward?: number
+          context_why?: string | null
           created_at?: string
           created_by?: string
           current_value?: number
           description?: string
+          diamonds_reward?: number | null
           ends_at?: string
           icon?: string | null
           id?: string
           insignia_id?: string | null
           is_featured?: boolean | null
+          is_overdue?: boolean | null
+          last_reminder_at?: string | null
           max_participants?: number | null
           metric_type?: string
           name?: string
           organization_id?: string
+          origin_id?: string | null
+          origin_source?: string | null
+          proof_type?: string | null
           reward_items?: Json | null
           reward_type?: Database["public"]["Enums"]["commitment_reward_type"]
           scope?: Database["public"]["Enums"]["commitment_scope"]
+          skill_ids?: string[] | null
           source?: Database["public"]["Enums"]["commitment_source"]
           starts_at?: string
           status?: Database["public"]["Enums"]["commitment_status"]
@@ -7752,6 +7833,7 @@ export type Database = {
       user_stats: {
         Row: {
           coins: number
+          diamonds: number | null
           dino_best_score: number
           dino_games_played: number
           id: string
@@ -7773,6 +7855,7 @@ export type Database = {
         }
         Insert: {
           coins?: number
+          diamonds?: number | null
           dino_best_score?: number
           dino_games_played?: number
           id?: string
@@ -7794,6 +7877,7 @@ export type Database = {
         }
         Update: {
           coins?: number
+          diamonds?: number | null
           dino_best_score?: number
           dino_games_played?: number
           id?: string
@@ -8896,6 +8980,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      update_overdue_challenges: { Args: never; Returns: undefined }
       update_xp_mission_progress: {
         Args: { p_user_id: string; p_xp_earned: number }
         Returns: undefined
