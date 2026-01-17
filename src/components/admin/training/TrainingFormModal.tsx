@@ -61,8 +61,9 @@ interface InsigniaRelation {
   relation_type: 'grants' | 'partial_criteria';
 }
 
+import { SELECTABLE_COLORS } from "@/constants/colors";
+
 const ICONS = ["📚", "🎓", "💼", "🚀", "💡", "🎯", "⚡", "🔥", "🏆", "📈", "🛡️", "⚙️", "🤝", "💬", "📱", "🖥️"];
-const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#06b6d4", "#84cc16"];
 const CATEGORIES = ["Onboarding", "Vendas", "Liderança", "Técnico", "Soft Skills", "Compliance", "Produto"];
 const DIFFICULTIES = [
   { value: "beginner", label: "Iniciante" },
@@ -433,17 +434,17 @@ export function TrainingFormModal({
               <div className="space-y-2">
                 <Label>Cor</Label>
                 <div className="flex flex-wrap gap-2">
-                  {COLORS.map((color) => (
+                  {SELECTABLE_COLORS.map((colorOption) => (
                     <button
-                      key={color}
+                      key={colorOption.value}
                       type="button"
-                      onClick={() => setFormData((prev) => ({ ...prev, color }))}
-                      className={`w-10 h-10 rounded-lg border-2 transition-all ${
-                        formData.color === color
+                      onClick={() => setFormData((prev) => ({ ...prev, color: colorOption.value }))}
+                      className={`w-10 h-10 rounded-lg border-2 transition-all ${colorOption.preview} ${
+                        formData.color === colorOption.value
                           ? "border-foreground ring-2 ring-offset-2 ring-offset-background ring-primary"
                           : "border-transparent"
                       }`}
-                      style={{ backgroundColor: color }}
+                      title={colorOption.label}
                     />
                   ))}
                 </div>

@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { RARITY_COLORS, type RarityKey } from "@/constants/colors";
 
 interface EquippedItems {
   frame?: { icon: string; rarity: string } | null;
@@ -18,12 +19,11 @@ interface AvatarWithEquipmentProps {
   className?: string;
 }
 
-const FRAME_STYLES: Record<string, string> = {
-  common: "ring-2 ring-muted",
-  uncommon: "ring-2 ring-green-500/60",
-  rare: "ring-3 ring-blue-500/70 shadow-[0_0_10px_rgba(59,130,246,0.3)]",
-  epic: "ring-3 ring-purple-500/70 shadow-[0_0_15px_rgba(168,85,247,0.4)]",
-  legendary: "ring-4 ring-amber-500/80 shadow-[0_0_20px_rgba(245,158,11,0.5)]",
+// Frame styles using centralized rarity colors
+const getFrameStyle = (rarity: string): string => {
+  const rarityColors = RARITY_COLORS[rarity as RarityKey] || RARITY_COLORS.common;
+  const ringSize = rarity === 'legendary' ? 'ring-4' : rarity === 'epic' || rarity === 'rare' ? 'ring-[3px]' : 'ring-2';
+  return `${ringSize} ${rarityColors.border.replace('border-', 'ring-')} ${rarityColors.glow}`;
 };
 
 const SIZE_CONFIG = {
@@ -43,7 +43,7 @@ export function AvatarWithEquipment({
 }: AvatarWithEquipmentProps) {
   const sizeConfig = SIZE_CONFIG[size];
   const frameStyle = equippedItems.frame 
-    ? FRAME_STYLES[equippedItems.frame.rarity] || FRAME_STYLES.common
+    ? getFrameStyle(equippedItems.frame.rarity)
     : "";
 
   const isLegendaryFrame = equippedItems.frame?.rarity === "legendary";
