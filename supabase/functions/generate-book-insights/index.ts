@@ -12,6 +12,33 @@ serve(async (req) => {
   }
 
   try {
+    // Validate authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabaseAuth = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const userId = claimsData.claims.sub;
+    console.log("[generate-book-insights] Authenticated user:", userId);
+
     const { organization_id, training_id, module_id, period_days = 30 } = await req.json()
 
     if (!organization_id) {
@@ -21,9 +48,25 @@ serve(async (req) => {
       )
     }
 
+    // Use service role for data access
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseKey)
+
+    // Verify user has access to this organization
+    const { data: memberCheck } = await supabase
+      .from('organization_members')
+      .select('org_role')
+      .eq('user_id', userId)
+      .eq('organization_id', organization_id)
+      .single();
+
+    if (!memberCheck) {
+      return new Response(
+        JSON.stringify({ error: 'Access denied to this organization' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     const periodStart = new Date()
     periodStart.setDate(periodStart.getDate() - period_days)
@@ -110,7 +153,7 @@ serve(async (req) => {
       percentage: Math.round((count / evidenceTexts.length) * 100)
     }))
 
-    // Generate AI summary using Lovable AI
+    // Generate AI summary using OpenAI
     let aiSummary = ''
     if (evidenceTexts.length > 0) {
       try {

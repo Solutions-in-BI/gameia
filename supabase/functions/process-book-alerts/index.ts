@@ -20,9 +20,52 @@ serve(async (req) => {
   }
 
   try {
+    // Validate authentication - this function requires admin/system access
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabaseAuth = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const userId = claimsData.claims.sub;
+    console.log("[process-book-alerts] Authenticated user:", userId);
+
+    // Use service role for data access
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseKey)
+
+    // Verify user is an admin or manager
+    const { data: memberData } = await supabase
+      .from('organization_members')
+      .select('org_role')
+      .eq('user_id', userId)
+      .in('org_role', ['owner', 'admin', 'manager'])
+      .limit(1);
+
+    if (!memberData || memberData.length === 0) {
+      return new Response(
+        JSON.stringify({ error: 'Admin or manager access required' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Get pending alerts that are due
     const { data: alerts, error: alertsError } = await supabase

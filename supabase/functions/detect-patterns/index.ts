@@ -1,14 +1,8 @@
 /**
  * detect-patterns - Edge Function para detecção de padrões e geração de alertas
  * 
- * Analisa core_events, user_skill_levels e dados de evolução para detectar:
- * - Skills estagnadas (> 14 dias sem evolução)
- * - Streaks quebrados (alto impacto se > 7 dias)
- * - Inatividade prolongada (sem eventos em X dias)
- * - Queda de performance (score médio caindo)
- * - Metas de PDI atrasadas
- * - Treinamentos obrigatórios pendentes
- * - Evolução positiva (reconhecimento)
+ * This function is designed to be called by system crons/scheduled jobs
+ * It requires a valid service key or system-level authentication
  */
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -40,9 +34,52 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Validate authentication - this function requires admin/system access
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabaseAuth = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const userId = claimsData.claims.sub;
+    console.log("[detect-patterns] Authenticated user:", userId);
+
+    // Use service role for the actual pattern detection
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Verify user is an admin or manager
+    const { data: memberData } = await supabase
+      .from('organization_members')
+      .select('org_role')
+      .eq('user_id', userId)
+      .in('org_role', ['owner', 'admin', 'manager'])
+      .limit(1);
+
+    if (!memberData || memberData.length === 0) {
+      return new Response(
+        JSON.stringify({ error: 'Admin or manager access required' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     console.log("[detect-patterns] Starting pattern detection...");
 
@@ -199,7 +236,7 @@ Deno.serve(async (req) => {
         }
       }
 
-      for (const [userId, scores] of Object.entries(userScores)) {
+      for (const [currentUserId, scores] of Object.entries(userScores)) {
         if (scores.recent.length >= 3 && scores.previous.length >= 3) {
           const recentAvg = scores.recent.reduce((a, b) => a + b, 0) / scores.recent.length;
           const previousAvg = scores.previous.reduce((a, b) => a + b, 0) / scores.previous.length;
@@ -211,7 +248,7 @@ Deno.serve(async (req) => {
               alerts.push({
                 type: "performance_drop",
                 severity: dropPercent >= 40 ? "critical" : "warning",
-                userId,
+                userId: currentUserId,
                 organizationId: scores.orgId,
                 title: `Queda de ${Math.round(dropPercent)}% na performance`,
                 description: `Seu desempenho caiu de ${Math.round(previousAvg)}% para ${Math.round(recentAvg)}%. Considere revisar treinamentos relacionados.`,
