@@ -1,14 +1,29 @@
 /**
  * Hook unificado para Desafios (antigo Commitments + MonthlyGoals)
- * Suporta escopos: personal (individual), team e global
- * Suporta fontes: internal (automático) e external (manual)
- * Inclui sistema de Torcida (supporters)
+ * 
+ * Princípio fundamental: "Desafio não é conteúdo. Desafio é execução com prazo e consequência."
+ * 
+ * Suporta:
+ * - Escopos: personal (individual), team e global
+ * - Fontes: internal (automático) e external (manual)
+ * - Origens: training, journey, pdi, assessment, manager, system
+ * - Tipos: practical, cognitive, performance, consistency, team, strategic
+ * - Comprovações: checkin, text, file, link, metric
+ * - Sistema de Torcida (supporters)
  */
 
 import { useState, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import type { 
+  ChallengeType, 
+  ChallengeOrigin, 
+  ProofType 
+} from "@/constants/challengeTypes";
+
+// Re-export types from constants
+export type { ChallengeType, ChallengeOrigin, ProofType } from "@/constants/challengeTypes";
 
 export type ChallengeScope = "personal" | "team" | "global";
 export type ChallengeSource = "internal" | "external";
@@ -44,6 +59,15 @@ export interface Challenge {
   is_featured: boolean;
   created_at: string;
   updated_at: string;
+  // New fields for Challenge System 2.0
+  challenge_type: ChallengeType;
+  origin_source: ChallengeOrigin;
+  origin_id: string | null;
+  proof_type: ProofType;
+  diamonds_reward: number;
+  context_why: string | null;
+  is_overdue: boolean;
+  skill_ids: string[];
   // Joined data
   team?: { name: string; icon: string; color: string };
   creator?: { nickname: string; avatar_url: string | null };
@@ -98,6 +122,27 @@ export interface CreateChallengeData {
     unlock_mode: 'auto_unlock' | 'enable_purchase';
   }>;
   evolution_template_id?: string;
+  // New fields for Challenge System 2.0
+  challenge_type?: ChallengeType;
+  origin_source?: ChallengeOrigin;
+  origin_id?: string | null;
+  proof_type?: ProofType;
+  diamonds_reward?: number;
+  context_why?: string;
+  skill_ids?: string[];
+}
+
+// Interface for challenge proofs/evidence
+export interface ChallengeProof {
+  id: string;
+  commitment_id: string;
+  user_id: string;
+  proof_type: ProofType;
+  content: string | null;
+  file_url: string | null;
+  submitted_at: string;
+  approved_at: string | null;
+  approved_by: string | null;
 }
 
 // Métricas internas que podem ser rastreadas automaticamente
@@ -524,6 +569,141 @@ export function useChallenges(orgId: string | undefined) {
     }
   }, [fetchChallenges]);
 
+  // Submit proof/evidence for a challenge
+  const submitProof = useCallback(async (
+    challengeId: string,
+    proofType: ProofType,
+    content?: string,
+    fileUrl?: string
+  ): Promise<ChallengeProof | null> => {
+    if (!user?.id) return null;
+
+    try {
+      const { data: proof, error } = await supabase
+        .from("challenge_proofs")
+        .insert({
+          commitment_id: challengeId,
+          user_id: user.id,
+          proof_type: proofType,
+          content,
+          file_url: fileUrl,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast.success("Comprovação enviada com sucesso!");
+      return proof as ChallengeProof;
+    } catch (error) {
+      console.error("Error submitting proof:", error);
+      toast.error("Erro ao enviar comprovação");
+      return null;
+    }
+  }, [user?.id]);
+
+  // Get proofs for a challenge
+  const getProofs = useCallback(async (challengeId: string): Promise<ChallengeProof[]> => {
+    try {
+      const { data, error } = await supabase
+        .from("challenge_proofs")
+        .select("*")
+        .eq("commitment_id", challengeId)
+        .order("submitted_at", { ascending: false });
+
+      if (error) throw error;
+      return (data || []) as ChallengeProof[];
+    } catch (error) {
+      console.error("Error fetching proofs:", error);
+      return [];
+    }
+  }, []);
+
+  // Approve a proof (for managers)
+  const approveProof = useCallback(async (proofId: string): Promise<boolean> => {
+    if (!user?.id) return false;
+
+    try {
+      const { error } = await supabase
+        .from("challenge_proofs")
+        .update({
+          approved_at: new Date().toISOString(),
+          approved_by: user.id,
+        })
+        .eq("id", proofId);
+
+      if (error) throw error;
+
+      toast.success("Comprovação aprovada!");
+      return true;
+    } catch (error) {
+      console.error("Error approving proof:", error);
+      toast.error("Erro ao aprovar comprovação");
+      return false;
+    }
+  }, [user?.id]);
+
+  // Create challenge from training module
+  const createFromTraining = useCallback(async (
+    moduleId: string,
+    moduleName: string,
+    trainingId: string,
+    daysToComplete: number = 7
+  ): Promise<Challenge | null> => {
+    const endsAt = new Date();
+    endsAt.setDate(endsAt.getDate() + daysToComplete);
+
+    return createChallenge({
+      name: `Aplicar: ${moduleName}`,
+      description: `Coloque em prática o que você aprendeu no módulo "${moduleName}"`,
+      scope: "personal",
+      source: "external",
+      starts_at: new Date().toISOString(),
+      ends_at: endsAt.toISOString(),
+      success_criteria: "Aplicar o aprendizado no trabalho",
+      target_value: 1,
+      metric_type: "completion",
+      reward_type: "both",
+      coins_reward: 50,
+      xp_reward: 100,
+      challenge_type: "practical",
+      origin_source: "training",
+      origin_id: trainingId,
+      proof_type: "text",
+      context_why: `Você aprendeu "${moduleName}". Agora é hora de aplicar na prática!`,
+    });
+  }, [createChallenge]);
+
+  // Create challenge from PDI goal
+  const createFromPDI = useCallback(async (
+    goalId: string,
+    goalName: string,
+    deadline: string,
+    skillIds: string[] = []
+  ): Promise<Challenge | null> => {
+    return createChallenge({
+      name: goalName,
+      description: `Desafio vinculado à meta do seu PDI: ${goalName}`,
+      scope: "personal",
+      source: "external",
+      starts_at: new Date().toISOString(),
+      ends_at: deadline,
+      success_criteria: "Concluir a meta do PDI",
+      target_value: 100,
+      metric_type: "percentage",
+      reward_type: "both",
+      coins_reward: 75,
+      xp_reward: 150,
+      diamonds_reward: 10,
+      challenge_type: "strategic",
+      origin_source: "pdi",
+      origin_id: goalId,
+      proof_type: "text",
+      skill_ids: skillIds,
+      context_why: `Esta meta é parte do seu Plano de Desenvolvimento Individual.`,
+    });
+  }, [createChallenge]);
+
   // Fetch on mount
   useEffect(() => {
     fetchChallenges();
@@ -536,6 +716,17 @@ export function useChallenges(orgId: string | undefined) {
   const teamChallenges = challenges.filter(c => c.scope === "team");
   const globalChallenges = challenges.filter(c => c.scope === "global");
   const featuredChallenges = challenges.filter(c => c.is_featured && c.status === "active");
+  const overdueChallenges = challenges.filter(c => c.is_overdue && c.status === "active");
+
+  // Filter by type
+  const getChallengesByType = useCallback((type: ChallengeType) => {
+    return challenges.filter(c => c.challenge_type === type);
+  }, [challenges]);
+
+  // Filter by origin
+  const getChallengesByOrigin = useCallback((origin: ChallengeOrigin) => {
+    return challenges.filter(c => c.origin_source === origin);
+  }, [challenges]);
 
   return {
     challenges,
@@ -546,10 +737,13 @@ export function useChallenges(orgId: string | undefined) {
     teamChallenges,
     globalChallenges,
     featuredChallenges,
+    overdueChallenges,
     isLoading,
     fetchChallenges,
     createChallenge,
     createPersonalChallenge,
+    createFromTraining,
+    createFromPDI,
     joinChallenge,
     leaveChallenge,
     supportChallenge,
@@ -557,5 +751,10 @@ export function useChallenges(orgId: string | undefined) {
     updateProgress,
     getSupporters,
     cancelChallenge,
+    submitProof,
+    getProofs,
+    approveProof,
+    getChallengesByType,
+    getChallengesByOrigin,
   };
 }
