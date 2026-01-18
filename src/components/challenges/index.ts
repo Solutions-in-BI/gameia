@@ -8,3 +8,4 @@ export { ChallengesSection, ChallengesHighlight } from "./ChallengesSection";
 export { SupportChallengeModal } from "./SupportChallengeModal";
 export { CreateChallengeModal } from "./CreateChallengeModal";
 export { ChallengeDetailModal } from "./ChallengeDetailModal";
+export { ChallengeProofSubmit } from "./ChallengeProofSubmit";
