@@ -1,6 +1,6 @@
 /**
  * ChallengeDetailModal - Modal de detalhes do desafio
- * Mostra progresso, participantes, apoiadores e histórico
+ * Mostra progresso, participantes, apoiadores, contexto e comprovação
  */
 
 import { useState, useEffect } from "react";
@@ -17,6 +17,11 @@ import {
   User,
   History,
   X,
+  FileText,
+  Gem,
+  Info,
+  CheckCircle2,
+  AlertTriangle,
 } from "lucide-react";
 import {
   Dialog,
@@ -31,9 +36,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { format, formatDistanceToNow } from "date-fns";
+import { format, formatDistanceToNow, isPast } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import type { Challenge, ChallengeParticipant, ChallengeSupporter } from "@/hooks/useChallenges";
+import type { Challenge, ChallengeParticipant, ChallengeSupporter, ChallengeProof } from "@/hooks/useChallenges";
+import {
+  CHALLENGE_TYPE_CONFIG,
+  CHALLENGE_ORIGIN_CONFIG,
+  PROOF_TYPE_CONFIG,
+  getDeadlineClasses,
+  getDeadlinePriority,
+  type ChallengeType,
+  type ChallengeOrigin,
+  type ProofType,
+} from "@/constants/challengeTypes";
+import { ChallengeProofSubmit } from "./ChallengeProofSubmit";
 
 interface ChallengeDetailModalProps {
   challenge: Challenge | null;
@@ -43,9 +59,11 @@ interface ChallengeDetailModalProps {
   onLeave?: () => void;
   onSupport?: () => void;
   onInputProgress?: () => void;
+  onSubmitProof?: (data: { proofType: string; content?: string; fileUrl?: string }) => Promise<void>;
   canManage?: boolean;
   getParticipants?: (id: string) => Promise<ChallengeParticipant[]>;
   getSupporters?: (id: string) => Promise<ChallengeSupporter[]>;
+  getProofs?: (id: string) => Promise<ChallengeProof[]>;
 }
 
 const SCOPE_LABELS: Record<string, { label: string; color: string }> = {
@@ -62,13 +80,18 @@ export function ChallengeDetailModal({
   onLeave,
   onSupport,
   onInputProgress,
+  onSubmitProof,
   canManage = false,
   getParticipants,
   getSupporters,
+  getProofs,
 }: ChallengeDetailModalProps) {
   const [participants, setParticipants] = useState<ChallengeParticipant[]>([]);
   const [supporters, setSupporters] = useState<ChallengeSupporter[]>([]);
+  const [proofs, setProofs] = useState<ChallengeProof[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(false);
+  const [showProofForm, setShowProofForm] = useState(false);
+  const [isSubmittingProof, setIsSubmittingProof] = useState(false);
 
   useEffect(() => {
     if (challenge && isOpen) {
@@ -76,13 +99,15 @@ export function ChallengeDetailModal({
       Promise.all([
         getParticipants?.(challenge.id) || Promise.resolve([]),
         getSupporters?.(challenge.id) || Promise.resolve([]),
-      ]).then(([p, s]) => {
+        getProofs?.(challenge.id) || Promise.resolve([]),
+      ]).then(([p, s, pr]) => {
         setParticipants(p);
         setSupporters(s);
+        setProofs(pr);
         setIsLoadingData(false);
       });
     }
-  }, [challenge?.id, isOpen, getParticipants, getSupporters]);
+  }, [challenge?.id, isOpen, getParticipants, getSupporters, getProofs]);
 
   if (!challenge) return null;
 
@@ -94,18 +119,41 @@ export function ChallengeDetailModal({
   const isActive = challenge.status === "active";
   const hasMultiplier = challenge.supporter_multiplier > 1;
   const scopeStyle = SCOPE_LABELS[challenge.scope] || SCOPE_LABELS.personal;
+  const isOverdue = challenge.is_overdue || (isActive && isPast(new Date(challenge.ends_at)));
+
+  const typeConfig = CHALLENGE_TYPE_CONFIG[challenge.challenge_type as ChallengeType] || CHALLENGE_TYPE_CONFIG.practical;
+  const originConfig = CHALLENGE_ORIGIN_CONFIG[challenge.origin_source as ChallengeOrigin];
+  const proofConfig = PROOF_TYPE_CONFIG[challenge.proof_type as ProofType] || PROOF_TYPE_CONFIG.checkin;
+  const deadlinePriority = getDeadlinePriority(challenge.ends_at);
+  const deadlineClasses = getDeadlineClasses(deadlinePriority);
 
   const daysRemaining = Math.max(
     0,
     Math.ceil((new Date(challenge.ends_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
   );
 
+  const handleProofSubmit = async (data: { proofType: string; content?: string; fileUrl?: string }) => {
+    if (!onSubmitProof) return;
+    setIsSubmittingProof(true);
+    try {
+      await onSubmitProof(data);
+      setShowProofForm(false);
+      // Refresh proofs
+      if (getProofs) {
+        const newProofs = await getProofs(challenge.id);
+        setProofs(newProofs);
+      }
+    } finally {
+      setIsSubmittingProof(false);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-lg max-h-[85vh] overflow-hidden flex flex-col">
         <DialogHeader className="shrink-0">
           <DialogTitle className="flex items-center gap-2">
-            <Target className="w-5 h-5 text-primary" />
+            <span className="text-xl">{typeConfig.emoji}</span>
             Detalhes do Desafio
           </DialogTitle>
         </DialogHeader>
@@ -119,10 +167,23 @@ export function ChallengeDetailModal({
                   <h3 className="text-lg font-semibold">{challenge.name}</h3>
                   <p className="text-sm text-muted-foreground">{challenge.description}</p>
                 </div>
-                <Badge variant="outline" className={scopeStyle.color}>
-                  {scopeStyle.label}
-                </Badge>
+                <div className="flex flex-col gap-1 items-end">
+                  <Badge variant="outline" className={scopeStyle.color}>
+                    {scopeStyle.label}
+                  </Badge>
+                  <Badge variant="outline" className="text-xs">
+                    {typeConfig.label}
+                  </Badge>
+                </div>
               </div>
+
+              {/* Origin badge */}
+              {originConfig && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <FileText className="w-3 h-3" />
+                  <span>Origem: {originConfig.label}</span>
+                </div>
+              )}
 
               {/* Stats row */}
               <div className="flex items-center gap-4 text-sm">
@@ -142,6 +203,19 @@ export function ChallengeDetailModal({
                 )}
               </div>
             </div>
+
+            {/* Context section */}
+            {challenge.context_why && (
+              <div className="p-4 rounded-xl border bg-primary/5 border-primary/20">
+                <div className="flex items-start gap-3">
+                  <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-primary mb-1">Por que este desafio?</p>
+                    <p className="text-sm text-muted-foreground">{challenge.context_why}</p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Progress section */}
             <div className="p-4 rounded-xl border bg-muted/20">
@@ -166,14 +240,25 @@ export function ChallengeDetailModal({
 
             {/* Time and rewards */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="p-3 rounded-lg border bg-muted/10">
+              <div className={cn(
+                "p-3 rounded-lg border",
+                isOverdue ? "bg-destructive/10 border-destructive/30" : "bg-muted/10"
+              )}>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                  <Clock className="w-4 h-4" />
+                  {isOverdue ? (
+                    <AlertTriangle className="w-4 h-4 text-destructive" />
+                  ) : (
+                    <Clock className="w-4 h-4" />
+                  )}
                   <span>Prazo</span>
                 </div>
-                <p className="font-medium">
-                  {isActive ? `${daysRemaining} dias restantes` : 
-                   isComplete ? "Completado!" : "Encerrado"}
+                <p className={cn(
+                  "font-medium",
+                  isOverdue && "text-destructive"
+                )}>
+                  {isComplete ? "Completado!" : 
+                   isOverdue ? "Atrasado!" :
+                   isActive ? `${daysRemaining} dias restantes` : "Encerrado"}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {format(new Date(challenge.ends_at), "dd/MM/yyyy", { locale: ptBR })}
@@ -185,13 +270,19 @@ export function ChallengeDetailModal({
                   <TrendingUp className="w-4 h-4" />
                   <span>Recompensa</span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className="font-medium text-primary">
                     +{Math.floor(challenge.xp_reward * challenge.supporter_multiplier)} XP
                   </span>
                   <span className="font-medium text-amber-400">
                     +{Math.floor(challenge.coins_reward * challenge.supporter_multiplier)} 🪙
                   </span>
+                  {(challenge.diamonds_reward || 0) > 0 && (
+                    <span className="font-medium text-cyan-400 flex items-center gap-1">
+                      <Gem className="w-3 h-3" />
+                      +{challenge.diamonds_reward}
+                    </span>
+                  )}
                 </div>
                 {hasMultiplier && (
                   <p className="text-xs text-green-400">
@@ -199,6 +290,60 @@ export function ChallengeDetailModal({
                   </p>
                 )}
               </div>
+            </div>
+
+            {/* Proof requirement */}
+            <div className="p-4 rounded-lg border bg-muted/10">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">{proofConfig.icon}</span>
+                  <span className="text-sm font-medium">Comprovação</span>
+                </div>
+                {challenge.is_participating && isActive && !showProofForm && onSubmitProof && (
+                  <Button size="sm" variant="outline" onClick={() => setShowProofForm(true)}>
+                    Enviar Evidência
+                  </Button>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">{proofConfig.description}</p>
+              
+              {showProofForm && (
+                <div className="mt-4">
+                  <ChallengeProofSubmit
+                    proofType={challenge.proof_type as ProofType}
+                    onSubmit={handleProofSubmit}
+                    onCancel={() => setShowProofForm(false)}
+                    isLoading={isSubmittingProof}
+                  />
+                </div>
+              )}
+
+              {/* Existing proofs */}
+              {proofs.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  <p className="text-xs font-medium text-muted-foreground">Evidências enviadas:</p>
+                  {proofs.map((proof) => (
+                    <div key={proof.id} className="p-2 rounded bg-muted/30 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">
+                          {format(new Date(proof.submitted_at), "dd/MM HH:mm", { locale: ptBR })}
+                        </span>
+                        {proof.approved_at ? (
+                          <Badge className="bg-green-500/20 text-green-400 text-xs">
+                            <CheckCircle2 className="w-3 h-3 mr-1" />
+                            Aprovado
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-xs">Pendente</Badge>
+                        )}
+                      </div>
+                      {proof.content && (
+                        <p className="mt-1 text-foreground">{proof.content}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Pool info */}
