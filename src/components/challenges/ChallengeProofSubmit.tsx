@@ -24,7 +24,8 @@ import { PROOF_TYPE_CONFIG, type ProofType } from "@/constants/challengeTypes";
 
 interface ChallengeProofSubmitProps {
   proofType: ProofType;
-  onSubmit: (data: { content?: string; file_url?: string }) => Promise<void>;
+  onSubmit: (data: { proofType: string; content?: string; fileUrl?: string }) => Promise<void>;
+  onCancel?: () => void;
   isLoading?: boolean;
   className?: string;
 }
@@ -40,6 +41,7 @@ const PROOF_ICONS = {
 export function ChallengeProofSubmit({
   proofType,
   onSubmit,
+  onCancel,
   isLoading = false,
   className,
 }: ChallengeProofSubmitProps) {
@@ -53,8 +55,9 @@ export function ChallengeProofSubmit({
   const handleSubmit = async () => {
     try {
       await onSubmit({
+        proofType,
         content: proofType === "checkin" ? "Check-in realizado" : content,
-        file_url: proofType === "file" ? fileUrl : undefined,
+        fileUrl: proofType === "file" ? fileUrl : undefined,
       });
       setIsSubmitted(true);
     } catch (error) {
@@ -101,14 +104,21 @@ export function ChallengeProofSubmit({
 
   return (
     <div className={cn("space-y-4", className)}>
-      <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border">
-        <div className="p-2 rounded-lg bg-primary/10">
-          <Icon className="w-5 h-5 text-primary" />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border flex-1">
+          <div className="p-2 rounded-lg bg-primary/10">
+            <Icon className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <p className="font-medium text-sm">{config.label}</p>
+            <p className="text-xs text-muted-foreground">{config.description}</p>
+          </div>
         </div>
-        <div>
-          <p className="font-medium text-sm">{config.label}</p>
-          <p className="text-xs text-muted-foreground">{config.description}</p>
-        </div>
+        {onCancel && (
+          <Button variant="ghost" size="icon" onClick={onCancel} className="ml-2">
+            <X className="w-4 h-4" />
+          </Button>
+        )}
       </div>
 
       {/* Checkin - Simple button */}
