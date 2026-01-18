@@ -1,6 +1,7 @@
 /**
  * CreateChallengeModal - Modal para criar desafios
  * Suporta personal, team e global
+ * Inclui: tipo de desafio, origem, comprovação, diamantes, skills
  */
 
 import { useState } from "react";
@@ -17,6 +18,8 @@ import {
   ChevronRight,
   ChevronLeft,
   Check,
+  Gem,
+  HelpCircle,
 } from "lucide-react";
 import {
   Dialog,
@@ -36,6 +39,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { 
   INTERNAL_METRICS, 
@@ -48,6 +57,12 @@ import {
 import { ItemRewardsSection } from "@/components/rewards/ItemRewardsSection";
 import { EvolutionTemplateSection } from "@/components/rewards/EvolutionTemplateSection";
 import type { ItemRewardConfig } from "@/hooks/useItemRewards";
+import {
+  CHALLENGE_TYPE_CONFIG,
+  PROOF_TYPE_CONFIG,
+  type ChallengeType,
+  type ProofType,
+} from "@/constants/challengeTypes";
 
 interface CreateChallengeModalProps {
   isOpen: boolean;
@@ -58,7 +73,7 @@ interface CreateChallengeModalProps {
   canCreateGlobal?: boolean;
 }
 
-const STEPS = ["Tipo", "Detalhes", "Período", "Meta", "Recompensa", "Itens", "Template"];
+const STEPS = ["Tipo", "Categoria", "Detalhes", "Período", "Meta", "Recompensa", "Itens", "Template"];
 
 const SCOPE_OPTIONS = [
   { value: "personal" as const, label: "Pessoal", icon: User, description: "Só você participa" },
@@ -95,9 +110,15 @@ export function CreateChallengeModal({
   const [rewardType, setRewardType] = useState<ChallengeRewardType>("both");
   const [xpReward, setXpReward] = useState(100);
   const [coinsReward, setCoinsReward] = useState(50);
+  const [diamondsReward, setDiamondsReward] = useState(0);
   const [icon, setIcon] = useState("target");
   const [rewardItems, setRewardItems] = useState<ItemRewardConfig[]>([]);
   const [evolutionTemplateId, setEvolutionTemplateId] = useState<string | null>(null);
+
+  // New fields for consolidated challenges
+  const [challengeType, setChallengeType] = useState<ChallengeType>("practical");
+  const [proofType, setProofType] = useState<ProofType>("checkin");
+  const [contextWhy, setContextWhy] = useState("");
 
   // Template selection for personal
   const [selectedTemplate, setSelectedTemplate] = useState<number | null>(null);
@@ -115,7 +136,11 @@ export function CreateChallengeModal({
     setSuccessCriteria("");
     setXpReward(100);
     setCoinsReward(50);
+    setDiamondsReward(0);
     setRewardItems([]);
+    setChallengeType("practical");
+    setProofType("checkin");
+    setContextWhy("");
   };
 
   const handleClose = () => {
@@ -138,17 +163,24 @@ export function CreateChallengeModal({
 
   const canProceed = (): boolean => {
     switch (step) {
-      case 0: 
+      case 0: // Scope
         if (scope === "team") return !!teamId;
         return true;
-      case 1: 
+      case 1: // Category (type + proof)
+        return !!challengeType && !!proofType;
+      case 2: // Details
         if (scope === "personal" && selectedTemplate !== null) return true;
         return name.trim().length > 0 && description.trim().length > 0;
-      case 2: return startsAt && endsAt && new Date(endsAt) > new Date(startsAt);
-      case 3: return successCriteria.trim().length > 0 && targetValue > 0;
-      case 4: return xpReward > 0 || coinsReward > 0;
-      case 5: return true; // Item rewards são opcionais
-      case 6: return true; // Template é opcional
+      case 3: // Period
+        return startsAt && endsAt && new Date(endsAt) > new Date(startsAt);
+      case 4: // Target
+        return successCriteria.trim().length > 0 && targetValue > 0;
+      case 5: // Rewards
+        return xpReward > 0 || coinsReward > 0 || diamondsReward > 0;
+      case 6: // Item rewards (optional)
+        return true;
+      case 7: // Template (optional)
+        return true;
       default: return false;
     }
   };
@@ -170,10 +202,14 @@ export function CreateChallengeModal({
       reward_type: rewardType,
       xp_reward: xpReward,
       coins_reward: coinsReward,
+      diamonds_reward: diamondsReward,
       icon,
       auto_enroll: scope === "personal",
       reward_items: rewardItems.length > 0 ? rewardItems : undefined,
       evolution_template_id: evolutionTemplateId || undefined,
+      challenge_type: challengeType,
+      proof_type: proofType,
+      context_why: contextWhy || undefined,
     };
 
     const result = await onCreate(data);
@@ -270,8 +306,92 @@ export function CreateChallengeModal({
               </div>
             )}
 
-            {/* Step 1: Details */}
+            {/* Step 1: Challenge Type & Proof Type */}
             {step === 1 && (
+              <div className="space-y-6">
+                {/* Challenge Type */}
+                <div className="space-y-3">
+                  <Label className="flex items-center gap-2">
+                    Tipo de Desafio
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="w-3.5 h-3.5 text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          <p>O tipo define a natureza do desafio e como ele será categorizado.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {(Object.entries(CHALLENGE_TYPE_CONFIG) as [ChallengeType, typeof CHALLENGE_TYPE_CONFIG[ChallengeType]][]).map(([key, config]) => (
+                      <button
+                        key={key}
+                        onClick={() => setChallengeType(key)}
+                        className={cn(
+                          "flex items-center gap-2 p-3 rounded-lg border text-left transition-all",
+                          challengeType === key
+                            ? "border-primary bg-primary/5"
+                            : "border-border/50 hover:border-border"
+                        )}
+                      >
+                        <span className="text-lg">{config.emoji}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-xs truncate">{config.label}</p>
+                        </div>
+                        {challengeType === key && (
+                          <Check className="w-3.5 h-3.5 text-primary shrink-0" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Proof Type */}
+                <div className="space-y-3">
+                  <Label className="flex items-center gap-2">
+                    Forma de Comprovação
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="w-3.5 h-3.5 text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          <p>Como o participante irá comprovar que completou o desafio.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </Label>
+                  <div className="grid gap-2">
+                    {(Object.entries(PROOF_TYPE_CONFIG) as [ProofType, typeof PROOF_TYPE_CONFIG[ProofType]][]).map(([key, config]) => (
+                      <button
+                        key={key}
+                        onClick={() => setProofType(key)}
+                        className={cn(
+                          "flex items-center gap-3 p-3 rounded-lg border text-left transition-all",
+                          proofType === key
+                            ? "border-primary bg-primary/5"
+                            : "border-border/50 hover:border-border"
+                        )}
+                      >
+                        <span className="text-base">{config.icon}</span>
+                        <div className="flex-1">
+                          <p className="font-medium text-sm">{config.label}</p>
+                          <p className="text-xs text-muted-foreground">{config.description}</p>
+                        </div>
+                        {proofType === key && (
+                          <Check className="w-4 h-4 text-primary" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Step 2: Details */}
+            {step === 2 && (
               <div className="space-y-4">
                 {scope === "personal" && (
                   <div className="space-y-3">
@@ -325,13 +445,34 @@ export function CreateChallengeModal({
                         rows={3}
                       />
                     </div>
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2">
+                        Por que este desafio? (opcional)
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <HelpCircle className="w-3.5 h-3.5 text-muted-foreground" />
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs">
+                              <p>Contexto que ajuda o participante a entender a importância do desafio.</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </Label>
+                      <Textarea
+                        value={contextWhy}
+                        onChange={(e) => setContextWhy(e.target.value)}
+                        placeholder="Ex: Este desafio vai ajudar você a desenvolver..."
+                        rows={2}
+                      />
+                    </div>
                   </div>
                 )}
               </div>
             )}
 
-            {/* Step 2: Period */}
-            {step === 2 && (
+            {/* Step 3: Period */}
+            {step === 3 && (
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground">Quando o desafio acontece?</p>
                 
@@ -362,8 +503,8 @@ export function CreateChallengeModal({
               </div>
             )}
 
-            {/* Step 3: Target */}
-            {step === 3 && (
+            {/* Step 4: Target */}
+            {step === 4 && (
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground">Qual é a meta do desafio?</p>
 
@@ -405,14 +546,14 @@ export function CreateChallengeModal({
               </div>
             )}
 
-            {/* Step 4: Rewards */}
-            {step === 4 && (
+            {/* Step 5: Rewards */}
+            {step === 5 && (
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground">Recompensas ao completar</p>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-3">
                   <div className="space-y-2">
-                    <Label className="flex items-center gap-2">
+                    <Label className="flex items-center gap-2 text-xs">
                       <Zap className="w-4 h-4 text-primary" />
                       XP
                     </Label>
@@ -424,7 +565,7 @@ export function CreateChallengeModal({
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="flex items-center gap-2">
+                    <Label className="flex items-center gap-2 text-xs">
                       <Coins className="w-4 h-4 text-amber-400" />
                       Moedas
                     </Label>
@@ -435,18 +576,34 @@ export function CreateChallengeModal({
                       min={0}
                     />
                   </div>
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2 text-xs">
+                      <Gem className="w-4 h-4 text-cyan-400" />
+                      Diamantes
+                    </Label>
+                    <Input
+                      type="number"
+                      value={diamondsReward}
+                      onChange={(e) => setDiamondsReward(Number(e.target.value))}
+                      min={0}
+                    />
+                  </div>
                 </div>
 
-                <div className="p-4 rounded-lg bg-muted/30 border border-border/30">
+                <div className="p-4 rounded-lg bg-muted/30 border border-border/30 space-y-2">
                   <p className="text-sm text-muted-foreground">
                     💡 Se outros apoiarem este desafio, as recompensas serão multiplicadas!
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    💎 <strong>Diamantes</strong> = impacto real para a empresa • 
+                    🪙 <strong>Moedas</strong> = esforço e aprendizado
                   </p>
                 </div>
               </div>
             )}
 
-            {/* Step 5: Item Rewards */}
-            {step === 5 && (
+            {/* Step 6: Item Rewards */}
+            {step === 6 && (
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground">
                   Adicione itens da loja como recompensa (opcional)
@@ -459,8 +616,8 @@ export function CreateChallengeModal({
               </div>
             )}
 
-            {/* Step 7 - Template de Evolução */}
-            {step === 6 && (
+            {/* Step 7: Template de Evolução */}
+            {step === 7 && (
               <div className="space-y-6">
                 <EvolutionTemplateSection
                   selectedTemplateId={evolutionTemplateId}

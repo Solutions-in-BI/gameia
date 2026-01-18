@@ -153,7 +153,8 @@ export type ProofType =
   | "metric";  // Métrica automática
 
 export interface ProofTypeConfig {
-  icon: LucideIcon;
+  icon: string;  // emoji for easy rendering
+  lucideIcon: LucideIcon;
   label: string;
   description: string;
   requiresInput: boolean;
@@ -161,31 +162,36 @@ export interface ProofTypeConfig {
 
 export const PROOF_TYPE_CONFIG: Record<ProofType, ProofTypeConfig> = {
   checkin: {
-    icon: CheckCircle,
+    icon: "✅",
+    lucideIcon: CheckCircle,
     label: "Check-in",
     description: "Confirmar que executou a ação",
     requiresInput: false,
   },
   text: {
-    icon: FileText,
+    icon: "📝",
+    lucideIcon: FileText,
     label: "Texto",
     description: "Escrever reflexão ou evidência",
     requiresInput: true,
   },
   file: {
-    icon: Upload,
+    icon: "📎",
+    lucideIcon: Upload,
     label: "Arquivo",
     description: "Enviar arquivo como evidência",
     requiresInput: true,
   },
   link: {
-    icon: Link,
+    icon: "🔗",
+    lucideIcon: Link,
     label: "Link",
     description: "Compartilhar link como evidência",
     requiresInput: true,
   },
   metric: {
-    icon: Activity,
+    icon: "📊",
+    lucideIcon: Activity,
     label: "Métrica",
     description: "Progresso medido automaticamente",
     requiresInput: false,
