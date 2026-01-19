@@ -32,3 +32,6 @@ verify_jwt = false
 
 [functions.ai-self-assessment]
 verify_jwt = false
+
+[functions.challenge-deadline-alerts]
+verify_jwt = false
